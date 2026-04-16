@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Кабинет ученика — И. Котельников</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── VARIABLES ── */
+:root {
+  --g:#4a7c59; --gd:#2e5339; --gm:#5a8f6a;
+  --gl:#e8f0ea; --gp:#f3f7f4;
+  --ink:#1c2b22; --im:#3a4d41; --mu:#7a9180;
+  --bdr:#d6e4da; --bg:#f7faf8; --wh:#ffffff;
+  --warn:#c8622a; --wbg:#fdf0e8;
+  --gold:#b8922a; --gbg:#fdf5e0;
+  --blue:#3a6fa8; --bbg:#e8f0fb;
+  --accent: #4a7c59; /* меняется под ученика */
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+/* ── LOGIN ── */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px}
+.lw{width:100%;max-width:400px;animation:up .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.chip{display:inline-flex;align-items:center;background:var(--gl);color:var(--g);font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;padding:6px 14px;border-radius:99px;margin-bottom:14px}
+.ltitle{font-family:'Nunito',sans-serif;font-size:32px;font-weight:900;color:var(--gd);line-height:1.15;margin-bottom:4px;letter-spacing:-.5px}
+.lsub{font-size:14px;color:var(--mu);margin-bottom:24px}
+.lcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:20px;padding:28px 24px;box-shadow:0 4px 24px rgba(46,83,57,.08)}
+
+/* Поля — вертикально, чётко видны */
+.fl{display:block;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);margin-bottom:7px;margin-top:16px}
+.fl:first-child{margin-top:0}
+.fi-wrap{position:relative;margin-bottom:0}
+.fi{width:100%;padding:14px 44px 14px 44px;background:var(--wh);border:2px solid var(--bdr);border-radius:12px;font-family:'Nunito Sans',sans-serif;font-size:15px;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none}
+.fi:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(74,124,89,.12)}
+.fi::placeholder{color:#b0c0b8}
+.fi-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
+.fi-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none;padding:4px}
+.lbtn{width:100%;padding:15px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:background .2s,box-shadow .2s;margin-top:22px}
+.lbtn:hover{background:var(--gm);box-shadow:0 6px 18px rgba(74,124,89,.3)}
+.lbtn:active{transform:scale(.98)}
+.lerr{color:var(--warn);font-size:13px;text-align:center;margin-top:10px;min-height:18px}
+.footer-note{text-align:center;font-size:12px;color:var(--mu);padding:16px 0 0;border-top:1.5px solid var(--bdr);margin-top:24px}
+
+/* ── APP ── */
+#app{display:none}
+
+/* TOPBAR — горизонтальная, не переносится */
+.topbar{height:56px;background:var(--wh);border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:200;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0;scrollbar-width:none}
+.topbar::-webkit-scrollbar{display:none}
+.tblogo{font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:var(--gd);margin-right:16px;white-space:nowrap;flex-shrink:0}
+.tblogo span{color:var(--g)}
+.tbnav{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.tn{padding:6px 12px;border-radius:9px;font-size:12px;font-weight:600;color:var(--mu);cursor:pointer;transition:all .18s;white-space:nowrap;border:none;background:none;font-family:'Nunito Sans',sans-serif;display:flex;align-items:center;gap:4px;flex-shrink:0}
+.tn:hover{background:var(--gp);color:var(--im)}
+.tn.active{background:var(--gl);color:var(--gd);font-weight:700}
+.tbright{display:flex;align-items:center;gap:8px;margin-left:12px;flex-shrink:0}
+.avchip{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;background:var(--gp);border-radius:99px;border:1.5px solid var(--bdr);cursor:pointer}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:800;font-size:11px;color:#fff;flex-shrink:0}
+.avname{font-size:11px;font-weight:700;color:var(--im);white-space:nowrap}
+.logoutl{font-size:11px;color:var(--mu);cursor:pointer;padding:5px 8px;border-radius:8px;transition:all .18s;font-weight:600;white-space:nowrap;flex-shrink:0}
+.logoutl:hover{color:var(--warn)}
+
+/* MAIN */
+.main{max-width:900px;margin:0 auto;padding:24px 16px 48px}
+.page{display:none}
+.page.active{display:block;animation:up .22s ease both}
+.sec-chip{display:inline-flex;background:var(--gl);color:var(--g);font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:8px}
+.ptitle{font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--gd);letter-spacing:-.3px;margin-bottom:3px}
+.psub{font-size:13px;color:var(--mu);margin-bottom:20px}
+
+/* CARDS */
+.card{background:var(--wh);border:1.5px solid var(--bdr);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+.ctitle{font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+
+/* STAT BOXES */
+.srow{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+.sbox{background:var(--wh);border:1.5px solid var(--bdr);border-radius:13px;padding:14px 16px 12px;position:relative;overflow:hidden}
+.sbox::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 11px 11px}
+.sbox.sg::after{background:var(--g)}.sbox.so::after{background:var(--warn)}
+.sbox.sgo::after{background:var(--gold)}.sbox.sb::after{background:var(--blue)}
+.slbl{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
+.sval{font-family:'Nunito',sans-serif;font-size:26px;font-weight:900;color:var(--gd);line-height:1}
+.snote{font-size:11px;color:var(--mu);margin-top:3px}
+
+/* PROGRESS */
+.prow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.plbl{font-size:12px;font-weight:600;min-width:110px;color:var(--im)}
+.ptrack{flex:1;height:7px;background:var(--gp);border-radius:99px;overflow:hidden;border:1px solid var(--bdr)}
+.pfill{height:100%;border-radius:99px;background:var(--g);transition:width 1.1s cubic-bezier(.16,1,.3,1)}
+.ppct{font-size:11px;font-weight:700;min-width:30px;text-align:right;color:var(--gd)}
+
+/* NEXT LESSON */
+.nextc{border-radius:13px;padding:18px 20px;color:#fff;margin-bottom:14px}
+.nxlbl{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;opacity:.7;margin-bottom:4px}
+.nxsub{font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;margin-bottom:2px}
+.nxinfo{font-size:12px;opacity:.8}
+
+/* SUB BLOCK */
+.sub-block{background:var(--wh);border:1.5px solid var(--bdr);border-radius:13px;padding:14px 18px;margin-bottom:14px}
+.sub-track{height:7px;background:var(--gp);border-radius:99px;overflow:hidden;border:1px solid var(--bdr);margin-top:8px}
+.sub-fill{height:100%;border-radius:99px;background:var(--g);transition:width .8s ease}
+.sub-fill.low{background:var(--warn)}.sub-fill.critical{background:#c0392b}
+
+/* ACHIEVEMENTS */
+.achitem{padding:8px 0;border-bottom:1.5px solid var(--bdr);font-size:13px;color:var(--im);font-weight:600}
+.achitem:last-child{border-bottom:none}
+
+/* TASKS */
+.trow{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1.5px solid var(--bdr)}
+.trow:last-child{border-bottom:none;padding-bottom:0}
+.chk{width:22px;height:22px;border-radius:6px;border:2px solid var(--bdr);background:var(--wh);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:2px;transition:all .18s;font-size:12px;color:#fff}
+.chk.done{background:var(--g);border-color:var(--g)}
+.chk:hover:not(.done){border-color:var(--g)}
+.tname{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.tname.st{text-decoration:line-through;color:var(--mu)}
+.tmeta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.bc{display:inline-flex;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
+.bg{background:var(--gl);color:var(--gd)}.bw{background:var(--wbg);color:var(--warn)}
+.bgo{background:var(--gbg);color:var(--gold)}.bb{background:var(--bbg);color:var(--blue)}
+.bgr{background:#f0f0f0;color:#666}
+
+/* GRADES TABLE — overflow scroll на мобиле */
+.gt-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.gt{width:100%;border-collapse:collapse;min-width:480px}
+.gt th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);padding:0 10px 8px;border-bottom:1.5px solid var(--bdr);white-space:nowrap}
+.gt td{padding:10px;font-size:12px;border-bottom:1px solid var(--gp);vertical-align:middle}
+.gt tr:last-child td{border-bottom:none}
+.gt tr:hover td{background:var(--gp)}
+.gc{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:12px}
+.g5{background:rgba(74,124,89,.15);color:var(--gd)}.g4{background:rgba(184,146,42,.15);color:var(--gold)}.g3{background:rgba(200,98,42,.15);color:var(--warn)}
+
+/* SCHEDULE */
+.sday{margin-bottom:18px}
+.sdlbl{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.lcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.lstripe{width:4px;align-self:stretch;border-radius:99px;flex-shrink:0}
+.ltime{font-size:12px;font-weight:700;color:var(--g);min-width:80px}
+.lname{font-size:13px;font-weight:700;color:var(--ink)}
+.ltopic{font-size:11px;color:var(--mu);margin-top:2px}
+
+/* MESSAGES */
+.mthread{max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.mwrap{display:flex;flex-direction:column}
+.mwrap.me{align-items:flex-end}
+.bubble{max-width:80%;padding:9px 13px;border-radius:13px;font-size:13px;line-height:1.5}
+.bubble.tutor{background:var(--gp);color:var(--ink);border:1.5px solid var(--bdr);border-bottom-left-radius:4px}
+.bubble.student{background:var(--g);color:#fff;border-bottom-right-radius:4px}
+.mtime{font-size:9px;color:var(--mu);margin-top:3px;padding:0 2px}
+.mbar{display:flex;gap:8px;align-items:center}
+.minp{flex:1;padding:11px 13px;background:var(--gp);border:1.5px solid var(--bdr);border-radius:10px;font-family:'Nunito Sans',sans-serif;font-size:13px;color:var(--ink);outline:none}
+.minp:focus{border-color:var(--g);background:var(--wh)}
+.msendbtn{padding:11px 16px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap}
+.msendbtn:hover{background:var(--gm)}
+
+/* KNOWLEDGE */
+.kb-filter{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.kbf{padding:6px 14px;border-radius:99px;font-size:11px;font-weight:700;border:1.5px solid var(--bdr);background:var(--wh);color:var(--mu);cursor:pointer;transition:all .18s;font-family:'Nunito',sans-serif}
+.kbf.active{background:var(--gl);border-color:var(--g);color:var(--gd)}
+.kb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.kbcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:13px;padding:16px 18px}
+.kbtitle{font-size:13px;font-weight:700;color:var(--ink);margin:8px 0 4px}
+.kbmeta{font-size:11px;color:var(--mu);display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.kbcontent{font-size:12px;color:var(--im);margin-top:7px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.kba{color:var(--g);text-decoration:none;font-weight:600;font-size:12px}
+
+/* ADD TASK form */
+.addtrig{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--g);cursor:pointer;margin-top:8px;padding:4px 0}
+.addform{background:var(--gp);border:1.5px dashed var(--bdr);border-radius:11px;padding:16px;margin-top:10px;display:none}
+.addform.show{display:block}
+.addform input,.addform select{width:100%;padding:9px 12px;background:var(--wh);border:1.5px solid var(--bdr);border-radius:9px;font-family:'Nunito Sans',sans-serif;font-size:13px;color:var(--ink);margin-bottom:8px;outline:none}
+.addform input:focus,.addform select:focus{border-color:var(--g)}
+.btnp{background:var(--g);color:#fff;padding:9px 16px;border-radius:9px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;border:none}
+.btng{background:transparent;color:var(--mu);border:1.5px solid var(--bdr);padding:9px 16px;border-radius:9px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lw">
+    <div class="chip">🎓 Личный кабинет</div>
+    <div class="ltitle">Котельников<br>Илья Станиславович</div>
+    <div class="lsub">Математика · Химия · Подготовка к ЕГЭ</div>
+
+    <div class="lcard">
+      <label class="fl">Ваше имя</label>
+      <div class="fi-wrap">
+        <span class="fi-icon">👤</span>
+        <input class="fi" id="linp" type="text" placeholder="Например: Аня Иванова" autocomplete="off">
+      </div>
+
+      <label class="fl">Пароль</label>
+      <div class="fi-wrap">
+        <span class="fi-icon">🔑</span>
+        <input class="fi" id="lpass" type="password" placeholder="Введите пароль"
+          onkeydown="if(event.key==='Enter')doLogin()">
+        <span class="fi-eye" id="eye" onclick="togglePw()">👁</span>
+      </div>
+
+      <button class="lbtn" onclick="doLogin()">Войти в кабинет →</button>
+      <div class="lerr" id="lerr"></div>
+    </div>
+
+    <div class="footer-note">Длительность от 60 минут · Гибкое расписание</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- TOPBAR (горизонтальная, скроллируется на мобиле) -->
+  <header class="topbar">
+    <div class="tblogo">И. Котельников<span>.</span></div>
+    <nav class="tbnav">
+      <button class="tn active" onclick="nav('dashboard',this)">🏠 Главная</button>
+      <button class="tn" onclick="nav('tasks',this)">✅ Задания</button>
+      <button class="tn" onclick="nav('grades',this)">📊 Оценки</button>
+      <button class="tn" onclick="nav('schedule',this)">📅 Расписание</button>
+      <button class="tn" onclick="nav('knowledge',this)">📚 Материалы</button>
+      <button class="tn" onclick="nav('messages',this)">💬 Сообщения</button>
+    </nav>
+    <div class="tbright">
+      <div class="avchip">
+        <div class="av" id="tav" style="background:var(--accent)"></div>
+        <div class="avname" id="tname"></div>
+      </div>
+      <div class="logoutl" onclick="doLogout()">Выйти</div>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="sec-chip" id="dchip"></div>
+      <div class="ptitle" id="dtitle"></div>
+      <div class="psub" id="dsub"></div>
+      <div class="srow" id="srow"></div>
+      <div id="nextwrap"></div>
+      <div id="subwrap"></div>
+      <div class="card"><div class="ctitle">📈 Прогресс по темам</div><div id="proglist"></div></div>
+      <div class="card"><div class="ctitle">🏆 Достижения</div><div id="achlist"></div></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="page" id="page-tasks">
+      <div class="sec-chip">Задания</div>
+      <div class="ptitle">Мои задания</div>
+      <div class="psub">Получай задания и сдавай выполненные фото</div>
+      <div class="card">
+        <div class="ctitle">⏳ Активные</div>
+        <div id="tactive"></div>
+        <div class="addtrig" onclick="toggleAdd()">＋ Добавить заметку</div>
+        <div class="addform" id="addform">
+          <input type="text" id="ntitle" placeholder="Название задания">
+          <div style="display:flex;gap:8px">
+            <select id="nsubj" style="flex:1"><option>Алгебра</option><option>Геометрия</option><option>Химия</option><option>Другое</option></select>
+            <input type="date" id="ndue" style="flex:1">
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button class="btnp" onclick="addTask()">Добавить</button>
+            <button class="btng" onclick="toggleAdd()">Отмена</button>
+          </div>
+        </div>
+      </div>
+      <div class="card"><div class="ctitle">✔️ Выполненные</div><div id="tdone"></div></div>
+    </div>
+
+    <!-- GRADES -->
+    <div class="page" id="page-grades">
+      <div class="sec-chip">Успеваемость</div>
+      <div class="ptitle">Оценки</div>
+      <div class="psub">История работ и контрольных</div>
+      <div class="card">
+        <div class="gt-wrap">
+          <table class="gt">
+            <thead><tr>
+              <th>Дата</th><th>Предмет</th><th>Тема</th><th>Тип</th><th>Оц.</th><th>Комментарий</th>
+            </tr></thead>
+            <tbody id="gtbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="page" id="page-schedule">
+      <div class="sec-chip">Расписание</div>
+      <div class="ptitle">Занятия на неделю</div>
+      <div class="psub">Актуальное расписание</div>
+      <div id="schedwrap"></div>
+    </div>
+
+    <!-- KNOWLEDGE -->
+    <div class="page" id="page-knowledge">
+      <div class="sec-chip">База знаний</div>
+      <div class="ptitle">Учебные материалы</div>
+      <div class="psub">Конспекты, видео, файлы от репетитора</div>
+      <div class="kb-filter" id="kbfilter"></div>
+      <div class="kb-grid" id="kbgrid"></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="page" id="page-messages">
+      <div class="sec-chip">Переписка</div>
+      <div class="ptitle">Сообщения</div>
+      <div class="psub">Чат с репетитором</div>
+      <div class="card">
+        <div class="mthread" id="mthread"></div>
+        <div class="mbar">
+          <input class="minp" id="minp" type="text" placeholder="Написать сообщение…"
+            onkeydown="if(event.key==='Enter')sendMsg()">
+          <button class="msendbtn" onclick="sendMsg()">→</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+const API = '';
+let ST = null, sName = '';
+let addOpen = false, kbSubject = '', pollTimer = null;
+
+// ── СЕССИЯ ──────────────────────────────────────────
+// Сохраняем логин в localStorage чтобы не вводить каждый раз
+function saveSession(name, pw) {
+  try { localStorage.setItem('ks_name', name); localStorage.setItem('ks_pw', pw); } catch(e){}
+}
+function loadSession() {
+  try { return { name: localStorage.getItem('ks_name')||'', pw: localStorage.getItem('ks_pw')||'' }; } catch(e){ return {name:'',pw:''}; }
+}
+function clearSession() {
+  try { localStorage.removeItem('ks_name'); localStorage.removeItem('ks_pw'); } catch(e){}
+}
+
+// ── УТИЛИТЫ ──────────────────────────────────────────
+function togglePw() {
+  const i = document.getElementById('lpass'), e = document.getElementById('eye');
+  i.type = i.type==='password' ? 'text' : 'password';
+  e.textContent = i.type==='password' ? '👁' : '🙈';
+}
+
+function setAccent(color) {
+  document.documentElement.style.setProperty('--accent', color || '#4a7c59');
+  document.documentElement.style.setProperty('--g', color || '#4a7c59');
+}
+
+// ── AUTH ──────────────────────────────────────────────
+async function doLogin(name, pw) {
+  if (!name) name = document.getElementById('linp').value.trim();
+  if (!pw)   pw   = document.getElementById('lpass').value;
+  const err = document.getElementById('lerr');
+  if(err) err.textContent = '';
+  if (!name) { if(err) err.textContent = 'Введите имя'; return; }
+  try {
+    const r = await fetch(`${API}/api/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name, password: pw||''})
+    });
+    if (!r.ok) {
+      if(err) err.textContent = r.status===404 ? 'Ученик не найден — уточни имя у репетитора' : 'Неверный пароль';
+      clearSession(); return;
+    }
+    const data = await r.json();
+    ST = data.student; sName = data.name;
+    saveSession(name, pw);
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    boot();
+    startPolling();
+  } catch(e) {
+    if(err) err.textContent = 'Нет соединения с сервером';
+  }
+}
+
+function doLogout() {
+  clearSession();
+  clearInterval(pollTimer);
+  ST = null; sName = '';
+  document.getElementById('login').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('linp').value = '';
+  document.getElementById('lpass').value = '';
+  // сбросить активную вкладку на главную
+  document.querySelectorAll('.tn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.tn').classList.add('active');
+}
+
+// Автовход при загрузке страницы
+window.addEventListener('DOMContentLoaded', () => {
+  const s = loadSession();
+  if (s.name) doLogin(s.name, s.pw);
+});
+
+// ── NAV ───────────────────────────────────────────────
+function nav(id, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='knowledge') loadKnowledge();
+}
+
+// ── POLLING ───────────────────────────────────────────
+function startPolling() {
+  clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    try {
+      const r = await fetch(`${API}/api/student/${encodeURIComponent(sName)}`);
+      if (r.ok) { ST = await r.json(); refreshUI(); }
+    } catch(e) {}
+  }, 10000);
+}
+
+function refreshUI() {
+  setAccent(ST.color);
+  renderStats(); renderProgress(); renderNext(); renderSub(); renderAch();
+  renderTasks(); renderGrades(); renderSched(); renderMsgs();
+}
+
+// ── BOOT ──────────────────────────────────────────────
+function boot() {
+  setAccent(ST.color);
+  const init = sName.split(' ').map(w=>w[0]).join('');
+  document.getElementById('tav').textContent = init;
+  document.getElementById('tname').textContent = sName.split(' ')[0];
+  const now = new Date();
+  const days=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  const mons=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  document.getElementById('dchip').textContent = ST.subject || ST.program || '';
+  document.getElementById('dtitle').textContent = `Привет, ${sName.split(' ')[0]}! 👋`;
+  document.getElementById('dsub').textContent = `${days[now.getDay()]}, ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()}`;
+  refreshUI();
+}
+
+// ── STATS ─────────────────────────────────────────────
+function renderStats() {
+  const active = (ST.tasks||[]).filter(t=>!t.done).length;
+  const avg = ST.avgGrade ? (+ST.avgGrade).toFixed(1) : '—';
+  document.getElementById('srow').innerHTML = [
+    {lbl:'Занятий',  val:ST.lessonsTotal||0,    note:'всего',            cls:'sg'},
+    {lbl:'Ср. оценка',val:avg,                  note:'последние работы', cls:'sgo'},
+    {lbl:'Активность',val:(ST.streak||0)+'д.',  note:'без пропусков',    cls:'so'},
+    {lbl:'Выполнено', val:ST.doneTasks||0,       note:active+' в работе', cls:'sb'},
+  ].map(i=>`<div class="sbox ${i.cls}"><div class="slbl">${i.lbl}</div><div class="sval">${i.val}</div><div class="snote">${i.note}</div></div>`).join('');
+}
+
+// ── PROGRESS ──────────────────────────────────────────
+function renderProgress() {
+  const prog = ST.progress||[];
+  document.getElementById('proglist').innerHTML = prog.length
+    ? prog.map(p=>`<div class="prow">
+        <div class="plbl">${p.t}</div>
+        <div class="ptrack"><div class="pfill" style="width:0%" data-p="${p.p}"></div></div>
+        <div class="ppct">${p.p}%</div>
+      </div>`).join('')
+    : '<div style="color:var(--mu);font-size:13px">Прогресс пока не заполнен</div>';
+  setTimeout(()=>document.querySelectorAll('.pfill').forEach(b=>b.style.width=b.dataset.p+'%'), 100);
+}
+
+// ── NEXT LESSON ───────────────────────────────────────
+function renderNext() {
+  const n = ST.next, c = ST.color||'#4a7c59';
+  document.getElementById('nextwrap').innerHTML = n
+    ? `<div class="nextc" style="background:${c}">
+        <div class="nxlbl">Ближайшее занятие</div>
+        <div class="nxsub">${n.name}</div>
+        <div class="nxinfo">${n.day} · ${n.time}</div>
+        ${n.topic?`<div class="nxinfo" style="opacity:.6;margin-top:2px">${n.topic}</div>`:''}
+      </div>`
+    : '';
+}
+
+// ── SUB ───────────────────────────────────────────────
+function renderSub() {
+  const sub = ST.current_sub, wrap = document.getElementById('subwrap');
+  if (!sub) { wrap.innerHTML=''; return; }
+  const pct = Math.round(sub.lessons_left/sub.lessons_total*100);
+  const cls = pct<=25?'critical':pct<=50?'low':'';
+  wrap.innerHTML=`<div class="sub-block">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu)">Абонемент</div>
+      <div style="font-size:12px;font-weight:700;color:${pct<=25?'#c0392b':pct<=50?'var(--warn)':'var(--g)'}">
+        ${sub.lessons_left} / ${sub.lessons_total} уроков
+      </div>
+    </div>
+    <div class="sub-track"><div class="sub-fill ${cls}" style="width:${pct}%"></div></div>
+    ${sub.lessons_left<=2?'<div style="font-size:11px;color:var(--warn);margin-top:6px">⚠️ Скоро заканчивается — уточни у репетитора</div>':''}
+  </div>`;
+}
+
+// ── ACH ───────────────────────────────────────────────
+function renderAch() {
+  const achs = ST.achievements||[];
+  document.getElementById('achlist').innerHTML = achs.length
+    ? achs.map(a=>`<div class="achitem">${a}</div>`).join('')
+    : '<div style="color:var(--mu);font-size:13px">Достижения появятся в процессе занятий</div>';
+}
+
+// ── TASKS ─────────────────────────────────────────────
+const PRI = {urgent:['bw','Срочно'], high:['bgo','Важно'], normal:['bb','Обычное']};
+
+function tHTML(t) {
+  const [bcls,blbl] = PRI[t.pri]||PRI.normal;
+  const due = t.due ? t.due.slice(8)+'.'+t.due.slice(5,7) : '';
+  const photoBlock = t.photo_url
+    ? `<img src="${t.photo_url}" onclick="openPhoto('${t.photo_url}')"
+        style="max-width:100%;max-height:200px;border-radius:9px;object-fit:cover;cursor:pointer;border:1.5px solid var(--bdr);margin-top:9px;display:block">`
+    : '';
+  const answerBlock = !t.done ? `
+    <div style="margin-top:9px">
+      ${t.answer_url?`<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+        <img src="${t.answer_url}" onclick="openPhoto('${t.answer_url}')"
+          style="height:44px;width:44px;border-radius:8px;object-fit:cover;cursor:pointer">
+        <span style="font-size:11px;color:var(--g);font-weight:600">✅ Ответ отправлен ${t.answer_date||''}</span>
+      </div>`:''}
+      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:var(--gp);border:1.5px solid var(--bdr);border-radius:9px;padding:7px 12px;font-size:12px;font-weight:700;color:var(--g)">
+        📤 ${t.answer_url?'Переотправить':'Сдать выполненное'}
+        <input type="file" accept="image/*" capture="camera" style="display:none" onchange="submitAnswer(${t.id},this)">
+      </label>
+    </div>` : '';
+  return `<div class="trow">
+    <div class="chk ${t.done?'done':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>
+    <div style="flex:1;min-width:0">
+      <div class="tname ${t.done?'st':''}">${t.title}</div>
+      <div class="tmeta">
+        <span class="bc bg">${t.subj}</span>
+        ${due?`<span style="font-size:10px;color:var(--mu)">до ${due}</span>`:''}
+        <span class="bc ${bcls}">${blbl}</span>
+      </div>
+      ${photoBlock}${answerBlock}
+    </div>
+  </div>`;
+}
+
+function renderTasks() {
+  const act=(ST.tasks||[]).filter(t=>!t.done), dn=(ST.tasks||[]).filter(t=>t.done);
+  document.getElementById('tactive').innerHTML = act.length ? act.map(tHTML).join('')
+    : '<div style="color:var(--mu);font-size:13px;padding:10px 0">Нет активных заданий 🎉</div>';
+  document.getElementById('tdone').innerHTML = dn.length ? dn.map(tHTML).join('')
+    : '<div style="color:var(--mu);font-size:13px;padding:10px 0">Нет выполненных</div>';
+}
+
+async function toggleTask(id) {
+  const t = (ST.tasks||[]).find(x=>x.id===id);
+  if(t) { t.done=!t.done; if(t.done) ST.doneTasks=(ST.doneTasks||0)+1; renderTasks(); renderStats(); }
+  try { await fetch(`${API}/api/student/${encodeURIComponent(sName)}/task/${id}`,{method:'PATCH'}); } catch(e){}
+}
+
+function toggleAdd() { addOpen=!addOpen; document.getElementById('addform').classList.toggle('show',addOpen); }
+
+async function addTask() {
+  const title=document.getElementById('ntitle').value.trim(); if(!title) return;
+  const subj=document.getElementById('nsubj').value, due=document.getElementById('ndue').value||'';
+  const id=Date.now(); ST.tasks=ST.tasks||[];
+  ST.tasks.push({id,title,subj,due,done:false,pri:'normal',photo_url:'',answer_url:''});
+  document.getElementById('ntitle').value=''; renderTasks(); toggleAdd();
+  try { await fetch(`${API}/api/admin/task`,{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Token':'local'},body:JSON.stringify({student:sName,title,subj,due,priority:'normal'})}); } catch(e){}
+}
+
+async function submitAnswer(taskId, inp) {
+  if(!inp.files[0]) return;
+  const fd=new FormData(); fd.append('photo',inp.files[0]);
+  try {
+    const r=await fetch(`${API}/api/student/${encodeURIComponent(sName)}/task/${taskId}/answer`,{method:'POST',body:fd});
+    if(r.ok){const d=await r.json(); const t=(ST.tasks||[]).find(x=>x.id===taskId); if(t){t.answer_url=d.answer_url;t.answer_date='сегодня';} renderTasks(); showToast('✅ Ответ отправлен репетитору!');}
+  } catch(e){showToast('❌ Нет соединения');}
+}
+
+function openPhoto(url) {
+  const o=document.createElement('div');
+  o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+  o.innerHTML=`<img src="${url}" style="max-width:95vw;max-height:90vh;border-radius:10px;object-fit:contain">`;
+  o.onclick=()=>o.remove(); document.body.appendChild(o);
+}
+
+function showToast(msg) {
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2e5339;color:#fff;padding:11px 18px;border-radius:11px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.2);white-space:nowrap';
+  t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
+}
+
+// ── GRADES ────────────────────────────────────────────
+function renderGrades() {
+  document.getElementById('gtbody').innerHTML = (ST.grades||[]).length
+    ? (ST.grades||[]).map(g=>{
+        const c=g.g===5?'g5':g.g===4?'g4':'g3';
+        return `<tr>
+          <td style="color:var(--mu);font-weight:600;white-space:nowrap">${g.d}</td>
+          <td><span class="bc bg" style="white-space:nowrap">${g.s}</span></td>
+          <td style="font-weight:500">${g.t}</td>
+          <td><span class="bc bgr" style="white-space:nowrap">${g.tp}</span></td>
+          <td><div class="gc ${c}">${g.g}</div></td>
+          <td style="color:var(--mu);font-size:11px">${g.c||''}</td>
+        </tr>`;}).join('')
+    : '<tr><td colspan="6" style="color:var(--mu);text-align:center;padding:18px">Оценок пока нет</td></tr>';
+}
+
+// ── SCHEDULE ──────────────────────────────────────────
+function renderSched() {
+  const sched=ST.schedule||[];
+  if(!sched.length){document.getElementById('schedwrap').innerHTML='<div class="card" style="color:var(--mu);font-size:13px">Расписание пока не заполнено</div>';return;}
+  const grouped={};
+  sched.forEach(l=>{if(!grouped[l.day])grouped[l.day]=[];grouped[l.day].push(l);});
+  document.getElementById('schedwrap').innerHTML=Object.entries(grouped).map(([day,ls])=>`
+    <div class="sday">
+      <div class="sdlbl">${day}</div>
+      ${ls.map(l=>`<div class="lcard">
+        <div class="lstripe" style="background:${l.color||'#4a7c59'}"></div>
+        <div class="ltime">${l.time}</div>
+        <div><div class="lname">${l.name}</div><div class="ltopic">${l.topic||''}</div></div>
+      </div>`).join('')}
+    </div>`).join('');
+}
+
+// ── KNOWLEDGE ─────────────────────────────────────────
+async function loadKnowledge() {
+  try {
+    const r=await fetch(`${API}/api/knowledge?student=${encodeURIComponent(sName)}`);
+    const items=await r.json(); renderKnowledge(items);
+  } catch(e){document.getElementById('kbgrid').innerHTML='<div style="color:var(--mu)">Нет соединения</div>';}
+}
+
+function renderKnowledge(items) {
+  const subjects=[...new Set(items.map(i=>i.subject).filter(Boolean))];
+  document.getElementById('kbfilter').innerHTML=
+    `<button class="kbf ${kbSubject===''?'active':''}" onclick="kbFilter('')">Все</button>`+
+    subjects.map(s=>`<button class="kbf ${kbSubject===s?'active':''}" onclick="kbFilter('${s}')">${s}</button>`).join('');
+  const list=kbSubject?items.filter(i=>i.subject===kbSubject):items;
+  if(!list.length){document.getElementById('kbgrid').innerHTML='<div style="color:var(--mu);font-size:13px">Материалов пока нет</div>';return;}
+  document.getElementById('kbgrid').innerHTML=list.map(item=>{
+    const ico=item.kind==='link'?'🎬':item.kind==='file'?'📄':'📝';
+    const bg=item.kind==='link'?'#fdf5e0':item.kind==='file'?'#e8f5ea':'#e8f0fb';
+    let cnt='';
+    if(item.kind==='link'&&item.content) cnt=`<a class="kba" href="${item.content}" target="_blank">Открыть →</a>`;
+    else if(item.kind==='file'&&item.file_url) cnt=`<a class="kba" href="${item.file_url}" target="_blank">Скачать →</a>`;
+    else if(item.content) cnt=`<div class="kbcontent">${item.content}</div>`;
+    return`<div class="kbcard">
+      <div style="width:40px;height:40px;border-radius:9px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:19px">${ico}</div>
+      <div class="kbtitle">${item.title}</div>
+      <div class="kbmeta"><span class="bc bg">${item.subject}</span><span>${item.date}</span>${item.for_student?'<span class="bc bb">Лично тебе</span>':''}</div>
+      ${cnt}
+    </div>`;}).join('');
+}
+
+function kbFilter(s){kbSubject=s;loadKnowledge();}
+
+// ── MESSAGES ──────────────────────────────────────────
+function renderMsgs() {
+  const t=document.getElementById('mthread');
+  t.innerHTML=(ST.messages||[]).map(m=>`
+    <div class="mwrap ${m.f==='student'?'me':''}">
+      <div class="bubble ${m.f}">${m.text}</div>
+      <div class="mtime">${m.f==='tutor'?'Илья Котельников · ':''}${m.time}</div>
+    </div>`).join('');
+  t.scrollTop=t.scrollHeight;
+}
+
+async function sendMsg() {
+  const inp=document.getElementById('minp'), txt=inp.value.trim(); if(!txt) return;
+  const tm=new Date().getHours()+':'+String(new Date().getMinutes()).padStart(2,'0');
+  ST.messages=ST.messages||[]; ST.messages.push({f:'student',text:txt,time:tm});
+  inp.value=''; renderMsgs();
+  try{await fetch(`${API}/api/student/${encodeURIComponent(sName)}/message`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:txt})});}catch(e){}
+}
+</script>
+</body>
+</html>

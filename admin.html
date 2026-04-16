@@ -294,7 +294,10 @@ textarea.fi2{resize:vertical;min-height:60px}
 
           <!-- Принять оплату -->
           <div class="card">
-            <div class="ctitle">💵 Принять оплату</div>
+            <div class="ctitle">💵 Ручная корректировка оплаты</div>
+            <div style="font-size:12px;color:var(--mu);margin-bottom:12px;background:var(--gbg);border-radius:9px;padding:9px 12px">
+              💡 Используй только если нужно вручную скорректировать баланс. При создании абонемента и проведении урока оплата учитывается автоматически.
+            </div>
             <label class="fl2">Ученик</label>
             <select class="fi2" id="pay-student"></select>
             <div class="frow">
@@ -1046,34 +1049,31 @@ async function sendMsg(){
 // ── Progress ──────────────────────────────────────────
 function loadProgress(){
   const name=document.getElementById('p-student').value;
-  const s=STUDENTS[name];if(!s)return;
+  const s=STUDENTS[name]; if(!s)return;
   const prog=s.progress||[];
-  if(!prog.length){document.getElementById('prog-editor').innerHTML='<div style="color:var(--mu);font-size:13px">Нет тем в программе</div>';return;}
+  if(!prog.length){document.getElementById('prog-editor').innerHTML='<div style="color:var(--mu);font-size:13px">Нет тем в программе. Добавь программу при создании ученика.</div>';return;}
   document.getElementById('prog-editor').innerHTML=`
     <div class="ctitle">📈 Прогресс: ${name}</div>
-    ${prog.map(p=>`
+    ${prog.map((p,i)=>`
       <div class="prog-edit-row">
         <div class="prog-edit-lbl">${p.t}</div>
-        <div class="ptrack"><div class="pfill" id="pf-${btoa(p.t).replace(/[^a-zA-Z0-9]/g,'')}" style="width:${p.p}%"></div></div>
+        <div class="ptrack"><div class="pfill" id="pf${i}" style="width:${p.p}%"></div></div>
         <input class="prog-edit-inp" type="number" min="0" max="100" value="${p.p}"
-          oninput="updateProgBar(this,'${btoa(p.t).replace(/[^a-zA-Z0-9]/g,'')}')"
-          onblur="saveProgress('${name}','${p.t}',this.value)">
+          oninput="document.getElementById('pf${i}').style.width=Math.min(100,Math.max(0,this.value))+'%'">
         <span style="font-size:10px;color:var(--mu)">%</span>
       </div>`).join('')}
-    <button class="btn btnp" onclick="saveAllProgress('${name}')" style="margin-top:12px">Сохранить</button>`;
+    <button class="btn btnp" onclick="saveAllProgress('${name}')" style="margin-top:14px">Сохранить</button>`;
 }
-function updateProgBar(inp,id){const b=document.getElementById('pf-'+id);if(b)b.style.width=Math.min(100,Math.max(0,inp.value))+'%';}
-async function saveProgress(name,topic,value){
-  await fetch(`${API}/api/admin/progress`,{method:'POST',headers:H(),body:JSON.stringify({student:name,topic,value:+value})});
-}
+
 async function saveAllProgress(name){
-  const s=STUDENTS[name];if(!s)return;
+  const s=STUDENTS[name]; if(!s)return;
+  const prog=s.progress||[];
   const inputs=document.querySelectorAll('.prog-edit-inp');
-  const topics=s.progress||[];
-  for(let i=0;i<topics.length&&i<inputs.length;i++){
-    await saveProgress(name,topics[i].t,+inputs[i].value);
+  for(let i=0;i<prog.length&&i<inputs.length;i++){
+    await fetch(`${API}/api/admin/progress`,{method:'POST',headers:H(),
+      body:JSON.stringify({student:name,topic:prog[i].t,value:+inputs[i].value})});
   }
-  toast('✅ Прогресс сохранён');await loadStudents();
+  toast('✅ Прогресс сохранён'); await loadStudents();
 }
 
 // ── Quick Bar ──────────────────────────────────────────
