@@ -74,6 +74,8 @@ def add_monthly_revenue(amount: float):
     f["monthly"][mk]["revenue"] += amount
     save_finance(f)
 
+tg_app_ref = None  # глобальная ссылка на бот
+
 def add_monthly_lesson():
     f = get_finance(); mk = month_key()
     f["monthly"].setdefault(mk, {"revenue": 0, "lessons": 0})
@@ -279,10 +281,120 @@ async def add_task(req: TaskReq, request: Request):
     st = s[req.student]; st.setdefault("tasks",[])
     tid = max((t["id"] for t in st["tasks"]),default=0)+1
     st["tasks"].append({"id":tid,"title":req.title,"subj":req.subj,
-        "due":req.due or str(date.today()),"done":False,"pri":req.priority})
+        "due":req.due or str(date.today()),"done":False,"pri":req.priority,
+        "photo_url":"","answer_url":""})
     save_students(s); return {"ok":True,"id":tid}
 
-@app.patch("/api/student/{name}/task/{task_id}")
+@app.post("/api/admin/task-with-photo")
+async def add_task_with_photo(request: Request,
+    student: str = Form(...),
+    title: str = Form(...),
+    subj: str = Form(...),
+    due: str = Form(""),
+    priority: str = Form("normal"),
+    photo: Optional[UploadFile] = File(None)
+):
+    require_admin(request)
+    s = get_students()
+    if student not in s: raise HTTPException(404)
+    st = s[student]; st.setdefault("tasks",[])
+    tid = max((t["id"] for t in st["tasks"]),default=0)+1
+    photo_url = ""
+    if photo and photo.filename:
+        safe = f"task_{student.replace(' ','_')}_{tid}_{photo.filename}"
+        with open(UPLOAD_DIR / safe, "wb") as f: f.write(await photo.read())
+        photo_url = f"/static/uploads/{safe}"
+    st["tasks"].append({"id":tid,"title":title,"subj":subj,
+        "due":due or str(date.today()),"done":False,"pri":priority,
+        "photo_url":photo_url,"answer_url":""})
+    save_students(s)
+    # Уведомление ученику в Telegram
+    tg_id = st.get("tg_id")
+    if tg_id and tg_app_ref:
+        try:
+            bot = tg_app_ref.bot
+            msg = f"📚 Новое задание!\n*{subj}*: {title}\nСрок: {due or 'не указан'}"
+            await bot.send_message(tg_id, msg, parse_mode="Markdown")
+            if photo_url:
+                await bot.send_photo(tg_id, open(UPLOAD_DIR / safe, "rb"),
+                    caption="📎 Фото задания")
+        except Exception as e: print(f"Ошибка уведомления: {e}")
+    return {"ok":True,"id":tid,"photo_url":photo_url}
+
+# Ученик сдаёт выполненное задание (фото ответа)
+@app.post("/api/student/{name}/task/{task_id}/answer")
+async def submit_answer(name: str, task_id: int,
+    photo: UploadFile = File(...)
+):
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    st = s[name]
+    task = next((t for t in st.get("tasks",[]) if t["id"]==task_id), None)
+    if not task: raise HTTPException(404, "Задание не найдено")
+    safe = f"answer_{name.replace(' ','_')}_{task_id}_{photo.filename}"
+    with open(UPLOAD_DIR / safe, "wb") as f: f.write(await photo.read())
+    task["answer_url"] = f"/static/uploads/{safe}"
+    task["answer_date"] = today_str()
+    save_students(s)
+    # Уведомляем репетитора
+    if ADMIN_ID and tg_app_ref:
+        try:
+            bot = tg_app_ref.bot
+            await bot.send_message(ADMIN_ID,
+                f"📬 *{name}* сдал(а) задание!\n*{task.get('subj','')}*: {task.get('title','')}",
+                parse_mode="Markdown")
+            await bot.send_photo(ADMIN_ID, open(UPLOAD_DIR / safe, "rb"),
+                caption=f"Ответ ученика: {name}")
+        except Exception as e: print(f"Ошибка уведомления репетитору: {e}")
+    return {"ok":True,"answer_url":task["answer_url"]}
+
+@app.post("/api/admin/cancel-lesson")
+async def cancel_lesson(data: dict, request: Request):
+    require_admin(request)
+    name = data.get("student","")
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    st = s[name]
+    # Возвращаем урок в абонемент если есть
+    sub = st.get("current_sub")
+    msg = ""
+    if sub:
+        sub["lessons_left"] = min(sub["lessons_left"]+1, sub["lessons_total"])
+        msg = f"Урок возвращён в абонемент. Осталось: {sub['lessons_left']}/{sub['lessons_total']}"
+        st["current_sub"] = sub
+    else:
+        # возвращаем деньги за разовый — обнуляем последний долг
+        price = st.get("lesson_price", 0)
+        st["balance"] = st.get("balance", 0) + price
+        msg = f"Разовый урок отменён. {'Долг уменьшен на '+str(price)+' ₽' if price else ''}"
+    # уменьшаем счётчик занятий
+    st["lessonsTotal"] = max(0, st.get("lessonsTotal",0) - 1)
+    f = get_finance(); mk = month_key()
+    if mk in f["monthly"]:
+        f["monthly"][mk]["lessons"] = max(0, f["monthly"][mk].get("lessons",0)-1)
+    save_finance(f); save_students(s)
+    return {"ok": True, "message": msg}
+
+@app.post("/api/admin/writeoff-debt")
+async def writeoff_debt(data: dict, request: Request):
+    require_admin(request)
+    name = data.get("student","")
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    st = s[name]
+    bal = st.get("balance", 0)
+    if bal >= 0:
+        return {"ok": True, "message": "Долгов нет"}
+    debt = -bal
+    st["balance"] = 0
+    st.setdefault("payments",[])
+    st["payments"].insert(0,{
+        "date": today_str(), "type": "Списание долга",
+        "amount": 0, "paid": True,
+        "note": f"Долг {debt:.0f} ₽ списан репетитором"
+    })
+    save_students(s)
+    return {"ok": True, "message": f"Долг {debt:.0f} ₽ списан"}
 async def toggle_task(name:str, task_id:int):
     s = get_students()
     if name not in s: raise HTTPException(404)
@@ -721,7 +833,9 @@ def start_bot():
         print("⚠️  Telegram бот не настроен."); return
 
     async def run():
+        global tg_app_ref
         tg = ApplicationBuilder().token(BOT_TOKEN).build()
+        tg_app_ref = tg
         tg.add_handler(CommandHandler("start",        tg_start))
         tg.add_handler(CommandHandler("ученики",      tg_students))
         tg.add_handler(CommandHandler("добавить",     tg_add))

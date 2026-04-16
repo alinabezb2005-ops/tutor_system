@@ -39,7 +39,19 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);
 .logoutl{margin-left:auto;font-size:12px;color:var(--mu);cursor:pointer;padding:6px 10px;border-radius:8px;transition:all .18s;font-weight:600;white-space:nowrap}
 .logoutl:hover{background:var(--rbg);color:var(--red)}
 
-.main{max-width:1100px;margin:0 auto;padding:28px 24px 50px}
+.main{max-width:1100px;margin:0 auto;padding:28px 24px 110px}
+
+/* ── BOTTOM QUICK BAR ── */
+.qbar{position:fixed;bottom:0;left:0;right:0;background:var(--wh);border-top:1.5px solid var(--bdr);z-index:300;padding:10px 20px;display:flex;align-items:center;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,.07)}
+.qbar-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);white-space:nowrap;margin-right:4px}
+.qbar select{padding:9px 12px;background:var(--gp);border:1.5px solid var(--bdr);border-radius:10px;font-family:'Nunito Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;appearance:none;min-width:160px;max-width:200px}
+.qbar select:focus{border-color:var(--g)}
+.qbtn{padding:9px 16px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;border:none;transition:all .18s;white-space:nowrap}
+.qbtn-g{background:var(--g);color:#fff}.qbtn-g:hover{background:var(--gm)}
+.qbtn-r{background:var(--rbg);color:var(--red);border:1.5px solid rgba(192,57,43,.2)}.qbtn-r:hover{background:var(--red);color:#fff}
+.qbtn-o{background:var(--gbg);color:var(--gold);border:1.5px solid rgba(184,146,42,.2)}.qbtn-o:hover{background:var(--gold);color:#fff}
+.qbar-sep{width:1px;height:32px;background:var(--bdr);flex-shrink:0}
+.qbar-result{font-size:12px;font-weight:600;color:var(--g);margin-left:4px;min-width:120px}
 .page{display:none}.page.active{display:block;animation:up .25s ease both}
 .chip{display:inline-flex;background:var(--gl);color:var(--g);font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;padding:5px 13px;border-radius:99px;margin-bottom:9px}
 .ptitle{font-family:'Nunito',sans-serif;font-size:26px;font-weight:900;color:var(--gd);letter-spacing:-.3px;margin-bottom:3px}
@@ -362,6 +374,17 @@ textarea.fi2{resize:vertical;min-height:60px}
             <option value="high">Важное</option>
             <option value="urgent">Срочное</option>
           </select>
+          <label class="fl2">Фото задания (необязательно)</label>
+          <div class="file-drop" id="t-drop" onclick="document.getElementById('t-photo').click()"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="handleTaskDrop(event)">
+            <input type="file" id="t-photo" accept="image/*" onchange="showTaskPhoto(this)" style="display:none">
+            <div id="t-photo-preview" style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <div style="font-size:28px">📷</div>
+              <div class="file-drop-text">Сфотографируй или <strong>выбери файл</strong></div>
+            </div>
+          </div>
           <button class="btn btnp" onclick="addTask()" style="margin-top:12px;width:100%;padding:11px">Выдать задание</button>
         </div>
         <div class="card">
@@ -534,7 +557,7 @@ async function loadStudents(){
     const r=await fetch(`${API}/api/students`,{headers:H()});
     const arr=await r.json();
     STUDENTS={};arr.forEach(s=>{STUDENTS[s.name]=s;});
-    renderStudentsList();fillStudentSelects();renderAdminStats();
+    renderStudentsList();fillStudentSelects();renderAdminStats();fillQBar();
   }catch(e){}
 }
 
@@ -800,15 +823,47 @@ async function addProgram(){
 }
 
 // ── Tasks ─────────────────────────────────────────────
+function showTaskPhoto(inp) {
+  if (!inp.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('t-photo-preview').innerHTML =
+      `<img src="${e.target.result}" style="max-height:120px;border-radius:8px;object-fit:cover">
+       <div style="font-size:11px;color:var(--g);font-weight:600">📎 ${inp.files[0].name}</div>`;
+  };
+  reader.readAsDataURL(inp.files[0]);
+}
+function handleTaskDrop(e) {
+  e.preventDefault(); document.getElementById('t-drop').classList.remove('drag');
+  const f = e.dataTransfer.files[0]; if (!f) return;
+  const dt = new DataTransfer(); dt.items.add(f);
+  document.getElementById('t-photo').files = dt.files;
+  showTaskPhoto(document.getElementById('t-photo'));
+}
+
 async function addTask(){
   const student=document.getElementById('t-student').value;
   const subj=document.getElementById('t-subj').value.trim();
   const title=document.getElementById('t-title').value.trim();
   const due=document.getElementById('t-due').value;
   const priority=document.getElementById('t-pri').value;
+  const photoInp=document.getElementById('t-photo');
   if(!title||!subj){toast('⚠️ Заполни предмет и задание');return;}
-  const r=await fetch(`${API}/api/admin/task`,{method:'POST',headers:H(),body:JSON.stringify({student,title,subj,due,priority})});
-  if(r.ok){toast(`✅ Задание выдано ${student}`);document.getElementById('t-title').value='';await loadStudents();renderAllTasks();}
+  const fd = new FormData();
+  fd.append('student',student); fd.append('title',title);
+  fd.append('subj',subj); fd.append('due',due); fd.append('priority',priority);
+  if(photoInp.files[0]) fd.append('photo', photoInp.files[0]);
+  const r=await fetch(`${API}/api/admin/task-with-photo`,{
+    method:'POST', headers:{'X-Admin-Token':TOKEN}, body:fd
+  });
+  if(r.ok){
+    toast(`✅ Задание выдано ${student}`);
+    document.getElementById('t-title').value='';
+    document.getElementById('t-photo-preview').innerHTML=
+      '<div style="font-size:28px">📷</div><div class="file-drop-text">Сфотографируй или <strong>выбери файл</strong></div>';
+    photoInp.value='';
+    await loadStudents(); renderAllTasks();
+  }
 }
 
 function renderAllTasks(){
@@ -1021,6 +1076,66 @@ async function saveAllProgress(name){
   toast('✅ Прогресс сохранён');await loadStudents();
 }
 
+// ── Quick Bar ──────────────────────────────────────────
+function fillQBar() {
+  const names = Object.keys(STUDENTS);
+  const sel = document.getElementById('q-student');
+  if (sel) sel.innerHTML = names.map(n=>`<option>${n}</option>`).join('');
+  document.getElementById('qbar').style.display = names.length ? 'flex' : 'none';
+}
+
+function qResult(msg, color='var(--g)') {
+  const el = document.getElementById('q-result');
+  el.style.color = color;
+  el.textContent = msg;
+  setTimeout(()=>{ el.textContent=''; }, 4000);
+}
+
+async function qConduct() {
+  const student = document.getElementById('q-student').value;
+  const r = await fetch(`${API}/api/admin/conduct-lesson`,{
+    method:'POST', headers:H(), body:JSON.stringify({student})
+  });
+  if (r.ok) {
+    const d = await r.json();
+    qResult('✅ ' + (d.message||'Урок проведён'));
+    await loadStudents(); fillQBar();
+    if (document.getElementById('page-finance').classList.contains('active')) loadFinance();
+  }
+}
+
+async function qCancel() {
+  const student = document.getElementById('q-student').value;
+  if (!confirm(`Отменить последний урок у «${student}»?`)) return;
+  const r = await fetch(`${API}/api/admin/cancel-lesson`,{
+    method:'POST', headers:H(), body:JSON.stringify({student})
+  });
+  if (r.ok) {
+    const d = await r.json();
+    qResult('↩️ ' + (d.message||'Урок отменён'), 'var(--warn)');
+    await loadStudents(); fillQBar();
+    if (document.getElementById('page-finance').classList.contains('active')) loadFinance();
+  }
+}
+
+async function qWriteOffDebt() {
+  const student = document.getElementById('q-student').value;
+  const bal = STUDENTS[student]?.balance || 0;
+  if (bal >= 0) { qResult('✅ Долгов нет', 'var(--g)'); return; }
+  const debt = (-bal).toFixed(0);
+  if (!confirm(`Списать долг ${debt} ₽ у «${student}»?\nЭто обнулит задолженность.`)) return;
+  const r = await fetch(`${API}/api/admin/writeoff-debt`,{
+    method:'POST', headers:H(), body:JSON.stringify({student})
+  });
+  if (r.ok) {
+    const d = await r.json();
+    qResult('💸 ' + d.message, 'var(--gold)');
+    toast(`💸 Долг ${debt} ₽ списан у ${student}`);
+    await loadStudents(); fillQBar();
+    if (document.getElementById('page-finance').classList.contains('active')) loadFinance();
+  }
+}
+
 // ── Toast ─────────────────────────────────────────────
 function toast(msg){
   const t=document.createElement('div');t.className='toast';t.textContent=msg;
@@ -1029,5 +1144,17 @@ function toast(msg){
 
 document.addEventListener('DOMContentLoaded',()=>{updateKbForm();});
 </script>
+
+<!-- НИЖНЯЯ ПАНЕЛЬ БЫСТРЫХ ДЕЙСТВИЙ -->
+<div class="qbar" id="qbar" style="display:none">
+  <div class="qbar-label">Быстро:</div>
+  <select id="q-student"></select>
+  <button class="qbtn qbtn-g" onclick="qConduct()">▶️ Провести</button>
+  <button class="qbtn qbtn-r" onclick="qCancel()">❌ Отменить урок</button>
+  <div class="qbar-sep"></div>
+  <button class="qbtn qbtn-o" onclick="qWriteOffDebt()">💸 Списать долг</button>
+  <div class="qbar-result" id="q-result"></div>
+</div>
+
 </body>
 </html>
