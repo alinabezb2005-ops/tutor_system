@@ -27,8 +27,9 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);
 .lsub{font-size:15px;color:var(--mu);margin-bottom:28px}
 .lcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:20px;padding:34px 30px;box-shadow:0 4px 28px rgba(46,83,57,.08)}
 .fl{display:block;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);margin-bottom:7px}
-.fi{width:100%;padding:12px 15px;background:var(--gp);border:1.5px solid var(--bdr);border-radius:12px;font-family:'Nunito Sans',sans-serif;font-size:15px;color:var(--ink);margin-bottom:16px;outline:none;transition:border-color .2s,background .2s;appearance:none}
-.fi:focus{border-color:var(--g);background:var(--wh)}
+.fi{width:100%;padding:14px 16px;background:var(--wh);border:2px solid var(--bdr);border-radius:12px;font-family:'Nunito Sans',sans-serif;font-size:16px;color:var(--ink);margin-bottom:16px;outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.fi:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(74,124,89,.15)}
+.fi::placeholder{color:#aab8b0}
 .lbtn{width:100%;padding:15px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:background .2s,box-shadow .2s}
 .lbtn:hover{background:var(--gm);box-shadow:0 6px 20px rgba(74,124,89,.28)}
 .lerr{color:var(--warn);font-size:13px;text-align:center;margin-top:10px;min-height:18px}
@@ -196,10 +197,24 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);
     <div class="ltitle">Котельников<br>Илья Станиславович</div>
     <div class="lsub">Математика · Химия · Подготовка к ЕГЭ</div>
     <div class="lcard">
-      <label class="fl">Ваше имя (как у репетитора)</label>
-      <input class="fi" id="linp" type="text" placeholder="Например: Аня Иванова" autocomplete="off">
-      <label class="fl">Пароль</label>
-      <input class="fi" id="lpass" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <div style="margin-bottom:20px">
+        <label class="fl" style="margin-bottom:8px;font-size:12px">ИМЯ (как у репетитора)</label>
+        <div style="position:relative">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">👤</span>
+          <input class="fi" id="linp" type="text" placeholder="Например: Аня Иванова"
+            autocomplete="off" style="padding-left:42px;margin-bottom:0">
+        </div>
+      </div>
+      <div style="margin-bottom:22px">
+        <label class="fl" style="margin-bottom:8px;font-size:12px">ПАРОЛЬ</label>
+        <div style="position:relative">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">🔑</span>
+          <input class="fi" id="lpass" type="password" placeholder="Введите пароль"
+            style="padding-left:42px;margin-bottom:0;letter-spacing:2px"
+            onkeydown="if(event.key==='Enter')doLogin()">
+          <span id="eye-toggle" onclick="togglePw()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;user-select:none">👁</span>
+        </div>
+      </div>
       <button class="lbtn" onclick="doLogin()">Войти в кабинет →</button>
       <div class="lerr" id="lerr"></div>
     </div>
@@ -321,6 +336,13 @@ let ST = null, sName = '';
 let addOpen = false;
 let kbSubject = '';
 let pollInterval = null;
+
+function togglePw() {
+  const inp = document.getElementById('lpass');
+  const eye = document.getElementById('eye-toggle');
+  if (inp.type === 'password') { inp.type = 'text'; inp.style.letterSpacing='normal'; eye.textContent='🙈'; }
+  else { inp.type = 'password'; inp.style.letterSpacing='2px'; eye.textContent='👁'; }
+}
 
 // ── AUTH ──────────────────────────────────────────────
 async function doLogin() {
