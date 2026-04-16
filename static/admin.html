@@ -14,8 +14,6 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
-
-/* LOGIN */
 #alog{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .alw{width:100%;max-width:400px}
 .alcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:20px;padding:32px 28px;box-shadow:0 4px 24px rgba(46,83,57,.1);animation:fadeUp .45s ease both}
@@ -23,137 +21,117 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);
 .altitle{font-family:'Nunito',sans-serif;font-size:22px;font-weight:900;color:var(--gd);margin-bottom:4px}
 .alsub{font-size:13px;color:var(--mu);margin-bottom:22px}
 .afl{display:block;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);margin-bottom:7px}
-.afi{width:100%;padding:13px 14px;background:var(--gp);border:2px solid var(--bdr);border-radius:11px;font-family:'Nunito Sans',sans-serif;font-size:14px;color:var(--ink);margin-bottom:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;caret-color:var(--ink)}
+.afi{width:100%;padding:13px 14px;background:var(--gp);border:2px solid var(--bdr);border-radius:11px;font-family:'Nunito Sans',sans-serif;font-size:14px;color:var(--ink);margin-bottom:14px;outline:none;-webkit-appearance:none;caret-color:var(--ink)}
 .afi:focus{border-color:var(--g);background:var(--wh)}
 .afi::placeholder{color:#b5c5bc}
-.abtn{width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:11px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:background .2s}
+.abtn{width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:11px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer}
 .abtn:hover{background:var(--gm)}
 .aerr{color:var(--warn);font-size:13px;text-align:center;margin-top:8px;min-height:16px}
-
-/* APP */
 #aapp{display:none}
-.topbar{height:58px;background:var(--wh);border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;padding:0 20px;position:sticky;top:0;z-index:200;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.topbar{height:56px;background:var(--wh);border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;padding:0 18px;position:sticky;top:0;z-index:200;overflow-x:auto;scrollbar-width:none}
 .topbar::-webkit-scrollbar{display:none}
-.tlogo{font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:var(--gd);margin-right:6px;white-space:nowrap;flex-shrink:0}
-.tbadge{background:var(--wbg);color:var(--warn);font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;margin-right:18px;white-space:nowrap;flex-shrink:0}
+.tlogo{font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;color:var(--gd);margin-right:5px;white-space:nowrap;flex-shrink:0}
+.tbadge{background:var(--wbg);color:var(--warn);font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;margin-right:16px;white-space:nowrap;flex-shrink:0}
 .tnav{display:flex;gap:2px;flex-shrink:0}
-.tn{padding:6px 12px;border-radius:9px;font-size:12px;font-weight:600;color:var(--mu);cursor:pointer;transition:all .15s;border:none;background:none;font-family:'Nunito Sans',sans-serif;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0}
+.tn{padding:6px 11px;border-radius:9px;font-size:12px;font-weight:600;color:var(--mu);cursor:pointer;transition:all .15s;border:none;background:none;font-family:'Nunito Sans',sans-serif;white-space:nowrap;flex-shrink:0}
 .tn:hover{background:var(--gp);color:var(--im)}
 .tn.active{background:var(--gl);color:var(--gd);font-weight:700}
-.logoutl{margin-left:12px;font-size:12px;color:var(--mu);cursor:pointer;padding:6px 9px;border-radius:7px;transition:all .15s;font-weight:600;white-space:nowrap;flex-shrink:0}
+.logoutl{margin-left:10px;font-size:12px;color:var(--mu);cursor:pointer;padding:5px 8px;border-radius:7px;transition:all .15s;font-weight:600;white-space:nowrap;flex-shrink:0}
 .logoutl:hover{background:var(--rbg);color:var(--red)}
-
-.main{max-width:1080px;margin:0 auto;padding:24px 20px 48px}
+.main{max-width:1080px;margin:0 auto;padding:22px 18px 46px}
 .page{display:none}.page.active{display:block;animation:fadeUp .22s ease both}
 .chip{display:inline-flex;background:var(--gl);color:var(--g);font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;padding:4px 12px;border-radius:99px;margin-bottom:8px}
-.ptitle{font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--gd);letter-spacing:-.3px;margin-bottom:3px}
-.psub{font-size:13px;color:var(--mu);margin-bottom:18px}
-
-.card{background:var(--wh);border:1.5px solid var(--bdr);border-radius:14px;padding:18px 20px;margin-bottom:14px}
-.ctitle{font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;color:var(--ink);margin-bottom:13px;display:flex;align-items:center;gap:7px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-
-/* STAT */
-.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
-.sbox{background:var(--wh);border:1.5px solid var(--bdr);border-radius:13px;padding:14px 16px 12px;position:relative;overflow:hidden;transition:box-shadow .2s}
-.sbox:hover{box-shadow:0 3px 14px rgba(46,83,57,.09)}
-.sbox::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 11px 11px}
+.ptitle{font-family:'Nunito',sans-serif;font-size:23px;font-weight:900;color:var(--gd);letter-spacing:-.3px;margin-bottom:3px}
+.psub{font-size:13px;color:var(--mu);margin-bottom:16px}
+.card{background:var(--wh);border:1.5px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:13px}
+.ctitle{font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.sbox{background:var(--wh);border:1.5px solid var(--bdr);border-radius:12px;padding:13px 15px 11px;position:relative;overflow:hidden}
+.sbox:hover{box-shadow:0 3px 12px rgba(46,83,57,.08)}
+.sbox::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 10px 10px}
 .sg::after{background:var(--g)}.so::after{background:var(--warn)}.sgo::after{background:var(--gold)}.sb::after{background:var(--blue)}.sred::after{background:var(--red)}
-.slbl{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
-.sval{font-family:'Nunito',sans-serif;font-size:26px;font-weight:900;color:var(--gd);line-height:1}
+.slbl{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);margin-bottom:3px}
+.sval{font-family:'Nunito',sans-serif;font-size:24px;font-weight:900;color:var(--gd);line-height:1}
 .snote{font-size:10px;color:var(--mu);margin-top:3px}
-
-/* FORMS */
-label.fl2{display:block;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;margin-top:12px}
+label.fl2{display:block;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--mu);margin-bottom:5px;margin-top:11px}
 label.fl2:first-child{margin-top:0}
-input.fi2,select.fi2,textarea.fi2{width:100%;padding:10px 12px;background:var(--gp);border:1.5px solid var(--bdr);border-radius:10px;font-family:'Nunito Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color .2s;-webkit-appearance:none;caret-color:var(--ink)}
+input.fi2,select.fi2,textarea.fi2{width:100%;padding:9px 12px;background:var(--gp);border:1.5px solid var(--bdr);border-radius:10px;font-family:'Nunito Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;-webkit-appearance:none;caret-color:var(--ink)}
 input.fi2:focus,select.fi2:focus,textarea.fi2:focus{border-color:var(--g);background:var(--wh)}
-input.fi2::placeholder{color:#b5c5bc}
+input.fi2::placeholder,textarea.fi2::placeholder{color:#b5c5bc}
 textarea.fi2{resize:vertical;min-height:60px}
-.frow{display:flex;gap:9px}.frow>*{flex:1}
-.btn{padding:9px 15px;border-radius:9px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;border:none;transition:all .15s}
+.frow{display:flex;gap:8px}.frow>*{flex:1}
+.btn{padding:8px 14px;border-radius:9px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;border:none;transition:all .15s}
 .btnp{background:var(--g);color:#fff}.btnp:hover{background:var(--gm)}
 .btnd{background:var(--rbg);color:var(--red);border:1.5px solid rgba(192,57,43,.2)}.btnd:hover{background:var(--red);color:#fff}
 .btns{background:var(--bbg);color:var(--blue);border:1.5px solid rgba(58,111,168,.2)}.btns:hover{background:var(--blue);color:#fff}
 .btno{background:var(--gbg);color:var(--gold);border:1.5px solid rgba(184,146,42,.2)}.btno:hover{background:var(--gold);color:#fff}
-
-/* STUDENTS LIST */
-.stlist{display:flex;flex-direction:column;gap:9px}
-.stcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:13px;padding:13px 16px;display:flex;align-items:center;gap:11px;transition:box-shadow .2s,border-color .2s;cursor:pointer}
-.stcard:hover{box-shadow:0 3px 14px rgba(46,83,57,.09);border-color:var(--g)}
-.stav{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:#fff;flex-shrink:0}
-.stname{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px}
-.stmeta{font-size:11px;color:var(--mu);display:flex;gap:8px;flex-wrap:wrap}
-.stactions{margin-left:auto;display:flex;gap:7px}
-.ic-btn{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--bdr);background:var(--wh);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
+.stcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:12px;padding:12px 15px;display:flex;align-items:center;gap:10px;transition:all .15s;cursor:pointer;margin-bottom:8px}
+.stcard:hover{box-shadow:0 3px 12px rgba(46,83,57,.09);border-color:var(--g)}
+.stav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:#fff;flex-shrink:0}
+.stname{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.stmeta{font-size:10px;color:var(--mu);display:flex;gap:7px;flex-wrap:wrap}
+.stactions{margin-left:auto;display:flex;gap:6px}
+.ic-btn{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--bdr);background:var(--wh);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s}
 .ic-btn:hover{background:var(--gp);border-color:var(--g)}
-
-/* FINANCE */
-.fin-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1.5px solid var(--bdr)}
-.fin-row:last-child{border-bottom:none}
-.fin-name{font-size:13px;font-weight:600;color:var(--ink);min-width:130px}
-.fin-amount{font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;margin-left:auto}
-.fin-red{color:var(--red)}.fin-green{color:var(--g)}
-.sub-bar-wrap{flex:1;height:6px;background:var(--gp);border-radius:99px;overflow:hidden;border:1px solid var(--bdr);min-width:50px}
-.sub-bar-fill{height:100%;border-radius:99px;background:var(--g);transition:width .4s ease}
-.sub-bar-fill.low{background:var(--warn)}.sub-bar-fill.critical{background:var(--red)}
-.bar-chart{display:flex;align-items:flex-end;gap:5px;height:70px}
-.bar-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
-.bar-rect{border-radius:4px 4px 0 0;background:var(--g);opacity:.7;min-height:2px;width:100%;transition:height .4s ease}
-.bar-label{font-size:8px;color:var(--mu);font-weight:600}
-.bar-val{font-size:7px;color:var(--gd);font-weight:700}
-
-/* TASKS — REVIEW SECTION */
-.task-review-item{background:var(--gbg);border:1.5px solid rgba(184,146,42,.3);border-radius:12px;padding:14px 16px;margin-bottom:10px}
-.task-review-name{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:4px}
-.task-review-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px}
-
-/* PROGRESS EDITOR */
-.prog-edit-row{display:flex;align-items:center;gap:9px;margin-bottom:8px}
-.prog-edit-lbl{font-size:12px;font-weight:600;min-width:130px;color:var(--im)}
-.ptrack{flex:1;height:7px;background:var(--gp);border-radius:99px;overflow:hidden;border:1px solid var(--bdr)}
-.pfill{height:100%;border-radius:99px;background:var(--g);transition:width .4s ease}
-.prog-edit-inp{width:52px;padding:5px 7px;background:var(--gp);border:1.5px solid var(--bdr);border-radius:8px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;color:var(--gd);outline:none;text-align:center}
-.prog-edit-inp:focus{border-color:var(--g)}
-
-/* KB */
-.kb-item{background:var(--wh);border:1.5px solid var(--bdr);border-radius:11px;padding:11px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
-.kb-ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.kb-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px}
-.kb-meta{font-size:10px;color:var(--mu);display:flex;gap:7px;flex-wrap:wrap}
-.bc{display:inline-flex;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
+.bc{display:inline-flex;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700}
 .bg{background:var(--gl);color:var(--gd)}.bw{background:var(--wbg);color:var(--warn)}
 .bgo{background:var(--gbg);color:var(--gold)}.bb{background:var(--bbg);color:var(--blue)}
 .bgr{background:#f0f0f0;color:#666}.bred{background:var(--rbg);color:var(--red)}
-
-/* FILE DROP */
-.file-drop{border:2px dashed var(--bdr);border-radius:11px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gp);margin-top:6px}
+.fin-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px solid var(--bdr)}
+.fin-row:last-child{border-bottom:none}
+.sub-bar-wrap{flex:1;height:6px;background:var(--gp);border-radius:99px;overflow:hidden;border:1px solid var(--bdr);min-width:50px}
+.sub-bar-fill{height:100%;border-radius:99px;background:var(--g);transition:width .4s ease}
+.sub-bar-fill.low{background:var(--warn)}.sub-bar-fill.critical{background:var(--red)}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:65px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+.bar-rect{border-radius:4px 4px 0 0;background:var(--g);opacity:.7;min-height:2px;width:100%}
+.bar-label{font-size:8px;color:var(--mu);font-weight:600}
+.bar-val{font-size:7px;color:var(--gd);font-weight:700}
+.prog-edit-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.prog-edit-lbl{font-size:12px;font-weight:600;min-width:120px;color:var(--im)}
+.ptrack{flex:1;height:6px;background:var(--gp);border-radius:99px;overflow:hidden;border:1px solid var(--bdr)}
+.pfill{height:100%;border-radius:99px;background:var(--g);transition:width .4s ease}
+.prog-edit-inp{width:48px;padding:4px 6px;background:var(--gp);border:1.5px solid var(--bdr);border-radius:7px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--gd);outline:none;text-align:center}
+.prog-edit-inp:focus{border-color:var(--g)}
+.kb-item{background:var(--wh);border:1.5px solid var(--bdr);border-radius:10px;padding:10px 13px;display:flex;align-items:flex-start;gap:9px;margin-bottom:7px}
+.file-drop{border:2px dashed var(--bdr);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gp);margin-top:5px}
 .file-drop:hover,.file-drop.drag{border-color:var(--g);background:var(--gl)}
 .file-drop input{display:none}
-.fdt{font-size:12px;color:var(--mu);font-weight:500}
-.fdt strong{color:var(--g)}
-.fdc{font-size:11px;color:var(--gd);margin-top:5px;font-weight:600}
+.task-review-item{background:var(--gbg);border:1.5px solid rgba(184,146,42,.3);border-radius:11px;padding:13px 15px;margin-bottom:9px}
 
-/* TOAST */
-.toast{position:fixed;bottom:20px;right:20px;background:var(--gd);color:#fff;padding:11px 17px;border-radius:11px;font-size:13px;font-weight:600;z-index:999;animation:fadeUp .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+/* LESSON CARD — кликабельная */
+.lesson-card{background:var(--wh);border:1.5px solid var(--bdr);border-radius:11px;padding:12px 15px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px}
+.lesson-card:hover{border-color:var(--g);box-shadow:0 2px 10px rgba(46,83,57,.1)}
+.lesson-stripe{width:4px;border-radius:99px;align-self:stretch;flex-shrink:0}
+.lesson-info{flex:1}
+.lesson-name{font-size:13px;font-weight:700;color:var(--ink)}
+.lesson-meta{font-size:11px;color:var(--mu);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.lesson-status{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:700}
+.ls-planned{background:var(--bbg);color:var(--blue)}.ls-completed{background:var(--gl);color:var(--gd)}
+.ls-cancelled{background:var(--rbg);color:var(--red)}.ls-transferred{background:var(--gbg);color:var(--gold)}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:888;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .2s ease}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{background:var(--wh);border-radius:18px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.2);animation:fadeUp .25s ease}
-.modal-head{padding:20px 22px 0;display:flex;align-items:center;justify-content:space-between}
-.modal-title{font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;color:var(--gd)}
-.modal-close{width:30px;height:30px;border-radius:50%;border:none;background:var(--gp);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
-.modal-body{padding:16px 22px 22px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:888;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--wh);border-radius:18px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.22);animation:fadeUp .22s ease}
+.modal-head{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:var(--gd)}
+.modal-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--gp);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:14px 20px 20px}
+.grade-pill{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;cursor:pointer;border:2px solid transparent;transition:all .15s}
+.grade-pill.g5{background:rgba(74,124,89,.12);color:var(--gd)}.grade-pill.g5.sel{background:var(--g);color:#fff;border-color:var(--gd)}
+.grade-pill.g4{background:rgba(184,146,42,.12);color:var(--gold)}.grade-pill.g4.sel{background:var(--gold);color:#fff}
+.grade-pill.g3{background:rgba(200,98,42,.12);color:var(--warn)}.grade-pill.g3.sel{background:var(--warn);color:#fff}
+.grade-pill.g2{background:rgba(192,57,43,.12);color:var(--red)}.grade-pill.g2.sel{background:var(--red);color:#fff}
 
-/* STUDENT CARD MODAL */
-.sc-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:#fff;flex-shrink:0}
-.sc-section{margin-top:14px;padding-top:14px;border-top:1.5px solid var(--bdr)}
-.sc-section-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
-.sc-item{font-size:13px;color:var(--ink);padding:6px 0;border-bottom:1px solid var(--gp);display:flex;justify-content:space-between;align-items:center}
-.sc-item:last-child{border-bottom:none}
+/* CHAT */
+.chat-bubble{max-width:80%;padding:8px 12px;border-radius:12px;font-size:12px;line-height:1.5;word-break:break-word;display:inline-block}
+.chat-bubble.tutor{background:var(--gp);color:var(--ink);border:1.5px solid var(--bdr);border-bottom-left-radius:4px}
+.chat-bubble.student{background:var(--g);color:#fff;border-bottom-right-radius:4px}
 
-@media(max-width:900px){.srow{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.main{padding:16px 12px 40px}}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--gd);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;animation:fadeUp .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+@media(max-width:900px){.srow{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.main{padding:14px 10px 40px}}
 </style>
 </head>
 <body>
@@ -184,7 +162,7 @@ textarea.fi2{resize:vertical;min-height:60px}
       <button class="tn" onclick="nav('tasks-admin',this)">✅ Задания</button>
       <button class="tn" onclick="nav('grades-admin',this)">📊 Оценки</button>
       <button class="tn" onclick="nav('schedule-admin',this)">📅 Расписание</button>
-      <button class="tn" onclick="nav('knowledge-admin',this)">📚 База знаний</button>
+      <button class="tn" onclick="nav('knowledge-admin',this)">📚 Материалы</button>
       <button class="tn" onclick="nav('messages-admin',this)">💬 Сообщения</button>
       <button class="tn" onclick="nav('progress-admin',this)">📈 Прогресс</button>
     </nav>
@@ -199,7 +177,7 @@ textarea.fi2{resize:vertical;min-height:60px}
       <div class="ptitle">Ученики</div>
       <div class="psub">Нажми на ученика чтобы открыть карточку</div>
       <div class="srow" id="admin-stats"></div>
-      <div class="stlist" id="stlist"></div>
+      <div id="stlist"></div>
     </div>
 
     <!-- ADD STUDENT -->
@@ -210,41 +188,37 @@ textarea.fi2{resize:vertical;min-height:60px}
         <div>
           <div class="card">
             <div class="ctitle">👤 Основное</div>
-            <label class="fl2">Полное имя</label>
-            <input class="fi2" id="ns-name" placeholder="Аня Иванова">
-            <label class="fl2">Пароль для входа</label>
-            <input class="fi2" id="ns-pw" value="1234" placeholder="Пароль">
-            <label class="fl2">Предметы</label>
-            <input class="fi2" id="ns-subject" placeholder="Математика, Химия">
-            <label class="fl2">Программа</label>
-            <select class="fi2" id="ns-program"></select>
+            <label class="fl2">Полное имя</label><input class="fi2" id="ns-name" placeholder="Аня Иванова">
+            <label class="fl2">Пароль</label><input class="fi2" id="ns-pw" value="1234">
+            <label class="fl2">Предметы</label><input class="fi2" id="ns-subject" placeholder="Математика, Химия">
+            <label class="fl2">Программа</label><select class="fi2" id="ns-program"></select>
+            <label class="fl2">Цвет кабинета</label>
+            <div style="display:flex;gap:10px;margin-top:7px;flex-wrap:wrap" id="color-picker">
+              <div class="color-opt" data-color="#4a7c59" onclick="pickColor(this)" style="width:26px;height:26px;border-radius:50%;background:#4a7c59;cursor:pointer;border:3px solid #2e5339;box-shadow:0 0 0 2px #fff,0 0 0 4px #4a7c59"></div>
+              <div class="color-opt" data-color="#3a6fa8" onclick="pickColor(this)" style="width:26px;height:26px;border-radius:50%;background:#3a6fa8;cursor:pointer;border:3px solid transparent"></div>
+              <div class="color-opt" data-color="#b8922a" onclick="pickColor(this)" style="width:26px;height:26px;border-radius:50%;background:#b8922a;cursor:pointer;border:3px solid transparent"></div>
+              <div class="color-opt" data-color="#c8622a" onclick="pickColor(this)" style="width:26px;height:26px;border-radius:50%;background:#c8622a;cursor:pointer;border:3px solid transparent"></div>
+              <div class="color-opt" data-color="#7a5c9e" onclick="pickColor(this)" style="width:26px;height:26px;border-radius:50%;background:#7a5c9e;cursor:pointer;border:3px solid transparent"></div>
+            </div>
           </div>
           <div class="card">
             <div class="ctitle">💰 Стоимость</div>
             <div class="frow">
-              <div><label class="fl2">Разовый урок (₽)</label><input class="fi2" id="ns-lp" type="number" placeholder="2000" value="0"></div>
-              <div><label class="fl2">Абонемент (₽)</label><input class="fi2" id="ns-sp" type="number" placeholder="7000" value="0"></div>
-              <div><label class="fl2">Уроков в абон.</label><input class="fi2" id="ns-sl" type="number" placeholder="8" value="8"></div>
+              <div><label class="fl2">Разовый (₽)</label><input class="fi2" id="ns-lp" type="number" value="0"></div>
+              <div><label class="fl2">Абонемент (₽)</label><input class="fi2" id="ns-sp" type="number" value="0"></div>
+              <div><label class="fl2">Уроков в абон.</label><input class="fi2" id="ns-sl" type="number" value="8"></div>
             </div>
-            <label class="fl2">Цвет кабинета</label>
-            <div style="display:flex;gap:10px;margin-top:7px;flex-wrap:wrap" id="color-picker">
-              <div class="color-opt" data-color="#4a7c59" onclick="pickColor(this)" style="width:28px;height:28px;border-radius:50%;background:#4a7c59;cursor:pointer;border:3px solid #2e5339;box-shadow:0 0 0 2px #fff,0 0 0 4px #4a7c59"></div>
-              <div class="color-opt" data-color="#3a6fa8" onclick="pickColor(this)" style="width:28px;height:28px;border-radius:50%;background:#3a6fa8;cursor:pointer;border:3px solid transparent"></div>
-              <div class="color-opt" data-color="#b8922a" onclick="pickColor(this)" style="width:28px;height:28px;border-radius:50%;background:#b8922a;cursor:pointer;border:3px solid transparent"></div>
-              <div class="color-opt" data-color="#c8622a" onclick="pickColor(this)" style="width:28px;height:28px;border-radius:50%;background:#c8622a;cursor:pointer;border:3px solid transparent"></div>
-              <div class="color-opt" data-color="#7a5c9e" onclick="pickColor(this)" style="width:28px;height:28px;border-radius:50%;background:#7a5c9e;cursor:pointer;border:3px solid transparent"></div>
-            </div>
-            <button class="btn btnp" onclick="createStudent()" style="margin-top:16px;width:100%;padding:12px">Создать кабинет →</button>
+            <button class="btn btnp" onclick="createStudent()" style="margin-top:14px;width:100%;padding:11px">Создать кабинет →</button>
           </div>
         </div>
         <div class="card">
           <div class="ctitle">📋 Программы</div>
           <div id="programs-list"></div>
-          <div style="margin-top:14px;padding-top:12px;border-top:1.5px solid var(--bdr)">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:7px">Новая программа</div>
+          <div style="margin-top:12px;padding-top:11px;border-top:1.5px solid var(--bdr)">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">Новая программа</div>
             <input class="fi2" id="npn" placeholder="Название программы">
-            <input class="fi2" id="npt" placeholder="Темы через запятую" style="margin-top:6px">
-            <button class="btn btns" onclick="addProgram()" style="margin-top:7px">Добавить программу</button>
+            <input class="fi2" id="npt" placeholder="Темы через запятую" style="margin-top:5px">
+            <button class="btn btns" onclick="addProgram()" style="margin-top:6px">Добавить</button>
           </div>
         </div>
       </div>
@@ -261,53 +235,48 @@ textarea.fi2{resize:vertical;min-height:60px}
             <div class="ctitle">📦 Создать абонемент</div>
             <label class="fl2">Ученик</label><select class="fi2" id="sub-student"></select>
             <div class="frow">
-              <div><label class="fl2">Уроков</label><input class="fi2" id="sub-lessons" type="number" value="8" min="1"></div>
+              <div><label class="fl2">Уроков</label><input class="fi2" id="sub-lessons" type="number" value="8"></div>
               <div><label class="fl2">Цена (₽)</label><input class="fi2" id="sub-price" type="number" placeholder="7000"></div>
             </div>
-            <label class="fl2">Уже оплачен?</label>
+            <label class="fl2">Оплачен?</label>
             <select class="fi2" id="sub-paid"><option value="true">✅ Да</option><option value="false">⏳ Нет</option></select>
             <label class="fl2">Комментарий</label><input class="fi2" id="sub-note" placeholder="Апрель 2026">
-            <button class="btn btnp" onclick="createSub()" style="margin-top:11px;width:100%;padding:11px">Создать абонемент</button>
+            <button class="btn btnp" onclick="createSub()" style="margin-top:10px;width:100%;padding:10px">Создать абонемент</button>
           </div>
           <div class="card">
-            <div class="ctitle">💵 Принять оплату</div>
-            <div style="font-size:11px;color:var(--mu);background:var(--gbg);border-radius:8px;padding:8px 11px;margin-bottom:12px">💡 Только для ручной корректировки баланса</div>
+            <div class="ctitle">💵 Корректировка баланса</div>
+            <div style="font-size:11px;color:var(--mu);background:var(--gbg);border-radius:8px;padding:7px 10px;margin-bottom:10px">Только для ручного ввода, не при проведении урока</div>
             <label class="fl2">Ученик</label><select class="fi2" id="pay-student"></select>
             <div class="frow">
               <div><label class="fl2">Сумма (₽)</label><input class="fi2" id="pay-amount" type="number" placeholder="2000"></div>
-              <div><label class="fl2">Тип</label><select class="fi2" id="pay-type"><option>Разовый урок</option><option>Абонемент</option><option>Погашение долга</option><option>Прочее</option></select></div>
+              <div><label class="fl2">Тип</label><select class="fi2" id="pay-type"><option>Оплата</option><option>Погашение долга</option><option>Прочее</option></select></div>
             </div>
-            <label class="fl2">Комментарий</label><input class="fi2" id="pay-note" placeholder="">
-            <button class="btn btno" onclick="addPayment()" style="margin-top:11px;width:100%;padding:11px">Зафиксировать оплату</button>
+            <button class="btn btno" onclick="addPayment()" style="margin-top:10px;width:100%;padding:10px">Зафиксировать</button>
           </div>
           <div class="card">
             <div class="ctitle">⚡ Быстрые действия</div>
-            <label class="fl2">Ученик</label>
-            <select class="fi2" id="quick-student"></select>
-            <div style="display:flex;gap:8px;margin-top:11px">
-              <button class="btn btnp" onclick="qConduct()" style="flex:1">▶️ Провести урок</button>
-              <button class="btn btnd" onclick="qCancel()" style="flex:1">↩️ Отменить урок</button>
+            <label class="fl2">Ученик</label><select class="fi2" id="quick-student"></select>
+            <div style="display:flex;gap:7px;margin-top:10px">
+              <button class="btn btnp" onclick="qConduct()" style="flex:1">▶️ Провести</button>
+              <button class="btn btnd" onclick="qCancel()" style="flex:1">↩️ Отменить</button>
             </div>
-            <button class="btn btno" onclick="qWriteOff()" style="width:100%;margin-top:8px;padding:9px">💸 Списать долг</button>
-            <div id="q-result" style="font-size:12px;color:var(--g);margin-top:8px;font-weight:600;min-height:16px"></div>
+            <button class="btn btno" onclick="qWriteOff()" style="width:100%;margin-top:7px;padding:8px">💸 Списать долг</button>
+            <div id="q-result" style="font-size:12px;color:var(--g);margin-top:7px;font-weight:600;min-height:14px"></div>
           </div>
         </div>
         <div>
           <div class="card">
-            <div class="ctitle">📦 Активные абонементы</div>
-            <div id="active-subs"></div>
+            <div class="ctitle">📦 Активные абонементы</div><div id="active-subs"></div>
           </div>
           <div class="card">
-            <div class="ctitle">⚠️ Долги</div>
-            <div id="debtors-list"></div>
+            <div class="ctitle">⚠️ Долги</div><div id="debtors-list"></div>
           </div>
           <div class="card">
-            <div class="ctitle">📊 Выручка по месяцам</div>
+            <div class="ctitle">📊 Выручка</div>
             <div class="bar-chart" id="revenue-chart"></div>
           </div>
           <div class="card">
-            <div class="ctitle">🧾 Последние оплаты</div>
-            <div id="recent-payments"></div>
+            <div class="ctitle">🧾 Последние оплаты</div><div id="recent-payments"></div>
           </div>
         </div>
       </div>
@@ -331,21 +300,23 @@ textarea.fi2{resize:vertical;min-height:60px}
             <div class="file-drop" id="t-drop" onclick="document.getElementById('t-photo').click()"
               ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleTaskDrop(event)">
               <input type="file" id="t-photo" accept="image/*" onchange="showTaskPhoto(this)" style="display:none">
-              <div id="t-preview"><div style="font-size:24px">📷</div><div class="fdt">Фото задания или <strong>выбери файл</strong></div></div>
+              <div id="t-preview"><div style="font-size:22px">📷</div><div style="font-size:12px;color:var(--mu)">Фото или <strong style="color:var(--g)">выбери файл</strong></div></div>
             </div>
-            <button class="btn btnp" onclick="addTask()" style="margin-top:11px;width:100%;padding:11px">Выдать задание</button>
+            <button class="btn btnp" onclick="addTask()" style="margin-top:10px;width:100%;padding:10px">Выдать задание</button>
           </div>
         </div>
         <div>
-          <!-- НА ПРОВЕРКЕ -->
           <div class="card">
-            <div class="ctitle">🔍 На проверке <span id="review-count" style="background:var(--gbg);color:var(--gold);font-size:11px;padding:2px 8px;border-radius:99px;font-weight:700"></span></div>
+            <div class="ctitle">🔍 На проверке <span id="review-count" style="background:var(--gbg);color:var(--gold);font-size:10px;padding:2px 7px;border-radius:99px;font-weight:700"></span></div>
             <div id="tasks-review-list"></div>
           </div>
-          <!-- АКТИВНЫЕ -->
           <div class="card">
-            <div class="ctitle">⏳ Активные задания</div>
+            <div class="ctitle">⏳ Активные</div>
             <div id="all-tasks-list"></div>
+          </div>
+          <div class="card">
+            <div class="ctitle">✔️ Последние выполненные</div>
+            <div id="tasks-done-list"></div>
           </div>
         </div>
       </div>
@@ -362,15 +333,14 @@ textarea.fi2{resize:vertical;min-height:60px}
           <label class="fl2">Предмет</label><input class="fi2" id="g-subj" placeholder="Алгебра">
           <label class="fl2">Тема / работа</label><input class="fi2" id="g-topic" placeholder="Производные">
           <label class="fl2">Тип работы</label>
-          <select class="fi2" id="g-type"><option>Контрольная</option><option>Самост. работа</option><option>Опрос</option><option>Пробный ЕГЭ</option><option>ДЗ</option><option>Оценка</option></select>
+          <select class="fi2" id="g-type"><option>Контрольная</option><option>Самост. работа</option><option>Опрос</option><option>Пробный ЕГЭ</option><option>ДЗ</option><option>Занятие</option><option>Оценка</option></select>
           <label class="fl2">Оценка</label>
-          <select class="fi2" id="g-grade"><option value="5">5 — Отлично</option><option value="4">4 — Хорошо</option><option value="3">3 — Удовлетворительно</option><option value="2">2 — Плохо</option></select>
-          <label class="fl2">Комментарий</label>
-          <input class="fi2" id="g-comment" placeholder="Молодец! / Нужно повторить…">
-          <button class="btn btnp" onclick="addGrade()" style="margin-top:11px;width:100%;padding:11px">Поставить оценку</button>
+          <select class="fi2" id="g-grade"><option value="5">5 — Отлично</option><option value="4">4 — Хорошо</option><option value="3">3 — Удовл.</option><option value="2">2 — Плохо</option></select>
+          <label class="fl2">Комментарий</label><input class="fi2" id="g-comment" placeholder="Молодец!">
+          <button class="btn btnp" onclick="addGrade()" style="margin-top:10px;width:100%;padding:10px">Поставить оценку</button>
         </div>
         <div class="card">
-          <div class="ctitle">📊 Последние оценки</div>
+          <div class="ctitle">📊 Все оценки <span style="font-size:11px;color:var(--mu);font-weight:500">(нажми для удаления)</span></div>
           <div id="recent-grades"></div>
         </div>
       </div>
@@ -381,39 +351,42 @@ textarea.fi2{resize:vertical;min-height:60px}
       <div class="chip">Расписание</div>
       <div class="ptitle">Занятия</div>
       <div class="two">
-        <div class="card">
-          <div class="ctitle">📅 Добавить занятие</div>
-          <label class="fl2">Ученик</label><select class="fi2" id="l-student"></select>
-          <label class="fl2">День и дата</label><input class="fi2" id="l-day" placeholder="Понедельник, 20 апреля">
-          <label class="fl2">Время</label><input class="fi2" id="l-time" placeholder="16:00 – 17:30">
-          <label class="fl2">Предмет</label><input class="fi2" id="l-subj" placeholder="Алгебра">
-          <label class="fl2">Тема занятия</label><input class="fi2" id="l-topic" placeholder="Интегралы — введение">
-          <label class="fl2">Ссылка на Zoom</label><input class="fi2" id="l-zoom" placeholder="https://zoom.us/j/...">
-          <label class="fl2" style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="l-recurring" style="width:16px;height:16px;margin:0">
-            <span>Еженедельное (постоянное) занятие</span>
-          </label>
-          <button class="btn btnp" onclick="addLesson()" style="margin-top:14px;width:100%;padding:11px">Добавить занятие</button>
+        <div>
+          <div class="card">
+            <div class="ctitle">📅 Добавить занятие</div>
+            <label class="fl2">Ученик</label><select class="fi2" id="l-student"></select>
+            <label class="fl2">День (напр.: Понедельник, 22 апреля)</label><input class="fi2" id="l-day" placeholder="Понедельник, 22 апреля">
+            <label class="fl2">Время</label><input class="fi2" id="l-time" placeholder="16:00 – 17:30">
+            <label class="fl2">Предмет</label><input class="fi2" id="l-subj" placeholder="Алгебра">
+            <label class="fl2">Тема занятия</label><input class="fi2" id="l-topic" placeholder="Интегралы — введение">
+            <label class="fl2">Ссылка на Zoom</label><input class="fi2" id="l-zoom" placeholder="https://zoom.us/j/...">
+            <label class="fl2" style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:13px">
+              <input type="checkbox" id="l-recurring" style="width:15px;height:15px;margin:0;flex-shrink:0">
+              Еженедельное (постоянное) занятие
+            </label>
+            <button class="btn btnp" onclick="addLesson()" style="margin-top:13px;width:100%;padding:10px">Добавить занятие</button>
+          </div>
+          <!-- Авто-генерация из постоянного расписания -->
+          <div class="card">
+            <div class="ctitle">🔄 Постоянное расписание</div>
+            <div style="font-size:12px;color:var(--mu);margin-bottom:10px">Генерирует занятия на 4 недели вперёд из еженедельного расписания</div>
+            <label class="fl2">Ученик</label><select class="fi2" id="gen-student"></select>
+            <button class="btn btns" onclick="generateSchedule()" style="margin-top:10px;width:100%;padding:10px">🔄 Сгенерировать занятия</button>
+            <div id="gen-result" style="font-size:12px;color:var(--g);margin-top:7px;font-weight:600;min-height:14px"></div>
+          </div>
         </div>
         <div>
-          <!-- ЗАВЕРШИТЬ ЗАНЯТИЕ -->
+          <!-- ЗАПЛАНИРОВАННЫЕ — БЛИЖАЙШИЕ 3 ДНЯ -->
           <div class="card">
-            <div class="ctitle">✅ Провести/завершить занятие</div>
-            <label class="fl2">Ученик</label>
-            <select class="fi2" id="complete-student" onchange="loadStudentLessons()"></select>
-            <label class="fl2" style="margin-top:10px">Занятие</label>
-            <select class="fi2" id="complete-lesson-id"></select>
-            <label class="fl2">Материалы к занятию (необязательно)</label>
-            <textarea class="fi2" id="complete-materials" placeholder="Что разбирали на занятии..."></textarea>
-            <div style="display:flex;gap:8px;margin-top:11px">
-              <button class="btn btnp" onclick="completeLesson()" style="flex:1;padding:11px">✅ Провести урок</button>
-              <button class="btn btnd" onclick="qCancelFromSched()" style="flex:1;padding:11px">↩️ Отменить урок</button>
-            </div>
-          </div>
-          <div class="card">
-            <div class="ctitle">📋 Запланированные</div>
+            <div class="ctitle">📅 Ближайшие занятия <span style="font-size:11px;color:var(--mu);font-weight:500">(нажми чтобы провести)</span></div>
             <div id="upcoming-lessons"></div>
           </div>
+          <!-- ВСЕ ЗАПЛАНИРОВАННЫЕ -->
+          <div class="card">
+            <div class="ctitle">📋 Все запланированные</div>
+            <div id="all-planned-lessons"></div>
+          </div>
+          <!-- ЗАВЕРШЁННЫЕ -->
           <div class="card">
             <div class="ctitle">✔️ Завершённые занятия</div>
             <div id="completed-lessons"></div>
@@ -422,7 +395,7 @@ textarea.fi2{resize:vertical;min-height:60px}
       </div>
     </div>
 
-    <!-- KNOWLEDGE ADMIN -->
+    <!-- KNOWLEDGE -->
     <div class="page" id="page-knowledge-admin">
       <div class="chip">База знаний</div>
       <div class="ptitle">Загрузить материал</div>
@@ -432,76 +405,76 @@ textarea.fi2{resize:vertical;min-height:60px}
           <label class="fl2">Предмет</label><input class="fi2" id="kb-subj" placeholder="Алгебра, Химия…">
           <label class="fl2">Заголовок</label><input class="fi2" id="kb-title" placeholder="Конспект: Производные">
           <label class="fl2">Тип</label>
-          <select class="fi2" id="kb-kind" onchange="updateKbForm()">
-            <option value="text">📝 Текст / конспект</option>
-            <option value="link">🔗 Ссылка (YouTube…)</option>
-            <option value="file">📄 Файл (PDF, Word…)</option>
-          </select>
-          <div id="kb-content-wrap">
-            <label class="fl2">Текст материала</label>
-            <textarea class="fi2" id="kb-content" placeholder="Вставь конспект…"></textarea>
-          </div>
-          <label class="fl2">Для конкретного ученика</label>
-          <select class="fi2" id="kb-student"><option value="">Для всех</option></select>
-          <button class="btn btnp" onclick="addKnowledge()" style="margin-top:11px;width:100%;padding:11px">Загрузить материал</button>
+          <select class="fi2" id="kb-kind" onchange="updateKbForm()"><option value="text">📝 Текст</option><option value="link">🔗 Ссылка</option><option value="file">📄 Файл</option></select>
+          <div id="kb-content-wrap"><label class="fl2">Текст</label><textarea class="fi2" id="kb-content" placeholder="Вставь конспект…"></textarea></div>
+          <label class="fl2">Для ученика</label><select class="fi2" id="kb-student"><option value="">Для всех</option></select>
+          <button class="btn btnp" onclick="addKnowledge()" style="margin-top:10px;width:100%;padding:10px">Загрузить</button>
         </div>
-        <div class="card">
-          <div class="ctitle">📚 Загруженные материалы</div>
-          <div id="kb-list"></div>
-        </div>
+        <div class="card"><div class="ctitle">📚 Материалы</div><div id="kb-list"></div></div>
       </div>
     </div>
 
-    <!-- MESSAGES ADMIN -->
+    <!-- MESSAGES -->
     <div class="page" id="page-messages-admin">
       <div class="chip">Сообщения</div>
-      <div class="ptitle">Написать ученику</div>
+      <div class="ptitle">Переписка</div>
       <div class="two">
         <div class="card">
-          <div class="ctitle">💬 Новое сообщение</div>
+          <div class="ctitle">💬 Написать</div>
           <label class="fl2">Ученик</label>
           <select class="fi2" id="m-student" onchange="loadChat()"></select>
           <label class="fl2">Сообщение</label>
           <textarea class="fi2" id="m-text" placeholder="Текст…" onkeydown="if(event.key==='Enter'&&event.ctrlKey)sendMsg()"></textarea>
-          <label class="fl2">Ссылка на Zoom (необязательно)</label>
+          <label class="fl2">Ссылка на Zoom</label>
           <input class="fi2" id="m-zoom" placeholder="https://zoom.us/j/...">
-          <div style="font-size:10px;color:var(--mu);margin-top:3px">Ctrl+Enter для отправки</div>
-          <button class="btn btnp" onclick="sendMsg()" style="margin-top:10px;width:100%;padding:11px">Отправить</button>
+          <div style="font-size:10px;color:var(--mu);margin-top:3px">Ctrl+Enter — отправить</div>
+          <button class="btn btnp" onclick="sendMsg()" style="margin-top:9px;width:100%;padding:10px">Отправить</button>
         </div>
         <div class="card">
-          <div class="ctitle">📩 Переписка</div>
-          <div id="chat-preview" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:7px"></div>
+          <div class="ctitle">📩 Диалог</div>
+          <div id="chat-preview" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:7px"></div>
         </div>
       </div>
     </div>
 
-    <!-- PROGRESS ADMIN -->
+    <!-- PROGRESS -->
     <div class="page" id="page-progress-admin">
       <div class="chip">Прогресс</div>
-      <div class="ptitle">Обновить прогресс</div>
-      <div class="card" style="max-width:380px">
+      <div class="ptitle">Успеваемость ученика</div>
+      <div class="card" style="max-width:360px">
         <label class="fl2">Ученик</label>
         <select class="fi2" id="p-student" onchange="loadProgress()"></select>
       </div>
+      <div id="progress-stats"></div>
       <div class="card" id="prog-editor"><div style="color:var(--mu);font-size:13px">Выберите ученика</div></div>
     </div>
 
   </div>
 </div>
 
-<!-- STUDENT CARD MODAL -->
-<div id="student-modal" style="display:none"></div>
+<!-- LESSON MODAL -->
+<div id="lesson-modal" class="modal-overlay hidden">
+  <div class="modal" id="lesson-modal-inner"></div>
+</div>
 
-<!-- TASK DETAIL MODAL -->
-<div id="task-modal" style="display:none"></div>
+<!-- STUDENT CARD MODAL -->
+<div id="student-modal" class="modal-overlay hidden">
+  <div class="modal" id="student-modal-inner"></div>
+</div>
+
+<!-- GRADE DETAIL MODAL -->
+<div id="grade-modal" class="modal-overlay hidden">
+  <div class="modal" id="grade-modal-inner"></div>
+</div>
 
 <script>
 const API=''; let TOKEN='', STUDENTS={};
 let selectedColor='#4a7c59';
+let chatPollTimer=null;
 
 // ── SESSION ──────────────────────────────────────────
 function saveAdminSession(t){try{localStorage.setItem('admin_token',t);}catch(e){}}
-function loadAdminSession(){try{return localStorage.getItem('admin_token')||'';}catch(e){return '';}}
+function loadAdminSession(){try{return localStorage.getItem('admin_token')||'';}catch(e){return'';}}
 function clearAdminSession(){try{localStorage.removeItem('admin_token');}catch(e){}}
 const H=()=>({'Content-Type':'application/json','X-Admin-Token':TOKEN});
 
@@ -512,8 +485,7 @@ async function aLogin(){
   try{
     const r=await fetch(`${API}/api/admin/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
     if(!r.ok){err.textContent='Неверный пароль';return;}
-    const d=await r.json(); TOKEN=d.token;
-    saveAdminSession(TOKEN);
+    const d=await r.json(); TOKEN=d.token; saveAdminSession(TOKEN);
     document.getElementById('alog').style.display='none';
     document.getElementById('aapp').style.display='block';
     await loadAll();
@@ -521,26 +493,19 @@ async function aLogin(){
 }
 
 function aLogout(){
-  clearAdminSession(); TOKEN=''; STUDENTS={};
+  clearAdminSession();TOKEN='';STUDENTS={};
+  clearInterval(chatPollTimer);
   document.getElementById('alog').style.display='flex';
   document.getElementById('aapp').style.display='none';
 }
 
-// Автовход при загрузке
 window.addEventListener('DOMContentLoaded',async()=>{
   const t=loadAdminSession();
-  if(t){
-    TOKEN=t;
-    // Проверяем токен
-    try{
-      const r=await fetch(`${API}/api/students`,{headers:H()});
-      if(r.ok){
-        document.getElementById('alog').style.display='none';
-        document.getElementById('aapp').style.display='block';
-        await loadAll(); return;
-      }
+  if(t){TOKEN=t;
+    try{const r=await fetch(`${API}/api/students`,{headers:H()});
+      if(r.ok){document.getElementById('alog').style.display='none';document.getElementById('aapp').style.display='block';await loadAll();return;}
     }catch(e){}
-    clearAdminSession(); TOKEN='';
+    clearAdminSession();TOKEN='';
   }
   updateKbForm();
 });
@@ -552,17 +517,15 @@ function nav(id,btn){
   document.getElementById('page-'+id).classList.add('active');
   if(btn)btn.classList.add('active');
   if(id==='finance')loadFinance();
-  if(id==='tasks-admin'){renderAllTasks();renderReviewTasks();}
+  if(id==='tasks-admin'){renderAllTasks();renderReviewTasks();renderDoneTasks();}
   if(id==='grades-admin')renderRecentGrades();
-  if(id==='schedule-admin'){renderUpcoming();renderCompleted();}
+  if(id==='schedule-admin'){renderUpcoming();renderAllPlanned();renderCompleted();}
+  if(id==='messages-admin'){loadChat();startChatPoll();}
+  else stopChatPoll();
 }
 
 // ── LOAD ──────────────────────────────────────────────
-async function loadAll(){
-  await loadStudents();
-  await loadPrograms();
-  loadKnowledgeAdmin(true);
-}
+async function loadAll(){await loadStudents();await loadPrograms();loadKnowledgeAdmin(true);}
 
 async function loadStudents(){
   try{
@@ -575,53 +538,43 @@ async function loadStudents(){
 
 async function loadPrograms(){
   try{
-    const r=await fetch(`${API}/api/programs`);
-    const progs=await r.json();
+    const r=await fetch(`${API}/api/programs`);const progs=await r.json();
     document.getElementById('ns-program').innerHTML=Object.keys(progs).map(p=>`<option>${p}</option>`).join('');
-    document.getElementById('programs-list').innerHTML=Object.keys(progs).map(p=>`
-      <div style="padding:6px 0;border-bottom:1.5px solid var(--bdr)">
-        <div style="font-size:12px;font-weight:700;color:var(--ink)">${p}</div>
-        <div style="font-size:10px;color:var(--mu)">${progs[p].slice(0,4).join(', ')}${progs[p].length>4?'…':''}</div>
-      </div>`).join('');
+    document.getElementById('programs-list').innerHTML=Object.keys(progs).map(p=>`<div style="padding:5px 0;border-bottom:1.5px solid var(--bdr)"><div style="font-size:12px;font-weight:700">${p}</div><div style="font-size:10px;color:var(--mu)">${progs[p].slice(0,3).join(', ')}${progs[p].length>3?'…':''}</div></div>`).join('');
   }catch(e){}
 }
 
 function fillStudentSelects(){
   const names=Object.keys(STUDENTS);
-  ['t-student','g-student','l-student','m-student','p-student','sub-student','pay-student','quick-student','complete-student'].forEach(id=>{
-    const el=document.getElementById(id); if(!el)return;
+  ['t-student','g-student','l-student','m-student','p-student','sub-student','pay-student','quick-student','gen-student','complete-student'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
     el.innerHTML=names.map(n=>`<option>${n}</option>`).join('');
   });
   const kb=document.getElementById('kb-student');
   if(kb)kb.innerHTML='<option value="">Для всех</option>'+names.map(n=>`<option>${n}</option>`).join('');
 }
 
-// ── ADMIN STATS ───────────────────────────────────────
 function renderAdminStats(){
   const names=Object.keys(STUDENTS);
-  const totalActive=names.reduce((s,n)=>(STUDENTS[n].tasks||[]).filter(t=>t.status==='active').length+s,0);
   const totalReview=names.reduce((s,n)=>(STUDENTS[n].tasks||[]).filter(t=>t.status==='review').length+s,0);
+  const totalActive=names.reduce((s,n)=>(STUDENTS[n].tasks||[]).filter(t=>t.status==='active').length+s,0);
   const totalDebt=names.reduce((s,n)=>STUDENTS[n].balance<0?s+(-STUDENTS[n].balance):s,0);
   const activeSubs=names.filter(n=>STUDENTS[n].current_sub).length;
   document.getElementById('admin-stats').innerHTML=`
     <div class="sbox sg"><div class="slbl">Учеников</div><div class="sval">${names.length}</div></div>
-    <div class="sbox sb"><div class="slbl">На проверке</div><div class="sval">${totalReview}</div><div class="snote">${totalActive} активных</div></div>
+    <div class="sbox sb"><div class="slbl">На проверке</div><div class="sval">${totalReview}</div><div class="snote">${totalActive} акт.</div></div>
     <div class="sbox sgo"><div class="slbl">Абонементов</div><div class="sval">${activeSubs}</div></div>
     <div class="sbox sred"><div class="slbl">Долг</div><div class="sval">${totalDebt.toFixed(0)}₽</div></div>`;
 }
 
-// ── STUDENTS LIST ─────────────────────────────────────
 function renderStudentsList(){
   const names=Object.keys(STUDENTS);
-  if(!names.length){document.getElementById('stlist').innerHTML='<div class="card" style="color:var(--mu);text-align:center;padding:22px">Учеников пока нет.</div>';return;}
+  if(!names.length){document.getElementById('stlist').innerHTML='<div class="card" style="color:var(--mu);text-align:center;padding:20px">Учеников пока нет.</div>';return;}
   document.getElementById('stlist').innerHTML=names.map(name=>{
-    const s=STUDENTS[name];
-    const init=name.split(' ').map(w=>w[0]).join('');
+    const s=STUDENTS[name];const init=name.split(' ').map(w=>w[0]).join('');
     const review=(s.tasks||[]).filter(t=>t.status==='review').length;
     const active=(s.tasks||[]).filter(t=>t.status==='active').length;
-    const sub=s.current_sub; const bal=s.balance||0;
-    const subStr=sub?`📦 ${sub.lessons_left}/${sub.lessons_total}`:'нет абон.';
-    const balStr=bal>=0?'✅':`⚠️ долг ${(-bal).toFixed(0)}₽`;
+    const sub=s.current_sub;const bal=s.balance||0;
     return`<div class="stcard" onclick="openStudentCard('${name}')">
       <div class="stav" style="background:${s.color||'#4a7c59'}">${init}</div>
       <div style="flex:1">
@@ -629,15 +582,15 @@ function renderStudentsList(){
         <div class="stmeta">
           <span>${s.program||''}</span>
           <span>🔑 ${s.password||'1234'}</span>
-          <span>${subStr}</span>
-          <span>${balStr}</span>
+          ${sub?`<span>📦 ${sub.lessons_left}/${sub.lessons_total}</span>`:'<span>нет абон.</span>'}
+          <span>${bal>=0?'✅':'⚠️ долг '+(-bal).toFixed(0)+'₽'}</span>
           <span>✅ ${active} акт.</span>
-          ${review?`<span style="color:var(--gold);font-weight:700">🔍 ${review} на пров.</span>`:''}
+          ${review?`<span style="color:var(--gold);font-weight:700">🔍 ${review} пров.</span>`:''}
         </div>
       </div>
       <div class="stactions" onclick="event.stopPropagation()">
-        <div class="ic-btn" title="Сообщение" onclick="quickMsg('${name}')">💬</div>
-        <div class="ic-btn" title="Удалить" onclick="deleteStudent('${name}')" style="color:var(--red)">🗑</div>
+        <div class="ic-btn" onclick="quickMsg('${name}')">💬</div>
+        <div class="ic-btn" style="color:var(--red)" onclick="deleteStudent('${name}')">🗑</div>
       </div>
     </div>`;}).join('');
 }
@@ -648,177 +601,124 @@ async function openStudentCard(name){
     const r=await fetch(`${API}/api/admin/student-activity/${encodeURIComponent(name)}`,{headers:H()});
     const d=await r.json();
     const init=name.split(' ').map(w=>w[0]).join('');
-    const sub=d.current_sub; const bal=d.balance||0;
-    const modal=document.getElementById('student-modal');
-    modal.style.display='flex';
-    modal.className='modal-overlay';
-    modal.onclick=e=>{if(e.target===modal)closeModal('student-modal');};
-    modal.innerHTML=`<div class="modal">
-      <div class="modal-head">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div class="sc-avatar" style="background:${d.color||'#4a7c59'}">${init}</div>
-          <div>
-            <div class="modal-title">${name}</div>
-            <div style="font-size:12px;color:var(--mu)">${STUDENTS[name]?.program||''}</div>
-          </div>
-        </div>
-        <button class="modal-close" onclick="closeModal('student-modal')">✕</button>
+    const sub=d.current_sub;const bal=d.balance||0;
+    const m=document.getElementById('student-modal-inner');
+    m.innerHTML=`<div class="modal-head">
+      <div style="display:flex;align-items:center;gap:11px">
+        <div style="width:48px;height:48px;border-radius:50%;background:${d.color||'#4a7c59'};display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:18px;color:#fff;flex-shrink:0">${init}</div>
+        <div><div class="modal-title">${name}</div><div style="font-size:12px;color:var(--mu)">${STUDENTS[name]?.program||''}</div></div>
       </div>
-      <div class="modal-body">
-        <!-- Баланс и абонемент -->
-        <div style="display:flex;gap:10px;margin-bottom:4px">
-          <div style="flex:1;background:${bal<0?'var(--rbg)':'var(--gl)'};border-radius:10px;padding:10px 14px;text-align:center">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu)">Баланс</div>
-            <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:${bal<0?'var(--red)':'var(--gd)'}">${bal>=0?'+':'-'}${Math.abs(bal).toFixed(0)}₽</div>
+      <button class="modal-close" onclick="closeModal('student-modal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:9px;margin-bottom:2px">
+        <div style="flex:1;background:${bal<0?'var(--rbg)':'var(--gl)'};border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu)">Баланс</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:${bal<0?'var(--red)':'var(--gd)'}">${bal>=0?'+':'-'}${Math.abs(bal).toFixed(0)}₽</div>
+        </div>
+        ${sub?`<div style="flex:1;background:var(--gbg);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu)">Абонемент</div>
+          <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:${sub.lessons_left<=2?'var(--warn)':'var(--gd)'}">${sub.lessons_left}/${sub.lessons_total}</div>
+        </div>`:''}
+      </div>
+      ${d.tasks_review.length?`<div style="margin-top:13px;padding-top:13px;border-top:1.5px solid var(--bdr)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:7px">🔍 На проверке (${d.tasks_review.length})</div>
+        ${d.tasks_review.map(t=>`<div style="padding:8px 0;border-bottom:1px solid var(--gp)">
+          <div style="font-size:13px;font-weight:600">${t.title}</div>
+          <div style="font-size:11px;color:var(--mu);margin-bottom:6px">${t.subj} · ${t.answer_date||'сегодня'}</div>
+          ${t.answer_url?`<img src="${t.answer_url}" onclick="openPhoto('${t.answer_url}')" style="max-width:100%;max-height:100px;border-radius:7px;object-fit:cover;cursor:pointer;margin-bottom:6px;display:block">`:''}
+          <div style="display:flex;gap:6px">
+            <button class="btn btnp" style="font-size:11px;padding:5px 10px" onclick="approveTask('${name}',${t.id})">✅ Принять</button>
+            <button class="btn btnd" style="font-size:11px;padding:5px 10px" onclick="returnTask('${name}',${t.id})">↩️ Вернуть</button>
           </div>
-          ${sub?`<div style="flex:1;background:var(--gbg);border-radius:10px;padding:10px 14px;text-align:center">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu)">Абонемент</div>
-            <div style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;color:${sub.lessons_left<=2?'var(--warn)':'var(--gd)'}">${sub.lessons_left} / ${sub.lessons_total}</div>
-          </div>`:''}
-        </div>
-
-        <!-- Задания на проверке -->
-        ${d.tasks_review.length?`<div class="sc-section">
-          <div class="sc-section-title">🔍 На проверке (${d.tasks_review.length})</div>
-          ${d.tasks_review.map(t=>`
-            <div style="padding:8px 0;border-bottom:1px solid var(--gp);cursor:pointer" onclick="openTaskDetail('${name}',${t.id})">
-              <div style="font-size:13px;font-weight:600;color:var(--ink)">${t.title}</div>
-              <div style="font-size:11px;color:var(--mu)">${t.subj} · сдано ${t.answer_date||'сегодня'}</div>
-              ${t.answer_url?`<img src="${t.answer_url}" style="max-width:100%;max-height:120px;border-radius:8px;margin-top:6px;object-fit:cover;display:block" onclick="event.stopPropagation();openPhoto('${t.answer_url}')">`:''}
-              <div style="display:flex;gap:7px;margin-top:7px">
-                <button class="btn btnp" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();approveTask('${name}',${t.id})">✅ Принять</button>
-                <button class="btn btnd" style="font-size:11px;padding:6px 12px" onclick="event.stopPropagation();returnTask('${name}',${t.id})">↩️ Вернуть</button>
-              </div>
-            </div>`).join('')}
-        </div>`:''}
-
-        <!-- Активные задания -->
-        ${d.tasks_active.length?`<div class="sc-section">
-          <div class="sc-section-title">⏳ Активные задания (${d.tasks_active.length})</div>
-          ${d.tasks_active.map(t=>`<div class="sc-item"><span style="font-size:12px">${t.subj}: ${t.title}</span><span style="font-size:10px;color:var(--mu)">до ${t.due?t.due.slice(8)+'.'+t.due.slice(5,7):''}</span></div>`).join('')}
-        </div>`:''}
-
-        <!-- Последние занятия -->
-        ${d.recent_lessons.length?`<div class="sc-section">
-          <div class="sc-section-title">📅 Последние занятия</div>
-          ${d.recent_lessons.map(l=>`<div class="sc-item"><span>${l.name}</span><span style="font-size:11px;color:var(--mu)">${l.completed_date||''}</span></div>`).join('')}
-        </div>`:''}
-
-        <!-- Последние оплаты -->
-        ${d.recent_payments.length?`<div class="sc-section">
-          <div class="sc-section-title">💰 Последние оплаты</div>
-          ${d.recent_payments.map(p=>`<div class="sc-item"><span>${p.type}</span><span style="color:var(--g);font-weight:700">+${p.amount}₽ · ${p.date}</span></div>`).join('')}
-        </div>`:''}
-
-        <!-- Последние сообщения -->
-        ${d.recent_msgs.length?`<div class="sc-section">
-          <div class="sc-section-title">💬 Последние сообщения</div>
-          ${d.recent_msgs.slice(-3).map(m=>`<div style="padding:5px 0;font-size:12px;color:var(--im)">
-            <span style="color:${m.f==='tutor'?'var(--g)':'var(--blue)'};">${m.f==='tutor'?'Репетитор':'Ученик'}</span>: ${m.text.slice(0,80)}${m.text.length>80?'…':''}
-          </div>`).join('')}
-        </div>`:''}
-
-        <div style="display:flex;gap:8px;margin-top:16px">
-          <button class="btn btnp" style="flex:1" onclick="closeModal('student-modal');quickMsg('${name}')">💬 Написать</button>
-          <button class="btn btns" style="flex:1" onclick="closeModal('student-modal');nav('tasks-admin',document.querySelectorAll('.tn')[3])">📋 Задания</button>
-        </div>
+        </div>`).join('')}
+      </div>`:''}
+      ${d.tasks_active.length?`<div style="margin-top:13px;padding-top:13px;border-top:1.5px solid var(--bdr)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">⏳ Активные задания</div>
+        ${d.tasks_active.map(t=>`<div style="font-size:12px;padding:5px 0;border-bottom:1px solid var(--gp);display:flex;justify-content:space-between"><span>${t.subj}: ${t.title}</span><span style="color:var(--mu);font-size:10px">до ${t.due?t.due.slice(8)+'.'+t.due.slice(5,7):''}</span></div>`).join('')}
+      </div>`:''}
+      ${d.recent_lessons.length?`<div style="margin-top:13px;padding-top:13px;border-top:1.5px solid var(--bdr)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">📅 Последние занятия</div>
+        ${d.recent_lessons.map(l=>`<div style="font-size:12px;padding:5px 0;border-bottom:1px solid var(--gp);display:flex;justify-content:space-between"><span>${l.name}</span><span style="color:var(--mu);font-size:10px">${l.completed_date||''}</span></div>`).join('')}
+      </div>`:''}
+      ${d.recent_payments.length?`<div style="margin-top:13px;padding-top:13px;border-top:1.5px solid var(--bdr)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">💰 Последние оплаты</div>
+        ${d.recent_payments.map(p=>`<div style="font-size:12px;padding:5px 0;border-bottom:1px solid var(--gp);display:flex;justify-content:space-between"><span>${p.type}</span><span style="color:var(--g);font-weight:700">+${p.amount}₽ · ${p.date}</span></div>`).join('')}
+      </div>`:''}
+      <div style="display:flex;gap:7px;margin-top:14px">
+        <button class="btn btnp" style="flex:1" onclick="closeModal('student-modal');quickMsg('${name}')">💬 Написать</button>
+        <button class="btn btns" style="flex:1" onclick="closeModal('student-modal');nav('progress-admin',document.querySelectorAll('.tn')[8]);document.getElementById('p-student').value='${name}';loadProgress()">📈 Прогресс</button>
       </div>
     </div>`;
-  }catch(e){toast('❌ Ошибка загрузки данных');}
+    document.getElementById('student-modal').classList.remove('hidden');
+  }catch(e){toast('❌ Ошибка загрузки');}
 }
 
-function closeModal(id){document.getElementById(id).style.display='none';}
-
-// Одобрить задание
-async function approveTask(name,taskId){
-  await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${taskId}/status`,{method:'PATCH',headers:H(),body:JSON.stringify({status:'done'})});
-  toast(`✅ Задание принято`); closeModal('student-modal'); await loadStudents();
-}
-async function returnTask(name,taskId){
-  await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${taskId}/status`,{method:'PATCH',headers:H(),body:JSON.stringify({status:'active'})});
-  toast(`↩️ Задание возвращено на доработку`); closeModal('student-modal'); await loadStudents();
-}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.add('hidden');}));
 
 function openPhoto(url){
   const o=document.createElement('div');
   o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
   o.innerHTML=`<img src="${url}" style="max-width:95vw;max-height:90vh;border-radius:10px;object-fit:contain">`;
-  o.onclick=()=>o.remove(); document.body.appendChild(o);
+  o.onclick=()=>o.remove();document.body.appendChild(o);
 }
 
 // ── COLOR ─────────────────────────────────────────────
 function pickColor(el){
   document.querySelectorAll('.color-opt').forEach(e=>{e.style.boxShadow='none';e.style.border='3px solid transparent';});
-  el.style.boxShadow=`0 0 0 2px #fff,0 0 0 4px ${el.dataset.color}`;
-  el.style.border=`3px solid ${el.dataset.color}`;
+  el.style.boxShadow=`0 0 0 2px #fff,0 0 0 4px ${el.dataset.color}`;el.style.border=`3px solid ${el.dataset.color}`;
   selectedColor=el.dataset.color;
 }
 
-// ── CREATE STUDENT ────────────────────────────────────
+// ── STUDENT CRUD ──────────────────────────────────────
 async function createStudent(){
-  const name=document.getElementById('ns-name').value.trim();
-  const pw=document.getElementById('ns-pw').value.trim()||'1234';
-  const subj=document.getElementById('ns-subject').value.trim();
-  const prog=document.getElementById('ns-program').value;
-  const lp=+document.getElementById('ns-lp').value||0;
-  const sp=+document.getElementById('ns-sp').value||0;
-  const sl=+document.getElementById('ns-sl').value||8;
-  if(!name){toast('⚠️ Введите имя ученика');return;}
-  const r=await fetch(`${API}/api/admin/students`,{method:'POST',headers:H(),body:JSON.stringify({name,password:pw,subject:subj,program:prog,color:selectedColor,lesson_price:lp,subscription_price:sp,subscription_lessons:sl})});
+  const name=document.getElementById('ns-name').value.trim();if(!name){toast('⚠️ Введите имя');return;}
+  const r=await fetch(`${API}/api/admin/students`,{method:'POST',headers:H(),body:JSON.stringify({
+    name,password:document.getElementById('ns-pw').value.trim()||'1234',
+    subject:document.getElementById('ns-subject').value.trim(),
+    program:document.getElementById('ns-program').value,color:selectedColor,
+    lesson_price:+document.getElementById('ns-lp').value||0,
+    subscription_price:+document.getElementById('ns-sp').value||0,
+    subscription_lessons:+document.getElementById('ns-sl').value||8
+  })});
   if(!r.ok){const e=await r.json();toast('❌ '+e.detail);return;}
-  toast(`✅ Ученик «${name}» добавлен!`);document.getElementById('ns-name').value='';
+  toast(`✅ «${name}» добавлен!`);document.getElementById('ns-name').value='';
   await loadStudents();nav('students',document.querySelector('.tn'));
 }
 async function deleteStudent(name){
   if(!confirm(`Удалить «${name}»?`))return;
   await fetch(`${API}/api/admin/students/${encodeURIComponent(name)}`,{method:'DELETE',headers:H()});
-  toast(`🗑 «${name}» удалён`); await loadStudents();
+  toast(`🗑 «${name}» удалён`);await loadStudents();
 }
 async function addProgram(){
-  const name=document.getElementById('npn').value.trim(); if(!name){toast('⚠️ Введите название');return;}
+  const name=document.getElementById('npn').value.trim();if(!name){toast('⚠️ Введите название');return;}
   const topics=document.getElementById('npt').value.trim().split(',').map(t=>t.trim()).filter(Boolean);
   await fetch(`${API}/api/admin/programs`,{method:'POST',headers:H(),body:JSON.stringify({name,topics})});
-  toast(`✅ Программа «${name}» добавлена`);document.getElementById('npn').value='';document.getElementById('npt').value='';
-  await loadPrograms();
+  toast(`✅ Программа «${name}» добавлена`);document.getElementById('npn').value='';document.getElementById('npt').value='';await loadPrograms();
 }
 
 // ── FINANCE ───────────────────────────────────────────
 async function loadFinance(){
   try{
-    const r=await fetch(`${API}/api/admin/finance-summary`,{headers:H()});
-    const d=await r.json();
+    const r=await fetch(`${API}/api/admin/finance-summary`,{headers:H()});const d=await r.json();
     document.getElementById('fin-stats').innerHTML=`
       <div class="sbox sg"><div class="slbl">Выручка месяц</div><div class="sval">${(d.month_revenue||0).toFixed(0)}₽</div><div class="snote">${d.month_lessons||0} уроков</div></div>
       <div class="sbox sgo"><div class="slbl">Абонементов</div><div class="sval">${(d.active_subscriptions||[]).length}</div></div>
       <div class="sbox sred"><div class="slbl">Долги</div><div class="sval">${(d.total_debt||0).toFixed(0)}₽</div></div>
       <div class="sbox sb"><div class="slbl">Переплата</div><div class="sval">${(d.total_prepay||0).toFixed(0)}₽</div></div>`;
-    // Active subs
     const as=document.getElementById('active-subs');
-    if(!(d.active_subscriptions||[]).length){as.innerHTML='<div style="color:var(--mu);font-size:13px">Нет активных абонементов</div>';}
-    else as.innerHTML=d.active_subscriptions.map(s=>{const pct=Math.round(s.lessons_left/s.lessons_total*100);const bc=pct<=25?'critical':pct<=50?'low':'';
-      return`<div style="padding:9px 0;border-bottom:1.5px solid var(--bdr)">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:12px;font-weight:700">${s.name}</span>
-          <span style="font-size:11px;font-weight:700;color:${pct<=25?'var(--red)':pct<=50?'var(--warn)':'var(--g)'}">${s.lessons_left}/${s.lessons_total}</span>
-        </div>
-        <div class="sub-bar-wrap"><div class="sub-bar-fill ${bc}" style="width:${pct}%"></div></div>
-        ${s.lessons_left<=2?'<div style="font-size:10px;color:var(--warn);margin-top:3px">⚠️ Заканчивается!</div>':''}
-      </div>`;}).join('');
-    // Debtors
-    const dl=document.getElementById('debtors-list');
-    if(!(d.debtors||[]).length){dl.innerHTML='<div style="color:var(--g);font-size:13px;font-weight:600">✅ Долгов нет!</div>';}
-    else dl.innerHTML=d.debtors.map(x=>`<div class="fin-row"><div class="fin-name">${x.name}</div><div class="fin-amount fin-red">${x.debt.toFixed(0)}₽</div></div>`).join('');
-    // Chart
+    as.innerHTML=(d.active_subscriptions||[]).length?d.active_subscriptions.map(s=>{const pct=Math.round(s.lessons_left/s.lessons_total*100);const bc=pct<=25?'critical':pct<=50?'low':'';
+      return`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr)"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;font-weight:700">${s.name}</span><span style="font-size:11px;font-weight:700;color:${pct<=25?'var(--red)':pct<=50?'var(--warn)':'var(--g)'}">${s.lessons_left}/${s.lessons_total}</span></div><div class="sub-bar-wrap"><div class="sub-bar-fill ${bc}" style="width:${pct}%"></div></div>${s.lessons_left<=2?'<div style="font-size:10px;color:var(--warn);margin-top:3px">⚠️ Заканчивается!</div>':''}</div>`;}).join('')
+      :'<div style="color:var(--mu);font-size:13px">Нет активных абонементов</div>';
+    document.getElementById('debtors-list').innerHTML=(d.debtors||[]).length?(d.debtors||[]).map(x=>`<div class="fin-row"><span style="font-size:13px;font-weight:600">${x.name}</span><span style="font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:var(--red);margin-left:auto">${x.debt.toFixed(0)}₽</span></div>`).join(''):'<div style="color:var(--g);font-size:13px;font-weight:600">✅ Долгов нет!</div>';
     const hist=d.monthly_history||{};const keys=Object.keys(hist).sort().slice(-6);
     const vals=keys.map(k=>hist[k].revenue||0);const max=Math.max(...vals,1);
     const mons={1:'янв',2:'фев',3:'мар',4:'апр',5:'май',6:'июн',7:'июл',8:'авг',9:'сен',10:'окт',11:'ноя',12:'дек'};
-    document.getElementById('revenue-chart').innerHTML=keys.map((k,i)=>{const[,m]=k.split('-');const h=Math.round((vals[i]/max)*60)+4;return`<div class="bar-col"><div class="bar-val">${vals[i]>0?(vals[i]/1000).toFixed(0)+'к':''}</div><div class="bar-rect" style="height:${h}px"></div><div class="bar-label">${mons[+m]}</div></div>`;}).join('');
-    // Recent payments
+    document.getElementById('revenue-chart').innerHTML=keys.map((k,i)=>{const[,m]=k.split('-');const h=Math.round((vals[i]/max)*55)+4;return`<div class="bar-col"><div class="bar-val">${vals[i]>0?(vals[i]/1000).toFixed(0)+'к':''}</div><div class="bar-rect" style="height:${h}px"></div><div class="bar-label">${mons[+m]}</div></div>`;}).join('');
     const rp=[];Object.entries(STUDENTS).forEach(([n,s])=>(s.payments||[]).slice(0,2).forEach(p=>rp.push({name:n,...p})));
-    document.getElementById('recent-payments').innerHTML=rp.slice(0,6).map(p=>`<div class="fin-row"><div><div style="font-size:11px;font-weight:700;color:var(--g)">${p.name}</div><div style="font-size:10px;color:var(--mu)">${p.type} · ${p.date}</div></div><div class="fin-amount fin-green">+${(p.amount||0).toFixed(0)}₽</div></div>`).join('')||'<div style="color:var(--mu);font-size:13px">Оплат пока нет</div>';
+    document.getElementById('recent-payments').innerHTML=rp.slice(0,6).map(p=>`<div class="fin-row"><div><div style="font-size:11px;font-weight:700;color:var(--g)">${p.name}</div><div style="font-size:10px;color:var(--mu)">${p.type} · ${p.date}</div></div><div style="font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;color:var(--g);margin-left:auto">+${(p.amount||0).toFixed(0)}₽</div></div>`).join('')||'<div style="color:var(--mu);font-size:13px">Оплат пока нет</div>';
   }catch(e){}
 }
-
 async function createSub(){
   const student=document.getElementById('sub-student').value;
   const lessons=+document.getElementById('sub-lessons').value||8;
@@ -830,35 +730,18 @@ async function createSub(){
 }
 async function addPayment(){
   const student=document.getElementById('pay-student').value;
-  const amount=+document.getElementById('pay-amount').value; if(!amount){toast('⚠️ Введи сумму');return;}
+  const amount=+document.getElementById('pay-amount').value;if(!amount){toast('⚠️ Введи сумму');return;}
   const payment_type=document.getElementById('pay-type').value;
-  const note=document.getElementById('pay-note').value.trim();
-  const r=await fetch(`${API}/api/admin/payment`,{method:'POST',headers:H(),body:JSON.stringify({student,amount,payment_type,note})});
-  if(r.ok){toast(`💰 Оплата ${amount}₽ зафиксирована`);document.getElementById('pay-amount').value='';await loadStudents();loadFinance();}
+  const r=await fetch(`${API}/api/admin/payment`,{method:'POST',headers:H(),body:JSON.stringify({student,amount,payment_type,note:''})});
+  if(r.ok){toast(`💰 ${amount}₽ зафиксировано`);document.getElementById('pay-amount').value='';await loadStudents();loadFinance();}
 }
-
-async function qConduct(){
-  const student=document.getElementById('quick-student').value;
-  const r=await fetch(`${API}/api/admin/conduct-lesson`,{method:'POST',headers:H(),body:JSON.stringify({student})});
-  if(r.ok){const d=await r.json();qRes('✅ '+d.message);await loadStudents();loadFinance();}
-}
-async function qCancel(){
-  const student=document.getElementById('quick-student').value;
-  if(!confirm(`Отменить урок у «${student}»?`))return;
-  const r=await fetch(`${API}/api/admin/cancel-lesson`,{method:'POST',headers:H(),body:JSON.stringify({student})});
-  if(r.ok){const d=await r.json();qRes('↩️ '+d.message,'var(--warn)');await loadStudents();loadFinance();}
-}
-async function qWriteOff(){
-  const student=document.getElementById('quick-student').value;
-  const bal=STUDENTS[student]?.balance||0; if(bal>=0){qRes('✅ Долгов нет');return;}
-  if(!confirm(`Списать долг ${(-bal).toFixed(0)}₽ у «${student}»?`))return;
-  const r=await fetch(`${API}/api/admin/writeoff-debt`,{method:'POST',headers:H(),body:JSON.stringify({student})});
-  if(r.ok){const d=await r.json();qRes('💸 '+d.message,'var(--gold)');toast(d.message);await loadStudents();loadFinance();}
-}
+async function qConduct(){const student=document.getElementById('quick-student').value;const r=await fetch(`${API}/api/admin/conduct-lesson`,{method:'POST',headers:H(),body:JSON.stringify({student})});if(r.ok){const d=await r.json();qRes('✅ '+d.message);await loadStudents();loadFinance();}}
+async function qCancel(){const student=document.getElementById('quick-student').value;if(!confirm(`Отменить урок у «${student}»?`))return;const r=await fetch(`${API}/api/admin/cancel-lesson`,{method:'POST',headers:H(),body:JSON.stringify({student})});if(r.ok){const d=await r.json();qRes('↩️ '+d.message,'var(--warn)');await loadStudents();loadFinance();}}
+async function qWriteOff(){const student=document.getElementById('quick-student').value;const bal=STUDENTS[student]?.balance||0;if(bal>=0){qRes('✅ Долгов нет');return;}if(!confirm(`Списать долг ${(-bal).toFixed(0)}₽ у «${student}»?`))return;const r=await fetch(`${API}/api/admin/writeoff-debt`,{method:'POST',headers:H(),body:JSON.stringify({student})});if(r.ok){const d=await r.json();qRes('💸 '+d.message,'var(--gold)');toast(d.message);await loadStudents();loadFinance();}}
 function qRes(msg,color='var(--g)'){const el=document.getElementById('q-result');el.style.color=color;el.textContent=msg;setTimeout(()=>el.textContent='',4000);}
 
 // ── TASKS ─────────────────────────────────────────────
-function showTaskPhoto(inp){if(!inp.files[0])return;const reader=new FileReader();reader.onload=e=>{document.getElementById('t-preview').innerHTML=`<img src="${e.target.result}" style="max-height:110px;border-radius:8px;object-fit:cover"><div style="font-size:11px;color:var(--g);font-weight:600;margin-top:5px">${inp.files[0].name}</div>`;};reader.readAsDataURL(inp.files[0]);}
+function showTaskPhoto(inp){if(!inp.files[0])return;const reader=new FileReader();reader.onload=e=>{document.getElementById('t-preview').innerHTML=`<img src="${e.target.result}" style="max-height:100px;border-radius:7px;object-fit:cover"><div style="font-size:11px;color:var(--g);font-weight:600;margin-top:4px">${inp.files[0].name}</div>`;};reader.readAsDataURL(inp.files[0]);}
 function handleTaskDrop(e){e.preventDefault();document.getElementById('t-drop').classList.remove('drag');const f=e.dataTransfer.files[0];if(!f)return;const dt=new DataTransfer();dt.items.add(f);document.getElementById('t-photo').files=dt.files;showTaskPhoto(document.getElementById('t-photo'));}
 
 async function addTask(){
@@ -869,64 +752,53 @@ async function addTask(){
   const priority=document.getElementById('t-pri').value;
   const photoInp=document.getElementById('t-photo');
   if(!title||!subj){toast('⚠️ Заполни предмет и задание');return;}
-  const fd=new FormData();
-  fd.append('student',student);fd.append('title',title);fd.append('subj',subj);fd.append('due',due);fd.append('priority',priority);
+  const fd=new FormData();fd.append('student',student);fd.append('title',title);fd.append('subj',subj);fd.append('due',due);fd.append('priority',priority);
   if(photoInp.files[0])fd.append('photo',photoInp.files[0]);
   const r=await fetch(`${API}/api/admin/task-with-photo`,{method:'POST',headers:{'X-Admin-Token':TOKEN},body:fd});
-  if(r.ok){
-    toast(`✅ Задание выдано ${student}`);
-    document.getElementById('t-title').value='';
-    document.getElementById('t-preview').innerHTML='<div style="font-size:24px">📷</div><div class="fdt">Фото задания или <strong>выбери файл</strong></div>';
-    photoInp.value='';
-    await loadStudents();renderAllTasks();renderReviewTasks();
-  }
+  if(r.ok){toast(`✅ Задание выдано ${student}`);document.getElementById('t-title').value='';document.getElementById('t-preview').innerHTML='<div style="font-size:22px">📷</div><div style="font-size:12px;color:var(--mu)">Фото или <strong style="color:var(--g)">выбери файл</strong></div>';photoInp.value='';await loadStudents();renderAllTasks();renderReviewTasks();renderDoneTasks();}
 }
 
 function renderAllTasks(){
-  const items=[];
-  Object.entries(STUDENTS).forEach(([name,s])=>{
-    (s.tasks||[]).filter(t=>t.status==='active').forEach(t=>items.push({name,...t}));
-  });
-  document.getElementById('all-tasks-list').innerHTML=items.length
-    ?items.map(t=>`<div style="padding:9px 0;border-bottom:1.5px solid var(--bdr)">
-        <div style="font-size:11px;font-weight:700;color:var(--g)">${t.name}</div>
-        <div style="font-size:13px;font-weight:600;color:var(--ink)">${t.title}</div>
-        <div style="font-size:10px;color:var(--mu)">${t.subj} · до ${t.due||'—'}</div>
-        ${t.photo_url?`<img src="${t.photo_url}" onclick="openPhoto('${t.photo_url}')" style="height:40px;border-radius:6px;margin-top:5px;cursor:pointer;object-fit:cover">`:''}
-      </div>`).join('')
-    :'<div style="color:var(--mu);font-size:13px">Активных заданий нет</div>';
+  const items=[];Object.entries(STUDENTS).forEach(([name,s])=>(s.tasks||[]).filter(t=>t.status==='active').forEach(t=>items.push({name,...t})));
+  document.getElementById('all-tasks-list').innerHTML=items.length?items.map(t=>`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr)"><div style="font-size:11px;font-weight:700;color:var(--g)">${t.name}</div><div style="font-size:12px;font-weight:600">${t.title}</div><div style="font-size:10px;color:var(--mu)">${t.subj} · до ${t.due||'—'}</div>${t.photo_url?`<img src="${t.photo_url}" onclick="openPhoto('${t.photo_url}')" style="height:36px;border-radius:5px;margin-top:4px;cursor:pointer;object-fit:cover">`:''}
+  </div>`).join(''):'<div style="color:var(--mu);font-size:13px">Активных нет</div>';
+}
+
+function renderDoneTasks(){
+  const items=[];Object.entries(STUDENTS).forEach(([name,s])=>(s.tasks||[]).filter(t=>t.status==='done').slice(0,3).forEach(t=>items.push({name,...t})));
+  document.getElementById('tasks-done-list').innerHTML=items.length?items.map(t=>`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);opacity:.75"><div style="font-size:11px;font-weight:700;color:var(--g)">${t.name}</div><div style="font-size:12px;text-decoration:line-through;color:var(--mu)">${t.title}</div><div style="font-size:10px;color:var(--mu)">${t.subj}</div></div>`).join(''):'<div style="color:var(--mu);font-size:13px">Выполненных нет</div>';
 }
 
 function renderReviewTasks(){
-  const items=[];
-  Object.entries(STUDENTS).forEach(([name,s])=>{
-    (s.tasks||[]).filter(t=>t.status==='review').forEach(t=>items.push({name,...t}));
-  });
-  const cnt=document.getElementById('review-count');
-  if(cnt)cnt.textContent=items.length?items.length:'';
-  document.getElementById('tasks-review-list').innerHTML=items.length
-    ?items.map(t=>`<div class="task-review-item">
-        <div class="task-review-name">👤 ${t.name}</div>
-        <div class="task-review-title">${t.subj}: ${t.title}</div>
-        <div style="font-size:11px;color:var(--mu);margin-bottom:8px">Сдано: ${t.answer_date||'сегодня'} · Срок был: ${t.due||'—'}</div>
-        ${t.photo_url?`<img src="${t.photo_url}" onclick="openPhoto('${t.photo_url}')" style="max-width:100%;max-height:150px;border-radius:8px;object-fit:cover;cursor:pointer;margin-bottom:8px;display:block">`:''}
-        ${t.answer_url?`<img src="${t.answer_url}" onclick="openPhoto('${t.answer_url}')" style="max-width:100%;max-height:150px;border-radius:8px;object-fit:cover;cursor:pointer;margin-bottom:8px;display:block;border:2px solid var(--gold)">`:''}
-        <div style="display:flex;gap:7px;flex-wrap:wrap">
-          <button class="btn btnp" style="font-size:11px;padding:7px 13px" onclick="approveTask('${t.name}',${t.id})">✅ Принять</button>
-          <button class="btn btnd" style="font-size:11px;padding:7px 13px" onclick="returnTask('${t.name}',${t.id})">↩️ Вернуть</button>
-          <button class="btn btns" style="font-size:11px;padding:7px 13px" onclick="gradeTaskDirect('${t.name}','${t.subj}','${t.title}',${t.id})">📊 Поставить оценку</button>
-        </div>
-      </div>`).join('')
-    :'<div style="color:var(--mu);font-size:13px">Нет заданий на проверке</div>';
+  const items=[];Object.entries(STUDENTS).forEach(([name,s])=>(s.tasks||[]).filter(t=>t.status==='review').forEach(t=>items.push({name,...t})));
+  const cnt=document.getElementById('review-count');if(cnt)cnt.textContent=items.length?items.length:'';
+  document.getElementById('tasks-review-list').innerHTML=items.length?items.map(t=>`<div class="task-review-item">
+    <div style="font-size:11px;font-weight:700;color:var(--gold)">👤 ${t.name}</div>
+    <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:5px">${t.subj}: ${t.title}</div>
+    <div style="font-size:10px;color:var(--mu);margin-bottom:7px">Сдано: ${t.answer_date||'сегодня'} · Срок: ${t.due||'—'}</div>
+    ${t.photo_url?`<img src="${t.photo_url}" onclick="openPhoto('${t.photo_url}')" style="max-width:100%;max-height:130px;border-radius:8px;object-fit:cover;cursor:pointer;margin-bottom:7px;display:block">`:''}
+    ${t.answer_url?`<img src="${t.answer_url}" onclick="openPhoto('${t.answer_url}')" style="max-width:100%;max-height:130px;border-radius:8px;object-fit:cover;cursor:pointer;margin-bottom:7px;display:block;border:2px solid var(--gold)">`:''}
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btnp" style="font-size:11px;padding:6px 11px" onclick="approveTask('${t.name}',${t.id})">✅ Принять</button>
+      <button class="btn btnd" style="font-size:11px;padding:6px 11px" onclick="returnTask('${t.name}',${t.id})">↩️ Вернуть</button>
+      <button class="btn btns" style="font-size:11px;padding:6px 11px" onclick="gradeTaskDirect('${t.name}','${t.subj}','${t.title}',${t.id})">📊 Оценка + принять</button>
+    </div>
+  </div>`).join(''):'<div style="color:var(--mu);font-size:13px">Нет заданий на проверке</div>';
 }
 
+async function approveTask(name,taskId){
+  await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${taskId}/status`,{method:'PATCH',headers:H(),body:JSON.stringify({status:'done'})});
+  toast('✅ Задание принято');closeModal('student-modal');await loadStudents();renderAllTasks();renderReviewTasks();renderDoneTasks();
+}
+async function returnTask(name,taskId){
+  await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${taskId}/status`,{method:'PATCH',headers:H(),body:JSON.stringify({status:'active'})});
+  toast('↩️ Возвращено на доработку');closeModal('student-modal');await loadStudents();renderAllTasks();renderReviewTasks();
+}
 async function gradeTaskDirect(name,subj,title,taskId){
-  const g=prompt(`Оценка за задание "${title}" (2-5):`);
-  if(!g||!['2','3','4','5'].includes(g))return;
-  const comment=prompt('Комментарий (необязательно):')||'';
+  const g=prompt(`Оценка за "${title}" (2-5):`);if(!g||!['2','3','4','5'].includes(g))return;
+  const comment=prompt('Комментарий (Enter — пропустить):')||'';
   await fetch(`${API}/api/admin/grade`,{method:'POST',headers:H(),body:JSON.stringify({student:name,subject:subj,topic:title,grade_type:'ДЗ',grade:+g,comment})});
-  await approveTask(name,taskId);
-  toast(`✅ Оценка ${g} поставлена`);
+  await approveTask(name,taskId);toast(`✅ Оценка ${g} поставлена`);
 }
 
 // ── GRADES ────────────────────────────────────────────
@@ -939,21 +811,49 @@ async function addGrade(){
   const comment=document.getElementById('g-comment').value.trim();
   if(!subject||!topic){toast('⚠️ Заполни предмет и тему');return;}
   const r=await fetch(`${API}/api/admin/grade`,{method:'POST',headers:H(),body:JSON.stringify({student,subject,topic,grade_type,grade,comment})});
-  if(r.ok){toast(`✅ Оценка ${grade} поставлена ${student}`);document.getElementById('g-topic').value='';document.getElementById('g-comment').value='';await loadStudents();renderRecentGrades();}
+  if(r.ok){toast(`✅ Оценка ${grade} — ${student}`);document.getElementById('g-topic').value='';document.getElementById('g-comment').value='';await loadStudents();renderRecentGrades();}
 }
 
 function renderRecentGrades(){
   const items=[];
-  Object.entries(STUDENTS).forEach(([name,s])=>(s.grades||[]).slice(0,2).forEach(g=>items.push({name,...g})));
-  document.getElementById('recent-grades').innerHTML=items.slice(0,8).map(g=>`
-    <div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;gap:8px;align-items:center">
-      <div style="font-size:18px">${g.g===5?'🟢':g.g===4?'🟡':'🟠'}</div>
-      <div><div style="font-size:11px;font-weight:700;color:var(--g)">${g.name}</div>
+  Object.entries(STUDENTS).forEach(([name,s])=>(s.grades||[]).forEach((g,idx)=>items.push({name,idx,...g})));
+  items.sort((a,b)=>0);
+  document.getElementById('recent-grades').innerHTML=items.slice(0,20).map(g=>`
+    <div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;gap:8px;align-items:center;cursor:pointer" onclick="openGradeDetail('${g.name}',${g.idx})">
+      <div style="font-size:17px">${g.g===5?'🟢':g.g===4?'🟡':g.g===3?'🟠':'🔴'}</div>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--g)">${g.name}</div>
         <div style="font-size:12px;color:var(--ink);font-weight:500">${g.t}</div>
         <div style="font-size:10px;color:var(--mu)">${g.s} · ${g.d}</div>
       </div>
-      <span style="margin-left:auto;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:var(--gd)">${g.g}</span>
+      <span style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;color:var(--gd)">${g.g}</span>
     </div>`).join('')||'<div style="color:var(--mu);font-size:13px">Оценок нет</div>';
+}
+
+function openGradeDetail(name,idx){
+  const grade=STUDENTS[name]?.grades?.[idx];if(!grade)return;
+  const m=document.getElementById('grade-modal-inner');
+  m.innerHTML=`<div class="modal-head">
+    <div class="modal-title">Оценка ${grade.g} — ${name}</div>
+    <button class="modal-close" onclick="closeModal('grade-modal')">✕</button></div>
+  <div class="modal-body">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+      <div style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:24px;background:${grade.g===5?'rgba(74,124,89,.12)':grade.g===4?'rgba(184,146,42,.12)':grade.g===3?'rgba(200,98,42,.12)':'rgba(192,57,43,.12)'};color:${grade.g===5?'var(--gd)':grade.g===4?'var(--gold)':grade.g===3?'var(--warn)':'var(--red)'}">${grade.g}</div>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--ink)">${grade.t}</div>
+        <div style="font-size:12px;color:var(--mu)">${grade.s} · ${grade.tp} · ${grade.d}</div>
+      </div>
+    </div>
+    ${grade.c?`<div style="background:var(--gp);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--im);margin-bottom:14px">${grade.c}</div>`:'<div style="color:var(--mu);font-size:13px;margin-bottom:14px">Комментария нет</div>'}
+    <button class="btn btnd" style="width:100%;padding:11px" onclick="deleteGrade('${name}',${idx})">🗑 Удалить оценку</button>
+  </div>`;
+  document.getElementById('grade-modal').classList.remove('hidden');
+}
+
+async function deleteGrade(name,idx){
+  if(!confirm('Удалить оценку?'))return;
+  await fetch(`${API}/api/admin/grade/${encodeURIComponent(name)}/${idx}`,{method:'DELETE',headers:H()});
+  toast('🗑 Оценка удалена');closeModal('grade-modal');await loadStudents();renderRecentGrades();
 }
 
 // ── SCHEDULE ──────────────────────────────────────────
@@ -965,59 +865,80 @@ async function addLesson(){
   const topic=document.getElementById('l-topic').value.trim();
   const zoom_link=document.getElementById('l-zoom').value.trim();
   const recurring=document.getElementById('l-recurring').checked;
-  if(!day||!time||!subject){toast('⚠️ Заполни все поля');return;}
+  if(!day||!time||!subject){toast('⚠️ Заполни день, время и предмет');return;}
   const r=await fetch(`${API}/api/admin/lesson`,{method:'POST',headers:H(),body:JSON.stringify({student,day,time,subject,topic,color:STUDENTS[student]?.color||'#4a7c59',zoom_link,recurring})});
-  if(r.ok){toast(`📅 Занятие добавлено для ${student}`);document.getElementById('l-day').value='';document.getElementById('l-time').value='';document.getElementById('l-topic').value='';document.getElementById('l-zoom').value='';document.getElementById('l-recurring').checked=false;await loadStudents();renderUpcoming();renderCompleted();}
-}
-
-function loadStudentLessons(){
-  const name=document.getElementById('complete-student').value;
-  const s=STUDENTS[name]; if(!s)return;
-  const planned=(s.schedule||[]).filter(l=>l.status==='planned');
-  const sel=document.getElementById('complete-lesson-id');
-  sel.innerHTML=planned.length
-    ?planned.map(l=>`<option value="${l.id}">${l.day} · ${l.time} — ${l.name}</option>`).join('')
-    :'<option value="">Нет запланированных занятий</option>';
-}
-
-async function completeLesson(){
-  const student=document.getElementById('complete-student').value;
-  const lessonId=+document.getElementById('complete-lesson-id').value;
-  const materials=document.getElementById('complete-materials').value.trim();
-  if(!lessonId){
-    // Просто провести урок без конкретного занятия
-    const r=await fetch(`${API}/api/admin/conduct-lesson`,{method:'POST',headers:H(),body:JSON.stringify({student})});
-    if(r.ok){const d=await r.json();toast('✅ '+d.message);await loadStudents();renderUpcoming();renderCompleted();return;}
-  }
-  const r=await fetch(`${API}/api/admin/lesson/${encodeURIComponent(student)}/${lessonId}/complete`,{method:'PATCH',headers:H(),body:JSON.stringify({materials})});
   if(r.ok){
-    // Также проводим урок (списываем из абонемента)
-    await fetch(`${API}/api/admin/conduct-lesson`,{method:'POST',headers:H(),body:JSON.stringify({student})});
-    toast(`✅ Занятие завершено`);document.getElementById('complete-materials').value='';
-    await loadStudents();renderUpcoming();renderCompleted();loadStudentLessons();
+    toast(`📅 Занятие добавлено для ${student}`);
+    document.getElementById('l-day').value='';document.getElementById('l-time').value='';document.getElementById('l-topic').value='';document.getElementById('l-zoom').value='';document.getElementById('l-recurring').checked=false;
+    await loadStudents();renderUpcoming();renderAllPlanned();renderCompleted();
   }
 }
 
-async function qCancelFromSched(){
-  const student=document.getElementById('complete-student').value;
-  if(!confirm(`Отменить урок у «${student}»?`))return;
-  const r=await fetch(`${API}/api/admin/cancel-lesson`,{method:'POST',headers:H(),body:JSON.stringify({student})});
-  if(r.ok){const d=await r.json();toast('↩️ '+d.message);await loadStudents();renderUpcoming();}
+async function generateSchedule(){
+  const student=document.getElementById('gen-student').value;
+  const r=await fetch(`${API}/api/admin/generate-schedule/${encodeURIComponent(student)}`,{method:'POST',headers:H()});
+  if(r.ok){const d=await r.json();const el=document.getElementById('gen-result');el.textContent=`✅ Сгенерировано ${d.generated} занятий`;setTimeout(()=>el.textContent='',4000);await loadStudents();renderUpcoming();renderAllPlanned();}
+}
+
+// Ближайшие 3 дня
+function getUpcomingLessons(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const in3=new Date(today);in3.setDate(in3.getDate()+3);
+  const dayNames=['вс','пн','вт','ср','чт','пт','сб'];
+  const months=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+  const items=[];
+  Object.entries(STUDENTS).forEach(([name,s])=>{
+    (s.schedule||[]).filter(l=>l.status==='planned').forEach(l=>{
+      // Парсим дату из поля day типа "Понедельник, 22 апреля"
+      const match=l.day.match(/(\d{1,2})\s+(\S+)/);
+      if(match){
+        const day=+match[1];const monthName=match[2].toLowerCase();
+        const monthIdx=months.indexOf(monthName.slice(0,3));
+        if(monthIdx>=0){
+          const year=today.getFullYear();const d=new Date(year,monthIdx,day);
+          if(d>=today&&d<=in3) items.push({name,lessonDate:d,...l});
+        }
+      } else {
+        items.push({name,lessonDate:today,...l});
+      }
+    });
+  });
+  items.sort((a,b)=>a.lessonDate-b.lessonDate);
+  return items;
 }
 
 function renderUpcoming(){
+  const items=getUpcomingLessons();
+  document.getElementById('upcoming-lessons').innerHTML=items.length
+    ?items.map(l=>`<div class="lesson-card" onclick="openLessonModal('${l.name}',${l.id})">
+        <div class="lesson-stripe" style="background:${l.color||'#4a7c59'}"></div>
+        <div class="lesson-info">
+          <div class="lesson-name">${l.name}</div>
+          <div class="lesson-meta">
+            <span>${l.day}</span><span>🕐 ${l.time}</span>
+            ${l['name']?`<span>${l['name']}</span>`:''}
+            ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" style="color:var(--blue);font-size:10px;font-weight:700" onclick="event.stopPropagation()">🔗 Zoom</a>`:''}
+          </div>
+        </div>
+        <span class="lesson-status ls-planned">Запланировано</span>
+      </div>`).join('')
+    :'<div style="color:var(--mu);font-size:13px">Нет занятий в ближайшие 3 дня</div>';
+}
+
+function renderAllPlanned(){
   const items=[];
   Object.entries(STUDENTS).forEach(([name,s])=>{
     (s.schedule||[]).filter(l=>l.status==='planned').forEach(l=>items.push({name,...l}));
   });
-  document.getElementById('upcoming-lessons').innerHTML=items.length
-    ?items.map(l=>`<div style="padding:9px 0;border-bottom:1.5px solid var(--bdr);display:flex;gap:9px;align-items:flex-start">
-        <div style="width:4px;height:36px;border-radius:99px;background:${l.color||'#4a7c59'};flex-shrink:0;margin-top:3px"></div>
-        <div>
+  document.getElementById('all-planned-lessons').innerHTML=items.length
+    ?items.map(l=>`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;gap:9px;cursor:pointer" onclick="openLessonModal('${l.name}',${l.id})">
+        <div style="width:3px;height:34px;border-radius:99px;background:${l.color||'#4a7c59'};flex-shrink:0"></div>
+        <div style="flex:1">
           <div style="font-size:11px;font-weight:700;color:var(--g)">${l.name}</div>
-          <div style="font-size:13px;font-weight:600;color:var(--ink)">${l['name_sub']||l.name} · ${l.time}</div>
-          <div style="font-size:10px;color:var(--mu)">${l.day}${l.zoom_link?` · <a href="${l.zoom_link}" target="_blank" style="color:var(--blue)">🔗 Zoom</a>`:''}</div>
+          <div style="font-size:12px;font-weight:600">${l.day} · ${l.time}</div>
+          <div style="font-size:10px;color:var(--mu)">${l['name_sub']||''}</div>
         </div>
+        ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" style="font-size:11px;color:var(--blue);font-weight:700" onclick="event.stopPropagation()">🔗</a>`:''}
       </div>`).join('')
     :'<div style="color:var(--mu);font-size:13px">Нет запланированных занятий</div>';
 }
@@ -1025,24 +946,120 @@ function renderUpcoming(){
 function renderCompleted(){
   const items=[];
   Object.entries(STUDENTS).forEach(([name,s])=>{
-    (s.schedule||[]).filter(l=>l.status==='completed').slice(-3).forEach(l=>items.push({name,...l}));
+    (s.schedule||[]).filter(l=>l.status==='completed'||l.status==='cancelled'||l.status==='transferred').slice(0,5).forEach(l=>items.push({name,...l}));
   });
   document.getElementById('completed-lessons').innerHTML=items.length
-    ?items.map(l=>`<div style="padding:9px 0;border-bottom:1.5px solid var(--bdr)">
-        <div style="font-size:11px;font-weight:700;color:var(--g)">${l.name}</div>
-        <div style="font-size:13px;font-weight:600;color:var(--ink)">${l.name_lesson||l['name']} · ${l.completed_date||''}</div>
-        ${l.materials?`<div style="font-size:11px;color:var(--mu);margin-top:3px">📝 ${l.materials}</div>`:''}
-      </div>`).join('')
+    ?items.map(l=>{
+        const cls=l.status==='completed'?'ls-completed':l.status==='cancelled'?'ls-cancelled':'ls-transferred';
+        const lbl=l.status==='completed'?'Проведено':l.status==='cancelled'?'Отменено':'Перенесено';
+        return`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;gap:9px">
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:700;color:var(--g)">${l.name}</div>
+            <div style="font-size:12px;font-weight:600">${l.day} · ${l.time}</div>
+            ${l.completed_topic?`<div style="font-size:10px;color:var(--mu)">${l.completed_topic}</div>`:''}
+            ${l.materials?`<div style="font-size:10px;color:var(--mu)">📝 ${l.materials}</div>`:''}
+            ${l.material_file?`<a href="${l.material_file}" target="_blank" style="font-size:10px;color:var(--blue)">📎 ${l.material_file_name||'Файл'}</a>`:''}
+          </div>
+          <span class="lesson-status ${cls}">${lbl}</span>
+        </div>`;}).join('')
     :'<div style="color:var(--mu);font-size:13px">Нет завершённых занятий</div>';
+}
+
+// ── LESSON MODAL (провести/отменить/перенести) ─────────
+let currentLessonStudent='', currentLessonId=0, selectedGrade=0;
+
+function openLessonModal(studentName, lessonId){
+  currentLessonStudent=studentName; currentLessonId=lessonId; selectedGrade=0;
+  const s=STUDENTS[studentName];if(!s)return;
+  const lesson=(s.schedule||[]).find(l=>l.id===lessonId);if(!lesson)return;
+  const m=document.getElementById('lesson-modal-inner');
+  m.innerHTML=`<div class="modal-head">
+    <div>
+      <div class="modal-title">📅 ${lesson.day} · ${lesson.time}</div>
+      <div style="font-size:12px;color:var(--mu)">👤 ${studentName} · ${lesson.name||''}</div>
+    </div>
+    <button class="modal-close" onclick="closeModal('lesson-modal')">✕</button></div>
+  <div class="modal-body">
+    ${lesson.zoom_link?`<a href="${lesson.zoom_link}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--blue);margin-bottom:12px;text-decoration:none">🔗 Открыть Zoom</a>`:''}
+    <div style="border:1.5px solid var(--bdr);border-radius:11px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:10px">Тема занятия</div>
+      <input class="fi2" id="lm-topic" placeholder="Что разбирали..." value="${lesson.topic||''}">
+    </div>
+    <div style="border:1.5px solid var(--bdr);border-radius:11px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:10px">Оценка (необязательно)</div>
+      <div style="display:flex;gap:9px;align-items:center;margin-bottom:8px">
+        ${[5,4,3,2].map(g=>`<div class="grade-pill g${g}" id="gp${g}" onclick="selectGrade(${g})">${g}</div>`).join('')}
+        <span style="font-size:11px;color:var(--mu)" id="grade-label">не ставить</span>
+      </div>
+      <input class="fi2" id="lm-comment" placeholder="Комментарий к оценке...">
+      <input class="fi2" id="lm-subject" placeholder="Предмет" value="${lesson.name||''}" style="margin-top:6px">
+    </div>
+    <div style="border:1.5px solid var(--bdr);border-radius:11px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:10px">Материалы (необязательно)</div>
+      <textarea class="fi2" id="lm-materials" placeholder="Что задали, ссылки, описание..." style="min-height:70px"></textarea>
+      <div class="file-drop" id="lm-file-drop" onclick="document.getElementById('lm-file').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" style="margin-top:7px">
+        <input type="file" id="lm-file" onchange="showLmFile(this)" style="display:none">
+        <div id="lm-file-preview" style="font-size:12px;color:var(--mu)">📎 Прикрепить файл (PDF, Word, изображение)</div>
+      </div>
+    </div>
+    <div style="border:1.5px solid var(--bdr);border-radius:11px;padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:10px">Перенос (необязательно)</div>
+      <div style="display:flex;gap:8px">
+        <input class="fi2" id="lm-new-day" placeholder="Новый день, напр.: Среда, 24 апреля" style="flex:2">
+        <input class="fi2" id="lm-new-time" placeholder="Новое время" style="flex:1">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btnp" onclick="doCompleteLesson('completed')" style="flex:1;padding:11px">✅ Провести урок</button>
+      <button class="btn btnd" onclick="doCompleteLesson('cancelled')" style="flex:1;padding:11px">❌ Отменить</button>
+      <button class="btn btno" onclick="doTransferLesson()" style="flex:1;padding:11px">🔄 Перенести</button>
+    </div>
+  </div>`;
+  document.getElementById('lesson-modal').classList.remove('hidden');
+}
+
+function showLmFile(inp){if(inp.files[0])document.getElementById('lm-file-preview').textContent='📎 '+inp.files[0].name;}
+
+function selectGrade(g){
+  selectedGrade=selectedGrade===g?0:g;
+  [2,3,4,5].forEach(n=>{const el=document.getElementById('gp'+n);if(el)el.classList.toggle('sel',selectedGrade===n);});
+  const lbl=document.getElementById('grade-label');if(lbl)lbl.textContent=selectedGrade?'Оценка '+selectedGrade:'не ставить';
+}
+
+async function doCompleteLesson(action){
+  const topic=document.getElementById('lm-topic')?.value.trim()||'';
+  const materials=document.getElementById('lm-materials')?.value.trim()||'';
+  const comment=document.getElementById('lm-comment')?.value.trim()||'';
+  const subject=document.getElementById('lm-subject')?.value.trim()||'';
+  const fileInp=document.getElementById('lm-file');
+  const fd=new FormData();
+  fd.append('action',action);fd.append('topic',topic);fd.append('materials',materials);
+  fd.append('grade',selectedGrade||0);fd.append('comment',comment);fd.append('subject',subject);
+  if(fileInp&&fileInp.files[0])fd.append('file',fileInp.files[0]);
+  const r=await fetch(`${API}/api/admin/lesson/${encodeURIComponent(currentLessonStudent)}/${currentLessonId}/complete`,
+    {method:'PATCH',headers:{'X-Admin-Token':TOKEN},body:fd});
+  if(r.ok){
+    const msg=action==='completed'?'✅ Урок проведён!':'❌ Урок отменён';
+    toast(msg);closeModal('lesson-modal');await loadStudents();renderUpcoming();renderAllPlanned();renderCompleted();
+  }
+}
+
+async function doTransferLesson(){
+  const newDay=document.getElementById('lm-new-day')?.value.trim();
+  const newTime=document.getElementById('lm-new-time')?.value.trim();
+  if(!newDay){toast('⚠️ Укажи новый день для переноса');return;}
+  const r=await fetch(`${API}/api/admin/lesson/${encodeURIComponent(currentLessonStudent)}/${currentLessonId}/transfer`,
+    {method:'PATCH',headers:H(),body:JSON.stringify({new_day:newDay,new_time:newTime})});
+  if(r.ok){toast('🔄 Занятие перенесено');closeModal('lesson-modal');await loadStudents();renderUpcoming();renderAllPlanned();renderCompleted();}
 }
 
 // ── KNOWLEDGE ─────────────────────────────────────────
 function updateKbForm(){
   const kind=document.getElementById('kb-kind')?.value||'text';
   const wrap=document.getElementById('kb-content-wrap');if(!wrap)return;
-  if(kind==='text')wrap.innerHTML='<label class="fl2">Текст материала</label><textarea class="fi2" id="kb-content" placeholder="Вставь конспект…"></textarea>';
+  if(kind==='text')wrap.innerHTML='<label class="fl2">Текст</label><textarea class="fi2" id="kb-content" placeholder="Вставь конспект…"></textarea>';
   else if(kind==='link')wrap.innerHTML='<label class="fl2">Ссылка</label><input class="fi2" id="kb-content" placeholder="https://youtube.com/…">';
-  else wrap.innerHTML=`<label class="fl2">Файл</label><div class="file-drop" id="kfdrop" onclick="document.getElementById('kffile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleKbDrop(event)"><input type="file" id="kffile" onchange="showKbFile(this)" style="display:none"><div class="fdt">Перетащи или <strong>выбери файл</strong></div><div class="fdc" id="kfchosen"></div></div>`;
+  else wrap.innerHTML=`<label class="fl2">Файл</label><div class="file-drop" id="kfdrop" onclick="document.getElementById('kffile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleKbDrop(event)"><input type="file" id="kffile" onchange="showKbFile(this)" style="display:none"><div style="font-size:12px;color:var(--mu)">Перетащи или <strong style="color:var(--g)">выбери файл</strong></div><div id="kfchosen" style="font-size:11px;color:var(--gd);margin-top:5px"></div></div>`;
 }
 function showKbFile(inp){if(inp.files[0])document.getElementById('kfchosen').textContent='📎 '+inp.files[0].name;}
 function handleKbDrop(e){e.preventDefault();document.getElementById('kfdrop').classList.remove('drag');const f=e.dataTransfer.files[0];if(!f)return;const dt=new DataTransfer();dt.items.add(f);document.getElementById('kffile').files=dt.files;showKbFile(document.getElementById('kffile'));}
@@ -1053,8 +1070,7 @@ async function addKnowledge(){
   const subject=document.getElementById('kb-subj').value.trim();
   const for_student=document.getElementById('kb-student').value;
   if(!title||!subject){toast('⚠️ Заполни предмет и заголовок');return;}
-  const fd=new FormData();
-  fd.append('title',title);fd.append('subject',subject);fd.append('kind',kind);fd.append('for_student',for_student);
+  const fd=new FormData();fd.append('title',title);fd.append('subject',subject);fd.append('kind',kind);fd.append('for_student',for_student);
   if(kind==='file'){const ff=document.getElementById('kffile');if(ff&&ff.files[0])fd.append('file',ff.files[0]);fd.append('content','');}
   else fd.append('content',document.getElementById('kb-content')?.value||'');
   const r=await fetch(`${API}/api/admin/knowledge`,{method:'POST',headers:{'X-Admin-Token':TOKEN},body:fd});
@@ -1068,55 +1084,96 @@ async function loadKnowledgeAdmin(countOnly=false){
     if(countOnly)return;
     const list=document.getElementById('kb-list');if(!list)return;
     list.innerHTML=items.length?items.map(item=>{const ico=item.kind==='link'?'🎬':item.kind==='file'?'📄':'📝';const bg=item.kind==='link'?'#fdf5e0':item.kind==='file'?'#e8f5ea':'#e8f0fb';
-      return`<div class="kb-item">
-        <div class="kb-ico" style="background:${bg}">${ico}</div>
-        <div style="flex:1"><div class="kb-title">${item.title}</div>
-          <div class="kb-meta"><span class="bc bg">${item.subject}</span>${item.for_student?`<span class="bc bb">${item.for_student}</span>`:'<span class="bc bgr">Все</span>'}<span>${item.date}</span></div>
-          ${item.content&&item.kind==='link'?`<a href="${item.content}" target="_blank" style="font-size:11px;color:var(--blue)">🔗 открыть</a>`:''}
-          ${item.file_url?`<a href="${item.file_url}" target="_blank" style="font-size:11px;color:var(--g)">📥 скачать</a>`:''}
-        </div>
-        <div class="ic-btn" onclick="deleteKb(${item.id})" style="color:var(--red)" title="Удалить">🗑</div>
-      </div>`;}).join(''):'<div style="color:var(--mu);font-size:13px">Материалов пока нет</div>';
+      return`<div class="kb-item"><div style="width:32px;height:32px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${ico}</div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700">${item.title}</div><div style="font-size:10px;color:var(--mu)">${item.subject} · ${item.date} ${item.for_student?'· '+item.for_student:''}</div>${item.content&&item.kind==='link'?`<a href="${item.content}" target="_blank" style="font-size:10px;color:var(--blue)">🔗 открыть</a>`:''}${item.file_url?`<a href="${item.file_url}" target="_blank" style="font-size:10px;color:var(--g)">📥 скачать</a>`:''}</div>
+        <div class="ic-btn" onclick="deleteKb(${item.id})" style="color:var(--red)">🗑</div></div>`;}).join(''):'<div style="color:var(--mu);font-size:13px">Материалов пока нет</div>';
   }catch(e){}
 }
 async function deleteKb(id){await fetch(`${API}/api/admin/knowledge/${id}`,{method:'DELETE',headers:H()});toast('🗑 Удалено');loadKnowledgeAdmin();}
 
 // ── MESSAGES ──────────────────────────────────────────
 function quickMsg(name){document.getElementById('m-student').value=name;nav('messages-admin',document.querySelectorAll('.tn')[7]);loadChat();}
-function loadChat(){
-  const name=document.getElementById('m-student').value;const s=STUDENTS[name];if(!s)return;
-  const el=document.getElementById('chat-preview');
-  el.innerHTML=(s.messages||[]).map(m=>{let txt=m.text;
-    txt=txt.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g,'<a href="$2" target="_blank" style="color:var(--blue)">$1</a>');
-    return`<div style="display:flex;flex-direction:column;align-items:${m.f==='student'?'flex-end':'flex-start'}">
-      <div style="max-width:80%;padding:8px 11px;border-radius:12px;font-size:12px;line-height:1.5;word-break:break-word;background:${m.f==='tutor'?'var(--gp)':'var(--g)'};color:${m.f==='tutor'?'var(--ink)':'#fff'};border:${m.f==='tutor'?'1.5px solid var(--bdr)':'none'};border-bottom-${m.f==='tutor'?'left':'right'}-radius:4px">${txt}</div>
-      <div style="font-size:9px;color:var(--mu);margin-top:2px;padding:0 3px">${m.f==='tutor'?'Репетитор · ':'Ученик · '}${m.time}</div>
-    </div>`;}).join('');
-  el.scrollTop=el.scrollHeight;
+
+function startChatPoll(){
+  clearInterval(chatPollTimer);
+  chatPollTimer=setInterval(async()=>{
+    await loadStudents();loadChatSilent();
+  },5000);
 }
+function stopChatPoll(){clearInterval(chatPollTimer);}
+
+async function loadChatSilent(){
+  const name=document.getElementById('m-student')?.value;if(!name)return;
+  try{const r=await fetch(`${API}/api/student/${encodeURIComponent(name)}`);if(r.ok){const s=await r.json();STUDENTS[name]={...STUDENTS[name],...s};renderChat(name);}}catch(e){}
+}
+
+function loadChat(){
+  const name=document.getElementById('m-student').value;
+  renderChat(name);
+}
+
+function renderChat(name){
+  const s=STUDENTS[name];if(!s)return;
+  const el=document.getElementById('chat-preview');if(!el)return;
+  const wasAtBottom=el.scrollHeight-el.scrollTop-el.clientHeight<40;
+  el.innerHTML=(s.messages||[]).map(m=>{
+    let txt=m.text||'';
+    txt=txt.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g,'<a href="$2" target="_blank" style="color:${m.f==="tutor"?"#fff":"var(--blue)"};text-decoration:underline">$1</a>');
+    return`<div style="display:flex;flex-direction:column;align-items:${m.f==='student'?'flex-end':'flex-start'}">
+      <div class="chat-bubble ${m.f}">${txt}</div>
+      <div style="font-size:9px;color:var(--mu);margin-top:2px;padding:0 2px">${m.f==='tutor'?'Репетитор · ':'Ученик · '}${m.time}</div>
+    </div>`;}).join('');
+  if(wasAtBottom||el.scrollTop===0)el.scrollTop=el.scrollHeight;
+}
+
 async function sendMsg(){
   const student=document.getElementById('m-student').value;
-  const text=document.getElementById('m-text').value.trim(); if(!text){toast('⚠️ Напиши сообщение');return;}
+  const text=document.getElementById('m-text').value.trim();if(!text){toast('⚠️ Напиши сообщение');return;}
   const zoom_link=document.getElementById('m-zoom').value.trim();
   const r=await fetch(`${API}/api/admin/message`,{method:'POST',headers:H(),body:JSON.stringify({student,text,zoom_link})});
-  if(r.ok){toast(`✅ Отправлено ${student}`);document.getElementById('m-text').value='';document.getElementById('m-zoom').value='';await loadStudents();loadChat();}
+  if(r.ok){toast(`✅ Отправлено`);document.getElementById('m-text').value='';document.getElementById('m-zoom').value='';await loadStudents();loadChat();}
 }
 
 // ── PROGRESS ──────────────────────────────────────────
-function loadProgress(){
-  const name=document.getElementById('p-student').value;const s=STUDENTS[name];if(!s)return;
+async function loadProgress(){
+  const name=document.getElementById('p-student').value;
+  const s=STUDENTS[name];if(!s)return;
+
+  // Загружаем статистику
+  try{
+    const r=await fetch(`${API}/api/admin/student-stats/${encodeURIComponent(name)}`,{headers:H()});
+    const stats=await r.json();
+    document.getElementById('progress-stats').innerHTML=`
+      <div class="srow" style="max-width:800px;margin-bottom:14px;grid-template-columns:repeat(3,1fr)">
+        <div class="sbox sg"><div class="slbl">Проведено</div><div class="sval">${stats.lessons_completed}</div><div class="snote">уроков</div></div>
+        <div class="sbox so"><div class="slbl">Отменено</div><div class="sval">${stats.lessons_cancelled}</div><div class="snote">перенесено: ${stats.lessons_transferred}</div></div>
+        <div class="sbox sgo"><div class="slbl">ДЗ выполнено</div><div class="sval">${stats.tasks_done}</div><div class="snote">акт: ${stats.tasks_active} · пров: ${stats.tasks_review}</div></div>
+      </div>
+      ${stats.avg_grade?`<div class="card" style="max-width:800px;margin-bottom:14px">
+        <div class="ctitle">📊 Средняя оценка: <span style="color:var(--gd)">${stats.avg_grade}</span></div>
+        ${stats.grades.slice(0,10).map(g=>`<div style="padding:7px 0;border-bottom:1px solid var(--gp);display:flex;gap:8px;align-items:center">
+          <span style="font-size:16px">${g.g===5?'🟢':g.g===4?'🟡':g.g===3?'🟠':'🔴'}</span>
+          <div><div style="font-size:12px;font-weight:600">${g.t}</div><div style="font-size:10px;color:var(--mu)">${g.s} · ${g.tp} · ${g.d}</div></div>
+          <span style="margin-left:auto;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;color:var(--gd)">${g.g}</span>
+        </div>`).join('')}
+      </div>`:''}`;
+  }catch(e){}
+
   const prog=s.progress||[];
-  if(!prog.length){document.getElementById('prog-editor').innerHTML='<div style="color:var(--mu);font-size:13px">Нет тем в программе</div>';return;}
-  document.getElementById('prog-editor').innerHTML=`<div class="ctitle">📈 Прогресс: ${name}</div>`+
-    prog.map((p,i)=>`<div class="prog-edit-row">
+  if(!prog.length){document.getElementById('prog-editor').innerHTML='<div class="card"><div style="color:var(--mu);font-size:13px">Нет тем в программе</div></div>';return;}
+  document.getElementById('prog-editor').innerHTML=`<div class="card">
+    <div class="ctitle">📈 Прогресс по темам: ${name}</div>
+    ${prog.map((p,i)=>`<div class="prog-edit-row">
       <div class="prog-edit-lbl">${p.t}</div>
       <div class="ptrack"><div class="pfill" id="pf${i}" style="width:${p.p}%"></div></div>
       <input class="prog-edit-inp" type="number" min="0" max="100" value="${p.p}"
         oninput="document.getElementById('pf${i}').style.width=Math.min(100,Math.max(0,this.value))+'%'">
       <span style="font-size:10px;color:var(--mu)">%</span>
-    </div>`).join('')+
-    `<button class="btn btnp" onclick="saveAllProgress('${name}')" style="margin-top:12px">Сохранить</button>`;
+    </div>`).join('')}
+    <button class="btn btnp" onclick="saveAllProgress('${name}')" style="margin-top:11px">Сохранить прогресс</button>
+  </div>`;
 }
+
 async function saveAllProgress(name){
   const s=STUDENTS[name];if(!s)return;const prog=s.progress||[];
   const inputs=document.querySelectorAll('.prog-edit-inp');

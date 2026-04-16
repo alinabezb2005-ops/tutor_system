@@ -403,26 +403,153 @@ async def add_lesson(req:LessonReq, r:Request):
     st["schedule"].append(lesson)
     if req.recurring:
         st.setdefault("recurring_schedule",[])
-        st["recurring_schedule"].append({"time":req.time,"name":req.subject,
+        # Определяем день недели из поля day
+        day_lower = req.day.lower()
+        dow = next((d for d in ["понедельник","вторник","среда","четверг","пятница","суббота","воскресенье"] if d in day_lower), "")
+        st["recurring_schedule"].append({"day_of_week":dow,"time":req.time,"name":req.subject,
                                            "topic":req.topic,"color":req.color,"zoom_link":req.zoom_link})
     st["next"]={"day":req.day,"time":req.time.split("–")[0].strip(),"name":req.subject,
                 "topic":req.topic,"zoom_link":req.zoom_link}
     save_students(s); return {"ok":True}
 
 @app.patch("/api/admin/lesson/{name}/{lesson_id}/complete")
-async def complete_lesson(name:str, lesson_id:int, data:dict, r:Request):
+async def complete_lesson(name:str, lesson_id:int, r:Request,
+    action:str=Form("complete"), topic:str=Form(""), materials:str=Form(""),
+    grade:int=Form(0), comment:str=Form(""), subject:str=Form(""),
+    file:Optional[UploadFile]=File(None),
+    transfer_to:str=Form("")):
     require_admin(r)
     s = get_students()
     if name not in s: raise HTTPException(404)
+    file_url = ""
+    if file and file.filename:
+        safe = f"lesson_{name.replace(' ','_')}_{lesson_id}_{file.filename}"
+        with open(UPLOAD_DIR/safe,"wb") as f_: f_.write(await file.read())
+        file_url = f"/static/uploads/{safe}"
     for l in s[name].get("schedule",[]):
         if l.get("id") == lesson_id:
-            l["status"] = "completed"
+            l["status"] = action  # "completed", "cancelled", "transferred"
             l["completed_date"] = today_str()
-            if data.get("materials"): l["materials"] = data["materials"]
+            if topic: l["completed_topic"] = topic
+            if materials: l["materials"] = materials
+            if file_url: l["material_file"] = file_url; l["material_file_name"] = file.filename if file else ""
+            if transfer_to: l["transferred_to"] = transfer_to
             break
-    s[name]["lessonsTotal"] = s[name].get("lessonsTotal",0)+1
-    add_monthly_lesson()
+    if action == "completed":
+        s[name]["lessonsTotal"] = s[name].get("lessonsTotal",0)+1
+        add_monthly_lesson()
+        # Оценка за занятие
+        if grade and grade in (2,3,4,5):
+            s[name].setdefault("grades",[])
+            s[name]["grades"].insert(0,{"d":today_str(),"s":subject or "Занятие","t":topic or "Урок",
+                                        "tp":"Занятие","g":grade,"c":comment})
+            g = s[name]["grades"]
+            s[name]["avgGrade"]=round(sum(x["g"] for x in g[:10])/min(len(g),10),1)
+    elif action == "cancelled":
+        # Возврат в абонемент
+        sub = s[name].get("current_sub")
+        if sub: sub["lessons_left"] = min(sub["lessons_left"]+1, sub["lessons_total"])
+    save_students(s); return {"ok":True, "file_url": file_url}
+
+# Перенос занятия
+@app.patch("/api/admin/lesson/{name}/{lesson_id}/transfer")
+async def transfer_lesson(name:str, lesson_id:int, data:dict, r:Request):
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    new_day = data.get("new_day",""); new_time = data.get("new_time","")
+    for l in s[name].get("schedule",[]):
+        if l.get("id") == lesson_id:
+            l["status"] = "transferred"
+            l["transferred_to"] = f"{new_day} {new_time}".strip()
+            # Создаём новое занятие с теми же данными
+            new_id = max((x.get("id",0) for x in s[name]["schedule"]),default=0)+1
+            new_lesson = dict(l)
+            new_lesson["id"] = new_id; new_lesson["day"] = new_day or l["day"]
+            new_lesson["time"] = new_time or l["time"]; new_lesson["status"] = "planned"
+            del new_lesson["transferred_to"]
+            s[name]["schedule"].append(new_lesson)
+            break
     save_students(s); return {"ok":True}
+
+# Удалить оценку
+@app.delete("/api/admin/grade/{name}/{grade_index}")
+async def delete_grade(name:str, grade_index:int, r:Request):
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    grades = s[name].get("grades",[])
+    if 0 <= grade_index < len(grades):
+        grades.pop(grade_index)
+        if grades: s[name]["avgGrade"]=round(sum(x["g"] for x in grades[:10])/min(len(grades),10),1)
+        else: s[name]["avgGrade"]=0
+    save_students(s); return {"ok":True}
+
+# Расширенная статистика по ученику
+@app.get("/api/admin/student-stats/{name}")
+async def student_stats(name:str, r:Request):
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    st = s[name]
+    schedule = st.get("schedule",[])
+    completed = [l for l in schedule if l.get("status")=="completed"]
+    cancelled  = [l for l in schedule if l.get("status")=="cancelled"]
+    transferred= [l for l in schedule if l.get("status")=="transferred"]
+    tasks_done = [t for t in st.get("tasks",[]) if t.get("status")=="done"]
+    tasks_active=[t for t in st.get("tasks",[]) if t.get("status")=="active"]
+    tasks_review=[t for t in st.get("tasks",[]) if t.get("status")=="review"]
+    grades = st.get("grades",[])
+    return {
+        "name": name,
+        "lessons_completed": len(completed),
+        "lessons_cancelled":  len(cancelled),
+        "lessons_transferred":len(transferred),
+        "tasks_done":   len(tasks_done),
+        "tasks_active": len(tasks_active),
+        "tasks_review": len(tasks_review),
+        "avg_grade":    st.get("avgGrade",0),
+        "grades":       grades,
+        "recent_completed": completed[-5:],
+        "payments":     st.get("payments",[])[:5],
+        "current_sub":  st.get("current_sub"),
+        "balance":      st.get("balance",0),
+    }
+
+# Генератор занятий на 4 недели вперёд из постоянного расписания
+@app.post("/api/admin/generate-schedule/{name}")
+async def generate_schedule(name:str, r:Request):
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    st = s[name]
+    recurring = st.get("recurring_schedule",[])
+    if not recurring: return {"ok":True,"generated":0}
+    days_ru = {"понедельник":0,"вторник":1,"среда":2,"четверг":3,"пятница":4,"суббота":5,"воскресенье":6}
+    existing_planned = {(l["day"],l["time"]) for l in st.get("schedule",[]) if l.get("status")=="planned"}
+    today = date.today()
+    generated = 0
+    max_id = max((l.get("id",0) for l in st.get("schedule",[])),default=0)
+    for rec in recurring:
+        day_name = rec.get("day_of_week","").lower()
+        day_num = days_ru.get(day_name)
+        if day_num is None: continue
+        for week in range(4):
+            days_ahead = (day_num - today.weekday()) % 7 + week*7
+            target = today + __import__('datetime').timedelta(days=days_ahead)
+            day_label = f"{['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][day_num]}, {target.strftime('%d.%m')}"
+            key = (day_label, rec["time"])
+            if key not in existing_planned:
+                max_id += 1
+                st["schedule"].append({
+                    "id":max_id,"day":day_label,"time":rec["time"],
+                    "name":rec["name"],"topic":rec.get("topic",""),"color":rec.get("color","#4a7c59"),
+                    "zoom_link":rec.get("zoom_link",""),"status":"planned","materials":[]
+                })
+                existing_planned.add(key)
+                generated += 1
+    save_students(s)
+    return {"ok":True,"generated":generated}
 
 # ── MESSAGES ──────────────────────────────────────────────────────────────────
 class MsgReq(BaseModel): student:str; text:str; zoom_link:str=""
