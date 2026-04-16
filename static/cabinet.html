@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кабинет ученика — И. Котельников</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g:    #4a7c59; --gd: #2e5339; --gm: #5a8f6a;
+  --gl:   #e8f0ea; --gp: #f3f7f4;
+  --ink:  #1c2b22; --im: #3a4d41; --mu: #7a9180;
+  --bdr:  #d6e4da; --bg: #f7faf8; --wh: #ffffff;
+  --warn: #c8622a; --wbg: #fdf0e8;
+  --gold: #b8922a; --gbg: #fdf5e0;
+  --blue: #3a6fa8; --bbg: #e8f0fb;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* ── LOGIN ── */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.lw{width:100%;max-width:440px;padding:20px;animation:up .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.chip{display:inline-flex;align-items:center;background:var(--gl);color:var(--g);font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;padding:6px 14px;border-radius:99px;margin-bottom:14px}
+.ltitle{font-family:'Nunito',sans-serif;font-size:34px;font-weight:900;color:var(--gd);line-height:1.15;margin-bottom:4px;letter-spacing:-.5px}
+.lsub{font-size:15px;color:var(--mu);margin-bottom:28px}
+.lcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:20px;padding:34px 30px;box-shadow:0 4px 28px rgba(46,83,57,.08)}
+.fl{display:block;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);margin-bottom:7px}
+.fi{width:100%;padding:12px 15px;background:var(--gp);border:1.5px solid var(--bdr);border-radius:12px;font-family:'Nunito Sans',sans-serif;font-size:15px;color:var(--ink);margin-bottom:16px;outline:none;transition:border-color .2s,background .2s;appearance:none}
+.fi:focus{border-color:var(--g);background:var(--wh)}
+.lbtn{width:100%;padding:15px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:background .2s,box-shadow .2s}
+.lbtn:hover{background:var(--gm);box-shadow:0 6px 20px rgba(74,124,89,.28)}
+.lerr{color:var(--warn);font-size:13px;text-align:center;margin-top:10px;min-height:18px}
+.lhint{text-align:center;font-size:12px;color:var(--mu);margin-top:12px}
+.footer-note{text-align:center;font-size:13px;color:var(--mu);padding:18px 0 0;border-top:1.5px solid var(--bdr);margin-top:28px}
+
+/* ── APP ── */
+#app{display:none}
+.topbar{height:62px;background:var(--wh);border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;padding:0 28px;position:sticky;top:0;z-index:200;gap:0}
+.tblogo{font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;color:var(--gd);margin-right:32px;white-space:nowrap;letter-spacing:-.2px}
+.tblogo span{color:var(--g)}
+.tbnav{display:flex;align-items:center;gap:2px;flex:1;flex-wrap:wrap}
+.tn{padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;transition:all .18s;white-space:nowrap;border:none;background:none;font-family:'Nunito Sans',sans-serif;display:flex;align-items:center;gap:5px}
+.tn:hover{background:var(--gp);color:var(--im)}
+.tn.active{background:var(--gl);color:var(--gd);font-weight:700}
+.tbright{display:flex;align-items:center;gap:10px;margin-left:auto}
+.avchip{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;background:var(--gp);border-radius:99px;border:1.5px solid var(--bdr)}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;color:#fff}
+.avname{font-size:12px;font-weight:700;color:var(--im)}
+.logoutl{font-size:12px;color:var(--mu);cursor:pointer;padding:6px 10px;border-radius:8px;transition:all .18s;font-weight:600}
+.logoutl:hover{background:var(--wbg);color:var(--warn)}
+
+.main{max-width:1080px;margin:0 auto;padding:32px 28px 56px}
+.page{display:none}
+.page.active{display:block;animation:up .25s ease both}
+.sec-chip{display:inline-flex;align-items:center;background:var(--gl);color:var(--g);font-size:11px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;padding:5px 13px;border-radius:99px;margin-bottom:10px}
+.ptitle{font-family:'Nunito',sans-serif;font-size:28px;font-weight:900;color:var(--gd);letter-spacing:-.4px;line-height:1.1;margin-bottom:3px}
+.psub{font-size:14px;color:var(--mu);margin-bottom:26px}
+
+/* STAT BOXES */
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+.sbox{background:var(--wh);border:1.5px solid var(--bdr);border-radius:16px;padding:18px 20px 16px;position:relative;overflow:hidden;transition:box-shadow .2s}
+.sbox:hover{box-shadow:0 4px 18px rgba(46,83,57,.09)}
+.sbox::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 14px 14px}
+.sbox.sg::after{background:var(--g)}.sbox.so::after{background:var(--warn)}.sbox.sgo::after{background:var(--gold)}.sbox.sb::after{background:var(--blue)}
+.slbl{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);margin-bottom:6px}
+.sval{font-family:'Nunito',sans-serif;font-size:32px;font-weight:900;color:var(--gd);line-height:1}
+.snote{font-size:12px;color:var(--mu);margin-top:4px}
+
+/* TWO COL */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:var(--wh);border:1.5px solid var(--bdr);border-radius:16px;padding:22px 24px;margin-bottom:16px}
+.ctitle{font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:7px}
+
+/* PROGRESS */
+.prow{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+.plbl{font-size:12px;font-weight:600;min-width:130px;color:var(--im)}
+.ptrack{flex:1;height:7px;background:var(--gp);border-radius:99px;overflow:hidden;border:1px solid var(--bdr)}
+.pfill{height:100%;border-radius:99px;background:var(--g);transition:width 1.1s cubic-bezier(.16,1,.3,1)}
+.ppct{font-size:12px;font-weight:700;min-width:34px;text-align:right;color:var(--gd)}
+
+/* NEXT */
+.nextc{border-radius:14px;padding:20px 22px;color:#fff;margin-bottom:16px}
+.nxlbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.7;margin-bottom:5px}
+.nxsub{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;margin-bottom:3px}
+.nxinfo{font-size:13px;opacity:.8}
+
+/* TASKS */
+.trow{display:flex;align-items:flex-start;gap:11px;padding:13px 0;border-bottom:1.5px solid var(--bdr)}
+.trow:last-child{border-bottom:none;padding-bottom:0}
+.chk{width:21px;height:21px;border-radius:6px;border:2px solid var(--bdr);background:var(--wh);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px;transition:all .18s;font-size:11px;color:#fff}
+.chk.done{background:var(--g);border-color:var(--g)}
+.chk:hover:not(.done){border-color:var(--g);background:var(--gp)}
+.tname{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.tname.st{text-decoration:line-through;color:var(--mu)}
+.tmeta{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.bc{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:700}
+.bg{background:var(--gl);color:var(--gd)}.bw{background:var(--wbg);color:var(--warn)}
+.bgo{background:var(--gbg);color:var(--gold)}.bb{background:var(--bbg);color:var(--blue)}
+.bgr{background:#f0f0f0;color:#666}
+
+/* ADD TASK */
+.addtrig{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:var(--g);cursor:pointer;margin-top:8px;padding:4px 0;transition:opacity .18s}
+.addtrig:hover{opacity:.7}
+.addform{background:var(--gp);border:1.5px dashed var(--bdr);border-radius:12px;padding:18px;margin-top:12px;display:none}
+.addform.show{display:block;animation:up .2s ease both}
+.addform input,.addform select{width:100%;padding:10px 13px;background:var(--wh);border:1.5px solid var(--bdr);border-radius:10px;font-family:'Nunito Sans',sans-serif;font-size:13px;color:var(--ink);margin-bottom:9px;outline:none;transition:border-color .2s}
+.addform input:focus,.addform select:focus{border-color:var(--g)}
+.frow{display:flex;gap:9px}.frow>*{flex:1}
+.btn{padding:9px 16px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;border:none;transition:all .18s}
+.btnp{background:var(--g);color:#fff}.btnp:hover{background:var(--gm)}
+.btng{background:transparent;color:var(--mu);border:1.5px solid var(--bdr)}.btng:hover{background:var(--wh);color:var(--ink)}
+
+/* GRADES */
+.gt{width:100%;border-collapse:collapse}
+.gt th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);padding:0 12px 9px;border-bottom:1.5px solid var(--bdr)}
+.gt td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--gp);vertical-align:middle}
+.gt tr:last-child td{border-bottom:none}
+.gt tr:hover td{background:var(--gp)}
+.gc{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px}
+.g5{background:rgba(74,124,89,.15);color:var(--gd)}.g4{background:rgba(184,146,42,.15);color:var(--gold)}.g3{background:rgba(200,98,42,.15);color:var(--warn)}
+
+/* SCHEDULE */
+.sday{margin-bottom:20px}
+.sdlbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);margin-bottom:9px}
+.lcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:13px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:8px;transition:box-shadow .2s,transform .15s}
+.lcard:hover{box-shadow:0 4px 14px rgba(46,83,57,.08);transform:translateX(3px)}
+.lstripe{width:4px;align-self:stretch;border-radius:99px;flex-shrink:0}
+.ltime{font-size:12px;font-weight:700;color:var(--g);min-width:90px}
+.lname{font-size:14px;font-weight:700;color:var(--ink)}
+.ltopic{font-size:12px;color:var(--mu);margin-top:2px}
+
+/* FILES */
+.frow2{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1.5px solid var(--bdr);cursor:pointer;transition:all .15s}
+.frow2:last-child{border-bottom:none}
+.frow2:hover .ftitle{color:var(--g)}
+.fico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ftitle{font-size:13px;font-weight:600;color:var(--ink);transition:color .18s;margin-bottom:2px}
+.fsub{font-size:11px;color:var(--mu)}
+.fsz{font-size:11px;color:var(--mu);margin-left:auto;font-weight:600}
+
+/* MESSAGES */
+.mthread{max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:9px;margin-bottom:14px;padding-right:4px}
+.mthread::-webkit-scrollbar{width:4px}
+.mthread::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+.mwrap{display:flex;flex-direction:column}
+.mwrap.me{align-items:flex-end}
+.bubble{max-width:78%;padding:10px 14px;border-radius:14px;font-size:13.5px;line-height:1.5;font-weight:400}
+.bubble.tutor{background:var(--gp);color:var(--ink);border:1.5px solid var(--bdr);border-bottom-left-radius:4px}
+.bubble.student{background:var(--g);color:#fff;border-bottom-right-radius:4px}
+.mtime{font-size:10px;color:var(--mu);margin-top:3px;padding:0 3px}
+.mbar{display:flex;gap:9px;align-items:center}
+.minp{flex:1;padding:11px 14px;background:var(--gp);border:1.5px solid var(--bdr);border-radius:11px;font-family:'Nunito Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;transition:border-color .2s,background .2s}
+.minp:focus{border-color:var(--g);background:var(--wh)}
+.msendbtn{padding:11px 20px;background:var(--g);color:#fff;border:none;border-radius:11px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:background .18s;white-space:nowrap}
+.msendbtn:hover{background:var(--gm)}
+
+/* KNOWLEDGE */
+.kb-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.kbf{padding:7px 16px;border-radius:99px;font-size:12px;font-weight:700;border:1.5px solid var(--bdr);background:var(--wh);color:var(--mu);cursor:pointer;transition:all .18s;font-family:'Nunito',sans-serif}
+.kbf:hover{background:var(--gp)}
+.kbf.active{background:var(--gl);border-color:var(--g);color:var(--gd)}
+.kb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.kbcard{background:var(--wh);border:1.5px solid var(--bdr);border-radius:14px;padding:18px 20px;transition:box-shadow .2s,transform .18s;cursor:pointer}
+.kbcard:hover{box-shadow:0 4px 18px rgba(46,83,57,.1);transform:translateY(-2px)}
+.kbico{font-size:22px;margin-bottom:10px}
+.kbtitle{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.kbmeta{font-size:12px;color:var(--mu);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kbcontent{font-size:13px;color:var(--im);margin-top:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.kba{color:var(--g);text-decoration:none;font-weight:600}
+.kba:hover{text-decoration:underline}
+
+
+/* SUB BLOCK */
+.sub-block{background:var(--wh);border:1.5px solid var(--bdr);border-radius:14px;padding:16px 20px;margin-bottom:16px}
+.sub-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.sub-count{font-family:"Nunito",sans-serif;font-size:24px;font-weight:900;color:var(--gd);line-height:1;margin-bottom:4px}
+.sub-desc{font-size:12px;color:var(--mu)}
+.sub-track{height:8px;background:var(--gp);border-radius:99px;overflow:hidden;border:1px solid var(--bdr);margin-top:10px}
+.sub-fill{height:100%;border-radius:99px;background:var(--g);transition:width .8s ease}
+.sub-fill.low{background:var(--warn)}.sub-fill.critical{background:var(--red)}
+/* ACH */
+.achitem{padding:9px 0;border-bottom:1.5px solid var(--bdr);font-size:13px;color:var(--im);font-weight:600;display:flex;align-items:center;gap:7px}
+.achitem:last-child{border-bottom:none}
+
+@media(max-width:900px){.srow{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.main{padding:20px 14px 40px}.tbnav .tn span.tnlbl{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lw">
+    <div class="chip">🎓 Личный кабинет</div>
+    <div class="ltitle">Котельников<br>Илья Станиславович</div>
+    <div class="lsub">Математика · Химия · Подготовка к ЕГЭ</div>
+    <div class="lcard">
+      <label class="fl">Ваше имя (как у репетитора)</label>
+      <input class="fi" id="linp" type="text" placeholder="Например: Аня Иванова" autocomplete="off">
+      <label class="fl">Пароль</label>
+      <input class="fi" id="lpass" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="lbtn" onclick="doLogin()">Войти в кабинет →</button>
+      <div class="lerr" id="lerr"></div>
+    </div>
+    <div class="footer-note">Длительность от 60 минут · Гибкое расписание</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="topbar">
+    <div class="tblogo">И. Котельников<span>.</span></div>
+    <nav class="tbnav">
+      <button class="tn active" onclick="nav('dashboard',this)"><span>🏠</span><span class="tnlbl">Главная</span></button>
+      <button class="tn" onclick="nav('tasks',this)"><span>✅</span><span class="tnlbl">Задания</span></button>
+      <button class="tn" onclick="nav('grades',this)"><span>📊</span><span class="tnlbl">Оценки</span></button>
+      <button class="tn" onclick="nav('schedule',this)"><span>📅</span><span class="tnlbl">Расписание</span></button>
+      <button class="tn" onclick="nav('knowledge',this)"><span>📚</span><span class="tnlbl">База знаний</span></button>
+      <button class="tn" onclick="nav('messages',this)"><span>💬</span><span class="tnlbl">Сообщения</span></button>
+    </nav>
+    <div class="tbright">
+      <div class="avchip"><div class="av" id="tav"></div><div class="avname" id="tname"></div></div>
+      <div class="logoutl" onclick="doLogout()">Выйти</div>
+    </div>
+  </header>
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="sec-chip" id="dchip"></div>
+      <div class="ptitle" id="dtitle"></div>
+      <div class="psub" id="dsub"></div>
+      <div class="srow" id="srow"></div>
+      <div class="two">
+        <div>
+          <div class="card"><div class="ctitle">📈 Прогресс по темам</div><div id="proglist"></div></div>
+        </div>
+        <div>
+          <div id="nextwrap"></div>
+          <div id="subwrap"></div>
+
+          <div class="card"><div class="ctitle">🏆 Достижения</div><div id="achlist"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="page" id="page-tasks">
+      <div class="sec-chip">Мои задания</div>
+      <div class="ptitle">Задания</div>
+      <div class="psub">Текущие и выполненные задачи</div>
+      <div class="card">
+        <div class="ctitle">⏳ Активные</div>
+        <div id="tactive"></div>
+        <div class="addtrig" onclick="toggleAdd()">＋ Добавить заметку</div>
+        <div class="addform" id="addform">
+          <input type="text" id="ntitle" placeholder="Название задания">
+          <div class="frow">
+            <select id="nsubj"><option>Алгебра</option><option>Геометрия</option><option>Химия</option><option>Другое</option></select>
+            <input type="date" id="ndue">
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btnp" onclick="addTask()">Добавить</button>
+            <button class="btn btng" onclick="toggleAdd()">Отмена</button>
+          </div>
+        </div>
+      </div>
+      <div class="card"><div class="ctitle">✔️ Выполненные</div><div id="tdone"></div></div>
+    </div>
+
+    <!-- GRADES -->
+    <div class="page" id="page-grades">
+      <div class="sec-chip">Успеваемость</div>
+      <div class="ptitle">Оценки</div>
+      <div class="psub">История работ и контрольных</div>
+      <div class="card">
+        <table class="gt"><thead><tr>
+          <th>Дата</th><th>Предмет</th><th>Тема</th><th>Тип</th><th>Оценка</th><th>Комментарий</th>
+        </tr></thead><tbody id="gtbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="page" id="page-schedule">
+      <div class="sec-chip">Расписание</div>
+      <div class="ptitle">Занятия на неделю</div>
+      <div class="psub">Актуальное расписание</div>
+      <div id="schedwrap"></div>
+    </div>
+
+    <!-- KNOWLEDGE -->
+    <div class="page" id="page-knowledge">
+      <div class="sec-chip">База знаний</div>
+      <div class="ptitle">Учебные материалы</div>
+      <div class="psub">Конспекты, видео, файлы и ссылки от репетитора</div>
+      <div class="kb-filter" id="kbfilter"></div>
+      <div class="kb-grid" id="kbgrid"></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="page" id="page-messages">
+      <div class="sec-chip">Переписка</div>
+      <div class="ptitle">Сообщения</div>
+      <div class="psub">Чат с репетитором</div>
+      <div class="card">
+        <div class="mthread" id="mthread"></div>
+        <div class="mbar">
+          <input class="minp" id="minp" type="text" placeholder="Написать сообщение…" onkeydown="if(event.key==='Enter')sendMsg()">
+          <button class="msendbtn" onclick="sendMsg()">Отправить</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = '';
+let ST = null, sName = '';
+let addOpen = false;
+let kbSubject = '';
+let pollInterval = null;
+
+// ── AUTH ──────────────────────────────────────────────
+async function doLogin() {
+  const name = document.getElementById('linp').value.trim();
+  const pw   = document.getElementById('lpass').value;
+  const err  = document.getElementById('lerr');
+  err.textContent = '';
+  if (!name) { err.textContent = 'Введите имя'; return; }
+  try {
+    const r = await fetch(`${API}/api/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name, password: pw})
+    });
+    if (!r.ok) {
+      const e = await r.json();
+      err.textContent = r.status===404 ? 'Ученик не найден. Уточни имя у репетитора.' : 'Неверный пароль.';
+      return;
+    }
+    const data = await r.json();
+    ST = data.student; sName = data.name;
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('app').style.display   = 'block';
+    boot();
+    startPolling();
+  } catch(e) {
+    err.textContent = 'Нет соединения с сервером';
+  }
+}
+
+function doLogout() {
+  clearInterval(pollInterval);
+  ST = null; sName = '';
+  document.getElementById('login').style.display = 'flex';
+  document.getElementById('app').style.display   = 'none';
+  document.getElementById('linp').value  = '';
+  document.getElementById('lpass').value = '';
+}
+
+// ── NAV ───────────────────────────────────────────────
+function nav(id, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='knowledge') loadKnowledge();
+}
+
+// ── POLLING ───────────────────────────────────────────
+function startPolling() {
+  pollInterval = setInterval(async()=>{
+    try {
+      const r = await fetch(`${API}/api/student/${encodeURIComponent(sName)}`);
+      if(r.ok) { ST = await r.json(); refreshUI(); }
+    } catch(e) {}
+  }, 8000);
+}
+
+function refreshUI() {
+  renderStats(); renderProgress(); renderNext(); renderAch(); renderSub();
+  renderTasks(); renderGrades(); renderSched(); renderMsgs();
+}
+
+// ── BOOT ──────────────────────────────────────────────
+function boot() {
+  const init = sName.split(' ').map(w=>w[0]).join('');
+  const av = document.getElementById('tav');
+  av.textContent = init;
+  av.style.background = ST.color || '#4a7c59';
+  document.getElementById('tname').textContent = sName.split(' ')[0];
+
+  const now = new Date();
+  const days = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  const mons = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  document.getElementById('dchip').textContent  = ST.subject || ST.program || 'Кабинет';
+  document.getElementById('dtitle').textContent = `Привет, ${sName.split(' ')[0]}! 👋`;
+  document.getElementById('dsub').textContent   = `${days[now.getDay()]}, ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()}`;
+  refreshUI();
+}
+
+// ── STATS ─────────────────────────────────────────────
+function renderStats() {
+  const active = (ST.tasks||[]).filter(t=>!t.done).length;
+  const items = [
+    {lbl:'Занятий проведено', val:ST.lessonsTotal||0,             note:'за всё время',         cls:'sg'},
+    {lbl:'Средняя оценка',    val:(ST.avgGrade||0).toFixed?.(ST.avgGrade?1:0)||'—', note:'последние работы', cls:'sgo'},
+    {lbl:'Активность',        val:(ST.streak||0)+' дн.',          note:'серия без пропусков',  cls:'so'},
+    {lbl:'Задач выполнено',   val:ST.doneTasks||0,                note:active+' ещё в работе', cls:'sb'},
+  ];
+  document.getElementById('srow').innerHTML = items.map(i=>`
+    <div class="sbox ${i.cls}">
+      <div class="slbl">${i.lbl}</div>
+      <div class="sval">${i.val}</div>
+      <div class="snote">${i.note}</div>
+    </div>`).join('');
+}
+
+// ── PROGRESS ──────────────────────────────────────────
+function renderProgress() {
+  const prog = ST.progress || [];
+  document.getElementById('proglist').innerHTML = prog.length
+    ? prog.map(p=>`
+        <div class="prow">
+          <div class="plbl">${p.t}</div>
+          <div class="ptrack"><div class="pfill" style="width:0%" data-p="${p.p}"></div></div>
+          <div class="ppct">${p.p}%</div>
+        </div>`).join('')
+    : '<div style="color:var(--mu);font-size:13px">Прогресс пока не заполнен</div>';
+  setTimeout(()=>{ document.querySelectorAll('.pfill').forEach(b=>{ b.style.width=b.dataset.p+'%'; }); },120);
+}
+
+// ── NEXT LESSON ───────────────────────────────────────
+function renderNext() {
+  const n = ST.next;
+  const color = ST.color || '#4a7c59';
+  document.getElementById('nextwrap').innerHTML = n
+    ? `<div class="nextc" style="background:${color}">
+        <div class="nxlbl">Ближайшее занятие</div>
+        <div class="nxsub">${n.name}</div>
+        <div class="nxinfo">${n.day} · ${n.time}</div>
+        <div class="nxinfo" style="margin-top:3px;opacity:.65">${n.topic||''}</div>
+      </div>`
+    : '<div class="card" style="color:var(--mu);font-size:13px">Расписание пока не назначено</div>';
+}
+
+// ── ACHIEVEMENTS ──────────────────────────────────────
+function renderAch() {
+  const achs = ST.achievements || [];
+  document.getElementById('achlist').innerHTML = achs.length
+    ? achs.map(a=>`<div class="achitem">${a}</div>`).join('')
+    : '<div style="color:var(--mu);font-size:13px">Достижения появятся в процессе занятий</div>';
+}
+
+
+// ── SUBSCRIPTION ──────────────────────────────────────
+function renderSub() {
+  const sub = ST.current_sub;
+  const wrap = document.getElementById('subwrap');
+  if (!sub) { wrap.innerHTML = ''; return; }
+  const pct = Math.round(sub.lessons_left / sub.lessons_total * 100);
+  const cls = pct <= 25 ? 'critical' : pct <= 50 ? 'low' : '';
+  const color = pct <= 25 ? 'var(--warn)' : pct <= 50 ? 'var(--gold)' : 'var(--g)';
+  wrap.innerHTML = `<div class="sub-block">
+    <div class="sub-title">Абонемент</div>
+    <div style="display:flex;align-items:flex-end;gap:6px">
+      <div class="sub-count">${sub.lessons_left}</div>
+      <div style="font-size:13px;color:var(--mu);margin-bottom:3px">из ${sub.lessons_total} уроков</div>
+    </div>
+    <div class="sub-desc">${sub.lessons_left <= 2 ? '⚠️ Скоро закончится — уточни у репетитора' : 'Осталось занятий'}</div>
+    <div class="sub-track"><div class="sub-fill ${cls}" style="width:${pct}%"></div></div>
+  </div>`;
+}
+// ── TASKS ─────────────────────────────────────────────
+const PRI = {urgent:['bw','Срочно'],high:['bgo','Важно'],normal:['bb','Обычное']};
+
+function tHTML(t) {
+  const [bcls,blbl] = PRI[t.pri]||PRI.normal;
+  const due = t.due ? t.due.slice(8)+'.'+t.due.slice(5,7) : '';
+  return `<div class="trow">
+    <div class="chk ${t.done?'done':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>
+    <div>
+      <div class="tname ${t.done?'st':''}">${t.title}</div>
+      <div class="tmeta">
+        <span class="bc bg">${t.subj}</span>
+        ${due?`<span style="font-size:11px;color:var(--mu)">до ${due}</span>`:''}
+        <span class="bc ${bcls}">${blbl}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderTasks() {
+  const act = (ST.tasks||[]).filter(t=>!t.done);
+  const dn  = (ST.tasks||[]).filter(t=>t.done);
+  document.getElementById('tactive').innerHTML = act.length
+    ? act.map(tHTML).join('')
+    : '<div style="color:var(--mu);font-size:13px;padding:10px 0">Нет активных заданий 🎉</div>';
+  document.getElementById('tdone').innerHTML = dn.length
+    ? dn.map(tHTML).join('')
+    : '<div style="color:var(--mu);font-size:13px;padding:10px 0">Нет выполненных</div>';
+}
+
+async function toggleTask(id) {
+  try {
+    const r = await fetch(`${API}/api/student/${encodeURIComponent(sName)}/task/${id}`, {method:'PATCH'});
+    if(r.ok) {
+      const t = (ST.tasks||[]).find(x=>x.id===id);
+      if(t) { t.done=!t.done; if(t.done) ST.doneTasks=(ST.doneTasks||0)+1; }
+      renderTasks(); renderStats();
+    }
+  } catch(e) {
+    const t = (ST.tasks||[]).find(x=>x.id===id);
+    if(t) { t.done=!t.done; renderTasks(); }
+  }
+}
+
+function toggleAdd() {
+  addOpen=!addOpen;
+  document.getElementById('addform').classList.toggle('show',addOpen);
+}
+
+async function addTask() {
+  const title = document.getElementById('ntitle').value.trim();
+  if(!title) return;
+  const subj = document.getElementById('nsubj').value;
+  const due  = document.getElementById('ndue').value || '';
+  try {
+    await fetch(`${API}/api/admin/task`,{
+      method:'POST',headers:{'Content-Type':'application/json','X-Admin-Token':'local'},
+      body:JSON.stringify({student:sName,title,subj,due,priority:'normal'})
+    });
+  } catch(e){}
+  const id = Date.now();
+  ST.tasks = ST.tasks||[];
+  ST.tasks.push({id,title,subj,due,done:false,pri:'normal'});
+  document.getElementById('ntitle').value='';
+  renderTasks(); toggleAdd();
+}
+
+// ── GRADES ────────────────────────────────────────────
+function renderGrades() {
+  const grades = ST.grades||[];
+  document.getElementById('gtbody').innerHTML = grades.length
+    ? grades.map(g=>{
+        const c = g.g===5?'g5':g.g===4?'g4':'g3';
+        return `<tr>
+          <td style="color:var(--mu);font-weight:600">${g.d}</td>
+          <td><span class="bc bg">${g.s}</span></td>
+          <td style="font-weight:500">${g.t}</td>
+          <td><span class="bc bgr">${g.tp}</span></td>
+          <td><div class="gc ${c}">${g.g}</div></td>
+          <td style="color:var(--mu);font-size:12px">${g.c}</td>
+        </tr>`;}).join('')
+    : '<tr><td colspan="6" style="color:var(--mu);text-align:center;padding:20px">Оценок пока нет</td></tr>';
+}
+
+// ── SCHEDULE ──────────────────────────────────────────
+function renderSched() {
+  const sched = ST.schedule||[];
+  if(!sched.length) {
+    document.getElementById('schedwrap').innerHTML='<div class="card" style="color:var(--mu);font-size:13px">Расписание пока не заполнено</div>';
+    return;
+  }
+  const grouped={};
+  sched.forEach(l=>{ if(!grouped[l.day]) grouped[l.day]=[]; grouped[l.day].push(l); });
+  document.getElementById('schedwrap').innerHTML = Object.entries(grouped).map(([day,ls])=>`
+    <div class="sday">
+      <div class="sdlbl">${day}</div>
+      ${ls.map(l=>`
+        <div class="lcard">
+          <div class="lstripe" style="background:${l.color||'#4a7c59'}"></div>
+          <div class="ltime">${l.time}</div>
+          <div><div class="lname">${l.name}</div><div class="ltopic">${l.topic||''}</div></div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+// ── KNOWLEDGE ─────────────────────────────────────────
+async function loadKnowledge() {
+  try {
+    const r = await fetch(`${API}/api/knowledge?student=${encodeURIComponent(sName)}`);
+    const items = await r.json();
+    renderKnowledge(items);
+  } catch(e) {
+    document.getElementById('kbgrid').innerHTML='<div style="color:var(--mu)">Нет подключения к серверу</div>';
+  }
+}
+
+function renderKnowledge(items) {
+  // Subjects filter
+  const subjects = [...new Set(items.map(i=>i.subject).filter(Boolean))];
+  document.getElementById('kbfilter').innerHTML =
+    `<button class="kbf ${kbSubject===''?'active':''}" onclick="kbFilter('')">Все</button>` +
+    subjects.map(s=>`<button class="kbf ${kbSubject===s?'active':''}" onclick="kbFilter('${s}')">${s}</button>`).join('');
+
+  const filtered = kbSubject ? items.filter(i=>i.subject===kbSubject) : items;
+  if(!filtered.length) {
+    document.getElementById('kbgrid').innerHTML='<div style="color:var(--mu);font-size:14px">Материалов пока нет</div>';
+    return;
+  }
+  document.getElementById('kbgrid').innerHTML = filtered.map(item=>{
+    const ico = item.kind==='link'?'🎬':item.kind==='file'?'📄':'📝';
+    const bg  = item.kind==='link'?'#fdf5e0':item.kind==='file'?'#e8f5ea':'#e8f0fb';
+    let contentHtml = '';
+    if(item.kind==='link' && item.content)
+      contentHtml = `<a class="kba" href="${item.content}" target="_blank">Открыть ссылку →</a>`;
+    else if(item.kind==='file' && item.file_url)
+      contentHtml = `<a class="kba" href="${item.file_url}" target="_blank">Скачать файл →</a>`;
+    else if(item.content)
+      contentHtml = `<div class="kbcontent">${item.content}</div>`;
+    return `<div class="kbcard">
+      <div class="kbico" style="background:${bg};width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">${ico}</div>
+      <div style="height:10px"></div>
+      <div class="kbtitle">${item.title}</div>
+      <div class="kbmeta">
+        <span class="bc bg">${item.subject}</span>
+        <span style="font-size:11px;color:var(--mu)">${item.date}</span>
+        ${item.for_student?`<span class="bc bb">Лично тебе</span>`:''}
+      </div>
+      ${contentHtml}
+    </div>`;
+  }).join('');
+}
+
+function kbFilter(s) {
+  kbSubject = s;
+  loadKnowledge();
+}
+
+// ── MESSAGES ──────────────────────────────────────────
+function renderMsgs() {
+  const msgs = ST.messages||[];
+  const t = document.getElementById('mthread');
+  t.innerHTML = msgs.map(m=>`
+    <div class="mwrap ${m.f==='student'?'me':''}">
+      <div class="bubble ${m.f}">${m.text}</div>
+      <div class="mtime">${m.f==='tutor'?'Илья Котельников · ':''}${m.time}</div>
+    </div>`).join('');
+  t.scrollTop = t.scrollHeight;
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('minp');
+  const txt = inp.value.trim(); if(!txt) return;
+  const now = new Date();
+  const tm  = now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  ST.messages = ST.messages||[];
+  ST.messages.push({f:'student',text:txt,time:tm});
+  inp.value=''; renderMsgs();
+  try {
+    await fetch(`${API}/api/student/${encodeURIComponent(sName)}/message`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:txt})
+    });
+  } catch(e){}
+}
+</script>
+</body>
+</html>
