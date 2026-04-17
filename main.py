@@ -565,6 +565,49 @@ async def send_message(req:MsgReq, r:Request):
     s[req.student]["messages"].append({"f":"tutor","text":text,"time":now_time(),"zoom_link":req.zoom_link})
     save_students(s); return {"ok":True}
 
+# Сообщение с файлом от репетитора
+@app.post("/api/admin/message-with-file")
+async def send_message_with_file(r:Request,
+    student:str=Form(...), text:str=Form(""), zoom_link:str=Form(""),
+    file:Optional[UploadFile]=File(None)):
+    require_admin(r)
+    s = get_students()
+    if student not in s: raise HTTPException(404)
+    s[student].setdefault("messages",[])
+    file_url = ""; file_name = ""
+    if file and file.filename:
+        safe = f"msg_{student.replace(' ','_')}_{now_time().replace(':','')}_{file.filename}"
+        with open(UPLOAD_DIR/safe,"wb") as f_: f_.write(await file.read())
+        file_url = f"/static/uploads/{safe}"; file_name = file.filename
+    msg_text = text
+    if zoom_link: msg_text += f"\n🔗 [Ссылка на Zoom]({zoom_link})"
+    s[student]["messages"].append({"f":"tutor","text":msg_text,"time":now_time(),
+        "zoom_link":zoom_link,"file_url":file_url,"file_name":file_name})
+    save_students(s); return {"ok":True}
+
+# Сообщение с файлом от ученика
+@app.post("/api/student/{name}/message-with-file")
+async def student_message_with_file(name:str,
+    text:str=Form(""), file:Optional[UploadFile]=File(None)):
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    file_url = ""; file_name = ""
+    if file and file.filename:
+        safe = f"msg_{name.replace(' ','_')}_{now_time().replace(':','')}_{file.filename}"
+        with open(UPLOAD_DIR/safe,"wb") as f_: f_.write(await file.read())
+        file_url = f"/static/uploads/{safe}"; file_name = file.filename
+    s[name].setdefault("messages",[])
+    s[name]["messages"].append({"f":"student","text":text,"time":now_time(),
+        "file_url":file_url,"file_name":file_name})
+    save_students(s)
+    # Уведомление репетитору если есть файл
+    if ADMIN_ID and tg_app_ref and file_url:
+        try:
+            await tg_app_ref.bot.send_message(ADMIN_ID,
+                f"📎 *{name}* прислал файл в сообщении: {file_name}", parse_mode="Markdown")
+        except: pass
+    return {"ok":True}
+
 @app.post("/api/student/{name}/message")
 async def student_message(name:str, req:dict):
     s = get_students()
@@ -572,6 +615,7 @@ async def student_message(name:str, req:dict):
     s[name].setdefault("messages",[])
     s[name]["messages"].append({"f":"student","text":req.get("text",""),"time":now_time()})
     save_students(s); return {"ok":True}
+
 
 # ── PROGRESS ──────────────────────────────────────────────────────────────────
 class ProgressReq(BaseModel): student:str; topic:str; value:int
@@ -601,21 +645,24 @@ async def add_program(data:dict, r:Request):
 
 # ── KNOWLEDGE ─────────────────────────────────────────────────────────────────
 @app.get("/api/knowledge")
-async def knowledge_list(subject:str="", student:str=""):
+async def knowledge_list(subject:str="", student:str="", program:str=""):
     items=get_knowledge()
     if subject: items=[i for i in items if i.get("subject","").lower()==subject.lower()]
-    if student: items=[i for i in items if not i.get("for_student") or i.get("for_student")==student]
+    # Фильтр по программе: показываем материалы без программы (для всех) или совпадающие
+    if program: items=[i for i in items if not i.get("program") or i.get("program")==program]
     return items
 
 @app.post("/api/admin/knowledge")
 async def add_knowledge(r:Request,
     title:str=Form(...), subject:str=Form(...), kind:str=Form(...),
-    content:str=Form(""), for_student:str=Form(""),
+    content:str=Form(""), program:str=Form(""),
+    codeword:str=Form(""),
     file:Optional[UploadFile]=File(None)):
     require_admin(r)
     items=get_knowledge()
     item={"id":len(items)+1,"title":title,"subject":subject,"kind":kind,
-          "content":content,"for_student":for_student,"date":today_str(),"file_url":""}
+          "content":content,"program":program,"codeword":codeword,
+          "date":today_str(),"file_url":""}
     if file and file.filename:
         safe=f"{len(items)+1}_{file.filename}"
         with open(UPLOAD_DIR/safe,"wb") as f_: f_.write(await file.read())
@@ -628,16 +675,25 @@ async def delete_knowledge(item_id:int, r:Request):
     items=[i for i in get_knowledge() if i["id"]!=item_id]
     save_knowledge(items); return {"ok":True}
 
-class AchReq(BaseModel): student:str; text:str
+# Ученик вводит кодовое слово и отмечает материал как изученный
+@app.post("/api/student/{name}/knowledge/{item_id}/complete")
+async def complete_knowledge(name:str, item_id:int, req:dict):
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    items = get_knowledge()
+    item = next((i for i in items if i["id"]==item_id), None)
+    if not item: raise HTTPException(404)
+    codeword = item.get("codeword","")
+    if codeword and req.get("codeword","").strip().lower() != codeword.strip().lower():
+        raise HTTPException(400, "Неверное кодовое слово")
+    # Помечаем в профиле ученика
+    st = s[name]
+    st.setdefault("completed_materials",[])
+    if item_id not in st["completed_materials"]:
+        st["completed_materials"].append(item_id)
+    save_students(s)
+    return {"ok":True}
 
-@app.post("/api/admin/achievement")
-async def add_achievement(req:AchReq, r:Request):
-    require_admin(r)
-    s=get_students()
-    if req.student not in s: raise HTTPException(404)
-    s[req.student].setdefault("achievements",[])
-    s[req.student]["achievements"].insert(0,req.text)
-    save_students(s); return {"ok":True}
 
 # ── STUDENT ACTIVITY (for tutor card) ─────────────────────────────────────────
 @app.get("/api/admin/student-activity/{name}")

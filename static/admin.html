@@ -407,7 +407,10 @@ textarea.fi2{resize:vertical;min-height:60px}
           <label class="fl2">Тип</label>
           <select class="fi2" id="kb-kind" onchange="updateKbForm()"><option value="text">📝 Текст</option><option value="link">🔗 Ссылка</option><option value="file">📄 Файл</option></select>
           <div id="kb-content-wrap"><label class="fl2">Текст</label><textarea class="fi2" id="kb-content" placeholder="Вставь конспект…"></textarea></div>
-          <label class="fl2">Для ученика</label><select class="fi2" id="kb-student"><option value="">Для всех</option></select>
+          <label class="fl2">Программа (материал будет виден только ученикам этой программы)</label>
+          <select class="fi2" id="kb-program"><option value="">Для всех программ</option></select>
+          <label class="fl2">Кодовое слово для подтверждения изучения</label>
+          <input class="fi2" id="kb-codeword" placeholder="Например: треугольник (необязательно)">
           <button class="btn btnp" onclick="addKnowledge()" style="margin-top:10px;width:100%;padding:10px">Загрузить</button>
         </div>
         <div class="card"><div class="ctitle">📚 Материалы</div><div id="kb-list"></div></div>
@@ -427,7 +430,13 @@ textarea.fi2{resize:vertical;min-height:60px}
           <textarea class="fi2" id="m-text" placeholder="Текст…" onkeydown="if(event.key==='Enter'&&event.ctrlKey)sendMsg()"></textarea>
           <label class="fl2">Ссылка на Zoom</label>
           <input class="fi2" id="m-zoom" placeholder="https://zoom.us/j/...">
-          <div style="font-size:10px;color:var(--mu);margin-top:3px">Ctrl+Enter — отправить</div>
+          <label class="fl2">Файл или фото (необязательно)</label>
+          <div style="display:flex;align-items:center;gap:9px;margin-top:4px">
+            <input type="file" id="m-file" accept="image/*,application/pdf,.doc,.docx,.txt" onchange="showMsgFile(this)" style="display:none">
+            <button class="btn btns" onclick="document.getElementById('m-file').click()" style="font-size:11px;padding:7px 12px">📎 Прикрепить файл</button>
+            <span id="m-file-name" style="font-size:11px;color:var(--g);font-weight:600"></span>
+          </div>
+          <div style="font-size:10px;color:var(--mu);margin-top:5px">Ctrl+Enter — отправить</div>
           <button class="btn btnp" onclick="sendMsg()" style="margin-top:9px;width:100%;padding:10px">Отправить</button>
         </div>
         <div class="card">
@@ -550,8 +559,8 @@ function fillStudentSelects(){
     const el=document.getElementById(id);if(!el)return;
     el.innerHTML=names.map(n=>`<option>${n}</option>`).join('');
   });
-  const kb=document.getElementById('kb-student');
-  if(kb)kb.innerHTML='<option value="">Для всех</option>'+names.map(n=>`<option>${n}</option>`).join('');
+  const kb=document.getElementById('kb-program');
+  if(kb){const r2=await fetch(`${API}/api/programs`);const progs=await r2.json();kb.innerHTML='<option value="">Для всех программ</option>'+Object.keys(progs).map(p=>`<option>${p}</option>`).join('');}
 }
 
 function renderAdminStats(){
@@ -1068,9 +1077,10 @@ async function addKnowledge(){
   const kind=document.getElementById('kb-kind').value;
   const title=document.getElementById('kb-title').value.trim();
   const subject=document.getElementById('kb-subj').value.trim();
-  const for_student=document.getElementById('kb-student').value;
+  const program=document.getElementById('kb-program').value;
+  const codeword=document.getElementById('kb-codeword').value.trim();
   if(!title||!subject){toast('⚠️ Заполни предмет и заголовок');return;}
-  const fd=new FormData();fd.append('title',title);fd.append('subject',subject);fd.append('kind',kind);fd.append('for_student',for_student);
+  const fd=new FormData();fd.append('title',title);fd.append('subject',subject);fd.append('kind',kind);fd.append('program',program);fd.append('codeword',codeword);
   if(kind==='file'){const ff=document.getElementById('kffile');if(ff&&ff.files[0])fd.append('file',ff.files[0]);fd.append('content','');}
   else fd.append('content',document.getElementById('kb-content')?.value||'');
   const r=await fetch(`${API}/api/admin/knowledge`,{method:'POST',headers:{'X-Admin-Token':TOKEN},body:fd});
@@ -1085,7 +1095,7 @@ async function loadKnowledgeAdmin(countOnly=false){
     const list=document.getElementById('kb-list');if(!list)return;
     list.innerHTML=items.length?items.map(item=>{const ico=item.kind==='link'?'🎬':item.kind==='file'?'📄':'📝';const bg=item.kind==='link'?'#fdf5e0':item.kind==='file'?'#e8f5ea':'#e8f0fb';
       return`<div class="kb-item"><div style="width:32px;height:32px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${ico}</div>
-        <div style="flex:1"><div style="font-size:12px;font-weight:700">${item.title}</div><div style="font-size:10px;color:var(--mu)">${item.subject} · ${item.date} ${item.for_student?'· '+item.for_student:''}</div>${item.content&&item.kind==='link'?`<a href="${item.content}" target="_blank" style="font-size:10px;color:var(--blue)">🔗 открыть</a>`:''}${item.file_url?`<a href="${item.file_url}" target="_blank" style="font-size:10px;color:var(--g)">📥 скачать</a>`:''}</div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700">${item.title}</div><div style="font-size:10px;color:var(--mu)">${item.subject} · ${item.date} ${item.program?'· '+item.program:''} ${item.codeword?'· 🔑 код':''}${item.content&&item.kind==='link'?`<a href="${item.content}" target="_blank" style="font-size:10px;color:var(--blue)">🔗 открыть</a>`:''}${item.file_url?`<a href="${item.file_url}" target="_blank" style="font-size:10px;color:var(--g)">📥 скачать</a>`:''}</div>
         <div class="ic-btn" onclick="deleteKb(${item.id})" style="color:var(--red)">🗑</div></div>`;}).join(''):'<div style="color:var(--mu);font-size:13px">Материалов пока нет</div>';
   }catch(e){}
 }
@@ -1126,12 +1136,35 @@ function renderChat(name){
   if(wasAtBottom||el.scrollTop===0)el.scrollTop=el.scrollHeight;
 }
 
+function showMsgFile(inp){
+  const name=inp.files[0]?.name||'';
+  document.getElementById('m-file-name').textContent=name?`📎 ${name}`:'';
+}
+
 async function sendMsg(){
   const student=document.getElementById('m-student').value;
-  const text=document.getElementById('m-text').value.trim();if(!text){toast('⚠️ Напиши сообщение');return;}
+  const text=document.getElementById('m-text').value.trim();
   const zoom_link=document.getElementById('m-zoom').value.trim();
-  const r=await fetch(`${API}/api/admin/message`,{method:'POST',headers:H(),body:JSON.stringify({student,text,zoom_link})});
-  if(r.ok){toast(`✅ Отправлено`);document.getElementById('m-text').value='';document.getElementById('m-zoom').value='';await loadStudents();loadChat();}
+  const fileInp=document.getElementById('m-file');
+  const file=fileInp?.files[0];
+  if(!text&&!file){toast('⚠️ Напиши сообщение или прикрепи файл');return;}
+  let ok=false;
+  if(file){
+    const fd=new FormData();
+    fd.append('student',student);fd.append('text',text);fd.append('zoom_link',zoom_link);fd.append('file',file);
+    const r=await fetch(`${API}/api/admin/message-with-file`,{method:'POST',headers:{'X-Admin-Token':TOKEN},body:fd});
+    ok=r.ok;
+  } else {
+    const r=await fetch(`${API}/api/admin/message`,{method:'POST',headers:H(),body:JSON.stringify({student,text,zoom_link})});
+    ok=r.ok;
+  }
+  if(ok){
+    toast('✅ Отправлено');
+    document.getElementById('m-text').value='';
+    document.getElementById('m-zoom').value='';
+    if(fileInp){fileInp.value='';document.getElementById('m-file-name').textContent='';}
+    await loadStudents();loadChat();
+  }
 }
 
 // ── PROGRESS ──────────────────────────────────────────
