@@ -553,14 +553,19 @@ async function loadPrograms(){
   }catch(e){}
 }
 
-function fillStudentSelects(){
+async function fillStudentSelects(){
   const names=Object.keys(STUDENTS);
   ['t-student','g-student','l-student','m-student','p-student','sub-student','pay-student','quick-student','gen-student','complete-student'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
     el.innerHTML=names.map(n=>`<option>${n}</option>`).join('');
   });
   const kb=document.getElementById('kb-program');
-  if(kb){const r2=await fetch(`${API}/api/programs`);const progs=await r2.json();kb.innerHTML='<option value="">Для всех программ</option>'+Object.keys(progs).map(p=>`<option>${p}</option>`).join('');}
+  if(kb){
+    try{
+      const r2=await fetch(`${API}/api/programs`);const progs=await r2.json();
+      kb.innerHTML='<option value="">Для всех программ</option>'+Object.keys(progs).map(p=>`<option>${p}</option>`).join('');
+    }catch(e){}
+  }
 }
 
 function renderAdminStats(){
