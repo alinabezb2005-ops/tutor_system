@@ -2,7 +2,7 @@
 Кабинет репетитора Котельникова Ильи Станиславовича
 FastAPI + JSON + Telegram Bot
 """
-import json, os, hashlib, asyncio, threading
+import json, os, hashlib, asyncio, threading, re
 from datetime import datetime, date
 from pathlib import Path
 from typing import Optional
@@ -741,7 +741,42 @@ def get_today_label():
     days=["понедельник","вторник","среда","четверг","пятница","суббота","воскресенье"]
     return days[datetime.now().weekday()]
 
+def parse_lesson_time(day_str: str, time_str: str) -> datetime | None:
+    """Парсит дату и время занятия, возвращает datetime или None"""
+    import datetime as dt_mod
+    months = {
+        'янв':1,'фев':2,'мар':3,'апр':4,'май':5,'июн':6,
+        'июл':7,'авг':8,'сен':9,'окт':10,'ноя':11,'дек':12,
+        'января':1,'февраля':2,'марта':3,'апреля':4,'мая':5,'июня':6,
+        'июля':7,'августа':8,'сентября':9,'октября':10,'ноября':11,'декабря':12
+    }
+    try:
+        # Извлекаем время начала (берём первое HH:MM)
+        tm = re.search(r'(\d{1,2}):(\d{2})', time_str)
+        if not tm: return None
+        hour, minute = int(tm.group(1)), int(tm.group(2))
+
+        # Формат "Пн, 22.04" или "Ср, 22.04.2026"
+        m1 = re.search(r'(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?', day_str)
+        if m1:
+            d, mo = int(m1.group(1)), int(m1.group(2))
+            y = int(m1.group(3)) if m1.group(3) else datetime.now().year
+            return datetime(y, mo, d, hour, minute)
+
+        # Формат "Понедельник, 22 апреля" или "Пн, 22 апреля"
+        m2 = re.search(r'(\d{1,2})\s+(\S+)', day_str)
+        if m2:
+            d = int(m2.group(1))
+            mon_name = m2.group(2).lower().rstrip('.,')
+            mo = months.get(mon_name)
+            if mo:
+                y = datetime.now().year
+                return datetime(y, mo, d, hour, minute)
+    except: pass
+    return None
+
 async def send_morning_notifications(bot):
+    """Утренняя сводка для репетитора"""
     today=get_today_label(); s=get_students(); found=[]
     for name,st in s.items():
         for l in st.get("schedule",[]):
@@ -757,29 +792,77 @@ async def send_morning_notifications(bot):
                 sub=st.get("current_sub"); bal=st.get("balance",0)
                 sub_str=f"📦 {sub['lessons_left']} ур." if sub else "⚠️ нет абон."
                 fin_str="✅" if bal>=0 else f"⚠️ долг {-bal:.0f}₽"
-                zoom_str=f"\n🔗 {l['zoom_link']}" if l.get("zoom_link") else ""
-                lines.append(f"• *{name}* — {l['name']} · {l['time']}\n  {sub_str} · {fin_str}{zoom_str}")
+                lines.append(f"• *{name}* — {l['name']} · {l['time']}\n  {sub_str} · {fin_str}")
             try: await bot.send_message(ADMIN_ID,"\n".join(lines),parse_mode="Markdown")
             except Exception as e: print(e)
-    for name,st,l in found:
-        tg_id=st.get("tg_id")
-        if not tg_id: continue
-        sub=st.get("current_sub"); sub_str=""
-        if sub:
-            sub_str=f"\n📦 Абонемент: {sub['lessons_left']}/{sub['lessons_total']}"
-            if sub["lessons_left"]<=2: sub_str+="\n⚠️ Скоро заканчивается!"
-        zoom_str=f"\n🔗 [Войти в Zoom]({l['zoom_link']})" if l.get("zoom_link") else ""
-        text=f"☀️ Привет, {name.split()[0]}!\n\nСегодня занятие:\n*{l['name']}*\n🕐 {l['time']}{zoom_str}{sub_str}\n\nУдачи! 💪"
-        try: await bot.send_message(tg_id,text,parse_mode="Markdown")
-        except Exception as e: print(e)
+
+async def send_lesson_reminder(bot, minutes_before: int):
+    """Отправляет напоминание за N минут до занятия"""
+    now_local = datetime.utcnow() + __import__('datetime').timedelta(hours=TZ_OFFSET)
+    s = get_students()
+    for name, st in s.items():
+        for l in st.get("schedule", []):
+            if l.get("status","planned") != "planned": continue
+            lesson_dt = parse_lesson_time(l.get("day",""), l.get("time",""))
+            if not lesson_dt: continue
+            diff = (lesson_dt - now_local).total_seconds() / 60
+            # Попадаем в окно ±3 минуты от нужного момента
+            if not (minutes_before - 3 <= diff <= minutes_before + 3): continue
+
+            zoom_link = l.get("zoom_link","")
+            with_zoom = minutes_before <= 30  # За 20 мин — со ссылкой
+
+            # Репетитору
+            if ADMIN_ID:
+                zoom_str = f"\n🔗 {zoom_link}" if zoom_link and with_zoom else ""
+                try:
+                    await bot.send_message(ADMIN_ID,
+                        f"{'🔔' if with_zoom else '⏰'} Через {minutes_before} мин занятие!\n"
+                        f"*{name}* — {l['name']}\n🕐 {l['time']}{zoom_str}",
+                        parse_mode="Markdown")
+                except Exception as e: print(f"Reminder to admin: {e}")
+
+            # Ученику
+            tg_id = st.get("tg_id")
+            if tg_id:
+                zoom_str = f"\n🔗 [Войти в Zoom]({zoom_link})" if zoom_link and with_zoom else ""
+                try:
+                    await bot.send_message(tg_id,
+                        f"{'🔔' if with_zoom else '⏰'} Привет, {name.split()[0]}!\n"
+                        f"Через {minutes_before} {'минут' if minutes_before < 60 else 'часа'} занятие:\n"
+                        f"*{l['name']}*\n🕐 {l['time']}{zoom_str}",
+                        parse_mode="Markdown")
+                except Exception as e: print(f"Reminder to student {name}: {e}")
 
 async def notification_scheduler(bot):
-    sent_today=None
+    """Планировщик: утренняя сводка + напоминания за 3ч и 20 мин"""
+    sent_morning = None
+    sent_3h: set = set()   # ключи отправленных напоминаний за 3ч
+    sent_20m: set = set()  # ключи отправленных напоминаний за 20 мин
+
     while True:
-        now=datetime.utcnow(); local_hour=(now.hour+TZ_OFFSET)%24; today=now.date()
-        if local_hour==NOTIFY_HOUR and sent_today!=today:
-            sent_today=today; await send_morning_notifications(bot)
+        now_utc = datetime.utcnow()
+        now_local = now_utc + __import__('datetime').timedelta(hours=TZ_OFFSET)
+        local_hour = now_local.hour
+        today = now_utc.date()
+
+        # Утренняя сводка
+        if local_hour == NOTIFY_HOUR and sent_morning != today:
+            sent_morning = today
+            await send_morning_notifications(bot)
+
+        # Напоминание за 3 часа (без Zoom)
+        await send_lesson_reminder(bot, 180)
+
+        # Напоминание за 20 минут (со Zoom)
+        await send_lesson_reminder(bot, 20)
+
+        # Сброс ключей в полночь
+        if local_hour == 0:
+            sent_3h.clear(); sent_20m.clear()
+
         await asyncio.sleep(60)
+
 
 # ── TELEGRAM BOT ──────────────────────────────────────────────────────────────
 def is_admin(u): return u.effective_user.id == ADMIN_ID
