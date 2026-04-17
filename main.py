@@ -1097,47 +1097,58 @@ async def tg_notify_cmd(update:Update, ctx:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("✅ Уведомления отправлены")
 
 # ── BOT START ─────────────────────────────────────────────────────────────────
-def start_bot():
+tg_app_obj = None  # глобальный объект приложения бота
+
+def build_bot_app():
+    """Собирает приложение бота без запуска"""
     if not TG_AVAILABLE or BOT_TOKEN=="ВСТАВЬ_ТОКЕН_СЮДА" or ADMIN_ID==0:
-        print("⚠️  Telegram бот не настроен."); return
-    async def run():
-        global tg_app_ref
-        tg=ApplicationBuilder().token(BOT_TOKEN).build(); tg_app_ref=tg
-        tg.add_handler(CommandHandler("start",        tg_start))
-        tg.add_handler(CommandHandler("ученики",      tg_students))
-        tg.add_handler(CommandHandler("добавить",     tg_add))
-        tg.add_handler(CommandHandler("задание",      tg_task))
-        tg.add_handler(CommandHandler("оценка",       tg_grade))
-        tg.add_handler(CommandHandler("занятие",      tg_lesson))
-        tg.add_handler(CommandHandler("провести",     tg_conduct))
-        tg.add_handler(CommandHandler("отменить",     tg_cancel))
-        tg.add_handler(CommandHandler("абонемент",    tg_subscription))
-        tg.add_handler(CommandHandler("оплата",       tg_payment))
-        tg.add_handler(CommandHandler("финансы",      tg_finance))
-        tg.add_handler(CommandHandler("долги",        tg_debts))
-        tg.add_handler(CommandHandler("сообщение",    tg_message_cmd))
-        tg.add_handler(CommandHandler("прогресс",     tg_progress_cmd))
-        tg.add_handler(CommandHandler("кабинет",      tg_cabinet_cmd))
-        tg.add_handler(CommandHandler("уведомления",  tg_notify_cmd))
-        tg.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, tg_text))
-        asyncio.create_task(notification_scheduler(tg.bot))
-        print("✅ Telegram бот запущен")
-        await tg.initialize(); await tg.start(); await tg.updater.start_polling()
-        await asyncio.Event().wait()
-    def thread_runner():
-        import asyncio
-        # Явно используем стандартный event loop без uvloop
-        policy = asyncio.DefaultEventLoopPolicy()
-        asyncio.set_event_loop_policy(policy)
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(run())
-        finally:
-            loop.close()
-    threading.Thread(target=thread_runner,daemon=True).start()
+        return None
+    global tg_app_ref
+    tg = ApplicationBuilder().token(BOT_TOKEN).build()
+    tg_app_ref = tg
+    tg.add_handler(CommandHandler("start",        tg_start))
+    tg.add_handler(CommandHandler("ученики",      tg_students))
+    tg.add_handler(CommandHandler("добавить",     tg_add))
+    tg.add_handler(CommandHandler("задание",      tg_task))
+    tg.add_handler(CommandHandler("оценка",       tg_grade))
+    tg.add_handler(CommandHandler("занятие",      tg_lesson))
+    tg.add_handler(CommandHandler("провести",     tg_conduct))
+    tg.add_handler(CommandHandler("отменить",     tg_cancel))
+    tg.add_handler(CommandHandler("абонемент",    tg_subscription))
+    tg.add_handler(CommandHandler("оплата",       tg_payment))
+    tg.add_handler(CommandHandler("финансы",      tg_finance))
+    tg.add_handler(CommandHandler("долги",        tg_debts))
+    tg.add_handler(CommandHandler("сообщение",    tg_message_cmd))
+    tg.add_handler(CommandHandler("прогресс",     tg_progress_cmd))
+    tg.add_handler(CommandHandler("кабинет",      tg_cabinet_cmd))
+    tg.add_handler(CommandHandler("уведомления",  tg_notify_cmd))
+    tg.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, tg_text))
+    return tg
 
 @app.on_event("startup")
 async def on_startup():
-    start_bot()
     print("🚀 http://localhost:8000  |  /admin")
+    if not TG_AVAILABLE or BOT_TOKEN=="ВСТАВЬ_ТОКЕН_СЮДА" or ADMIN_ID==0:
+        print("⚠️  Telegram бот не настроен.")
+        return
+    try:
+        tg = build_bot_app()
+        if not tg: return
+        await tg.initialize()
+        await tg.start()
+        await tg.updater.start_polling()
+        # Запускаем планировщик уведомлений в том же event loop
+        asyncio.create_task(notification_scheduler(tg.bot))
+        print("✅ Telegram бот запущен (polling)")
+    except Exception as e:
+        print(f"❌ Ошибка запуска бота: {e}")
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    global tg_app_ref
+    if tg_app_ref:
+        try:
+            await tg_app_ref.updater.stop()
+            await tg_app_ref.stop()
+            await tg_app_ref.shutdown()
+        except: pass
