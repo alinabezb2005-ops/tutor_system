@@ -1125,7 +1125,16 @@ def start_bot():
         await tg.initialize(); await tg.start(); await tg.updater.start_polling()
         await asyncio.Event().wait()
     def thread_runner():
-        loop=asyncio.new_event_loop(); asyncio.set_event_loop(loop); loop.run_until_complete(run())
+        import asyncio
+        # Явно используем стандартный event loop без uvloop
+        policy = asyncio.DefaultEventLoopPolicy()
+        asyncio.set_event_loop_policy(policy)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(run())
+        finally:
+            loop.close()
     threading.Thread(target=thread_runner,daemon=True).start()
 
 @app.on_event("startup")
