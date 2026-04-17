@@ -339,10 +339,14 @@ async def set_task_status(name:str, task_id:int, data:dict, r:Request):
     s = get_students()
     if name not in s: raise HTTPException(404)
     new_status = data.get("status","done")
+    grade = data.get("grade",0)
+    grade_comment = data.get("grade_comment","")
     for t in s[name].get("tasks",[]):
         if t["id"] == task_id:
             t["status"] = new_status
-            if new_status == "done": s[name]["doneTasks"] = s[name].get("doneTasks",0)+1
+            if new_status == "done":
+                s[name]["doneTasks"] = s[name].get("doneTasks",0)+1
+                if grade: t["grade"] = grade; t["grade_comment"] = grade_comment
             break
     save_students(s); return {"ok":True}
 
@@ -516,38 +520,45 @@ async def student_stats(name:str, r:Request):
         "balance":      st.get("balance",0),
     }
 
-# Генератор занятий на 4 недели вперёд из постоянного расписания
+# Генератор занятий на 4 недели вперёд по конкретному занятию (со следующей недели)
 @app.post("/api/admin/generate-schedule/{name}")
 async def generate_schedule(name:str, r:Request):
     require_admin(r)
+    import datetime as dt_mod
     s = get_students()
     if name not in s: raise HTTPException(404)
     st = s[name]
-    recurring = st.get("recurring_schedule",[])
-    if not recurring: return {"ok":True,"generated":0}
-    days_ru = {"понедельник":0,"вторник":1,"среда":2,"четверг":3,"пятница":4,"суббота":5,"воскресенье":6}
-    existing_planned = {(l["day"],l["time"]) for l in st.get("schedule",[]) if l.get("status")=="planned"}
+    try: body = await r.json()
+    except: body = {}
+    lesson_id = body.get("lesson_id")
+    lesson = next((l for l in st.get("schedule",[]) if l.get("id")==lesson_id), None) if lesson_id else None
+    if not lesson: return {"ok":True,"generated":0,"error":"Занятие не найдено"}
+    days_ru = {"пн":0,"вт":1,"ср":2,"чт":3,"пт":4,"сб":5,"вс":6,
+               "понедельник":0,"вторник":1,"среда":2,"четверг":3,"пятница":4,"суббота":5,"воскресенье":6}
+    day_lower = lesson.get("day","").lower()
+    day_num = next((v for k,v in days_ru.items() if day_lower.startswith(k)), None)
+    if day_num is None: return {"ok":True,"generated":0,"error":"Не определён день недели"}
+    time_ = lesson.get("time","")
+    existing_keys = {(l.get("day",""),l.get("time","")) for l in st.get("schedule",[])}
     today = date.today()
+    # Всегда начинаем со СЛЕДУЮЩЕЙ недели
+    days_to_day = (day_num - today.weekday()) % 7
+    start_offset = days_to_day + 7  # +7 гарантирует следующую неделю
     generated = 0
     max_id = max((l.get("id",0) for l in st.get("schedule",[])),default=0)
-    for rec in recurring:
-        day_name = rec.get("day_of_week","").lower()
-        day_num = days_ru.get(day_name)
-        if day_num is None: continue
-        for week in range(4):
-            days_ahead = (day_num - today.weekday()) % 7 + week*7
-            target = today + __import__('datetime').timedelta(days=days_ahead)
-            day_label = f"{['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][day_num]}, {target.strftime('%d.%m')}"
-            key = (day_label, rec["time"])
-            if key not in existing_planned:
-                max_id += 1
-                st["schedule"].append({
-                    "id":max_id,"day":day_label,"time":rec["time"],
-                    "name":rec["name"],"topic":rec.get("topic",""),"color":rec.get("color","#4a7c59"),
-                    "zoom_link":rec.get("zoom_link",""),"status":"planned","materials":[]
-                })
-                existing_planned.add(key)
-                generated += 1
+    abbrs = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"]
+    for week in range(4):
+        target = today + dt_mod.timedelta(days=start_offset + week*7)
+        day_label = f"{abbrs[day_num]}, {target.strftime('%d.%m')}"
+        key = (day_label, time_)
+        if key not in existing_keys:
+            max_id += 1
+            st["schedule"].append({"id":max_id,"day":day_label,"time":time_,
+                "name":lesson.get("name",""),"topic":lesson.get("topic",""),
+                "color":lesson.get("color","#4a7c59"),"zoom_link":lesson.get("zoom_link",""),
+                "status":"planned","materials":[]})
+            existing_keys.add(key)
+            generated += 1
     save_students(s)
     return {"ok":True,"generated":generated}
 

@@ -293,7 +293,11 @@ textarea.fi2{resize:vertical;min-height:60px}
             <label class="fl2">Ученик</label><select class="fi2" id="t-student"></select>
             <label class="fl2">Предмет</label><input class="fi2" id="t-subj" placeholder="Алгебра">
             <label class="fl2">Текст задания</label><input class="fi2" id="t-title" placeholder="§12 упр. 5–9">
-            <label class="fl2">Срок</label><input class="fi2" type="date" id="t-due">
+            <label class="fl2">Срок</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="fi2" type="date" id="t-due" style="flex:1">
+              <button class="btn btns" onclick="setDueNextLesson()" style="font-size:11px;padding:8px 11px;white-space:nowrap" title="Поставить срок до следующего занятия ученика">📅 След. занятие</button>
+            </div>
             <label class="fl2">Приоритет</label>
             <select class="fi2" id="t-pri"><option value="normal">Обычное</option><option value="high">Важное</option><option value="urgent">Срочное</option></select>
             <label class="fl2">Фото задания</label>
@@ -369,9 +373,12 @@ textarea.fi2{resize:vertical;min-height:60px}
           <!-- Авто-генерация из постоянного расписания -->
           <div class="card">
             <div class="ctitle">🔄 Постоянное расписание</div>
-            <div style="font-size:12px;color:var(--mu);margin-bottom:10px">Генерирует занятия на 4 недели вперёд из еженедельного расписания</div>
-            <label class="fl2">Ученик</label><select class="fi2" id="gen-student"></select>
-            <button class="btn btns" onclick="generateSchedule()" style="margin-top:10px;width:100%;padding:10px">🔄 Сгенерировать занятия</button>
+            <div style="font-size:12px;color:var(--mu);margin-bottom:10px">Выбери ученика и конкретное занятие — система сгенерирует его на 4 недели вперёд со следующей недели</div>
+            <label class="fl2">Ученик</label>
+            <select class="fi2" id="gen-student" onchange="fillGenLessons()"></select>
+            <label class="fl2" style="margin-top:10px">Занятие для повтора</label>
+            <select class="fi2" id="gen-lesson"><option value="">— сначала выбери ученика —</option></select>
+            <button class="btn btns" onclick="generateSchedule()" style="margin-top:10px;width:100%;padding:10px">🔄 Сгенерировать на 4 недели</button>
             <div id="gen-result" style="font-size:12px;color:var(--g);margin-top:7px;font-weight:600;min-height:14px"></div>
           </div>
         </div>
@@ -542,6 +549,9 @@ async function loadStudents(){
     const arr=await r.json(); STUDENTS={};
     arr.forEach(s=>{STUDENTS[s.name]=s;});
     renderStudentsList();fillStudentSelects();renderAdminStats();
+    // Обновить список занятий для генерации если ученик уже выбран
+    const genSt=document.getElementById('gen-student');
+    if(genSt&&genSt.value)fillGenLessons();
   }catch(e){}
 }
 
@@ -758,6 +768,31 @@ function qRes(msg,color='var(--g)'){const el=document.getElementById('q-result')
 function showTaskPhoto(inp){if(!inp.files[0])return;const reader=new FileReader();reader.onload=e=>{document.getElementById('t-preview').innerHTML=`<img src="${e.target.result}" style="max-height:100px;border-radius:7px;object-fit:cover"><div style="font-size:11px;color:var(--g);font-weight:600;margin-top:4px">${inp.files[0].name}</div>`;};reader.readAsDataURL(inp.files[0]);}
 function handleTaskDrop(e){e.preventDefault();document.getElementById('t-drop').classList.remove('drag');const f=e.dataTransfer.files[0];if(!f)return;const dt=new DataTransfer();dt.items.add(f);document.getElementById('t-photo').files=dt.files;showTaskPhoto(document.getElementById('t-photo'));}
 
+function setDueNextLesson(){
+  const student=document.getElementById('t-student').value;
+  const s=STUDENTS[student]; if(!s){toast('⚠️ Сначала выбери ученика');return;}
+  // Ищем ближайшее запланированное занятие
+  const months={янв:0,фев:1,мар:2,апр:3,май:4,июн:5,июл:6,авг:7,сен:8,окт:9,ноя:10,дек:11};
+  const today=new Date(); today.setHours(0,0,0,0);
+  let nearest=null;
+  for(const l of (s.schedule||[]).filter(x=>x.status==='planned')){
+    const m=l.day.match(/(\d{1,2})\s+(\S+)/);
+    if(!m)continue;
+    const mn=months[m[2].toLowerCase().slice(0,3)];
+    if(mn===undefined)continue;
+    const d=new Date(today.getFullYear(),mn,+m[1]);
+    if(d<today)continue;
+    if(!nearest||d<nearest)nearest=d;
+  }
+  if(!nearest){toast('⚠️ Нет запланированных занятий');return;}
+  // Форматируем в yyyy-mm-dd для input[type=date]
+  const y=nearest.getFullYear();
+  const mo=String(nearest.getMonth()+1).padStart(2,'0');
+  const dy=String(nearest.getDate()).padStart(2,'0');
+  document.getElementById('t-due').value=`${y}-${mo}-${dy}`;
+  toast(`📅 Срок: ${dy}.${mo}`);
+}
+
 async function addTask(){
   const student=document.getElementById('t-student').value;
   const subj=document.getElementById('t-subj').value.trim();
@@ -779,8 +814,18 @@ function renderAllTasks(){
 }
 
 function renderDoneTasks(){
-  const items=[];Object.entries(STUDENTS).forEach(([name,s])=>(s.tasks||[]).filter(t=>t.status==='done').slice(0,3).forEach(t=>items.push({name,...t})));
-  document.getElementById('tasks-done-list').innerHTML=items.length?items.map(t=>`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);opacity:.75"><div style="font-size:11px;font-weight:700;color:var(--g)">${t.name}</div><div style="font-size:12px;text-decoration:line-through;color:var(--mu)">${t.title}</div><div style="font-size:10px;color:var(--mu)">${t.subj}</div></div>`).join(''):'<div style="color:var(--mu);font-size:13px">Выполненных нет</div>';
+  const items=[];
+  Object.entries(STUDENTS).forEach(([studentName,s])=>
+    (s.tasks||[]).filter(t=>t.status==='done').slice(0,10).forEach(t=>items.push({studentName,...t})));
+  document.getElementById('tasks-done-list').innerHTML=items.length
+    ?items.map(t=>`<div style="padding:10px 0;border-bottom:1.5px solid var(--bdr)">
+        <div style="font-size:11px;font-weight:700;color:var(--g)">${t.studentName}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--im);text-decoration:line-through">${t.title}</div>
+        <div style="font-size:10px;color:var(--mu);margin-bottom:5px">${t.subj} · сдано ${t.answer_date||'—'}</div>
+        ${t.answer_url?`<img src="${t.answer_url}" onclick="openPhoto('${t.answer_url}')" style="max-width:100%;max-height:140px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid var(--g);display:block;margin-bottom:5px">`:''}
+        ${t.grade?`<span style="font-size:11px;font-weight:700;color:var(--g)">Оценка: ${t.grade}${t.grade_comment?' — '+t.grade_comment:''}</span>`:''}
+      </div>`).join('')
+    :'<div style="color:var(--mu);font-size:13px">Выполненных нет</div>';
 }
 
 function renderReviewTasks(){
@@ -800,19 +845,30 @@ function renderReviewTasks(){
   </div>`).join(''):'<div style="color:var(--mu);font-size:13px">Нет заданий на проверке</div>';
 }
 
-async function approveTask(name,taskId){
-  await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${taskId}/status`,{method:'PATCH',headers:H(),body:JSON.stringify({status:'done'})});
-  toast('✅ Задание принято');closeModal('student-modal');await loadStudents();renderAllTasks();renderReviewTasks();renderDoneTasks();
+async function approveTask(name,taskId,grade=0,grade_comment=''){
+  await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${taskId}/status`,{
+    method:'PATCH',headers:H(),
+    body:JSON.stringify({status:'done',grade,grade_comment})
+  });
+  toast('✅ Задание принято');
+  const m=document.getElementById('student-modal');
+  if(m&&!m.classList.contains('hidden'))closeModal('student-modal');
+  await loadStudents();renderAllTasks();renderReviewTasks();renderDoneTasks();
 }
 async function returnTask(name,taskId){
   await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${taskId}/status`,{method:'PATCH',headers:H(),body:JSON.stringify({status:'active'})});
-  toast('↩️ Возвращено на доработку');closeModal('student-modal');await loadStudents();renderAllTasks();renderReviewTasks();
+  toast('↩️ Возвращено на доработку');
+  const m=document.getElementById('student-modal');
+  if(m&&!m.classList.contains('hidden'))closeModal('student-modal');
+  await loadStudents();renderAllTasks();renderReviewTasks();
 }
 async function gradeTaskDirect(name,subj,title,taskId){
   const g=prompt(`Оценка за "${title}" (2-5):`);if(!g||!['2','3','4','5'].includes(g))return;
   const comment=prompt('Комментарий (Enter — пропустить):')||'';
+  // Сохраняем оценку и в grades и прямо в задание
   await fetch(`${API}/api/admin/grade`,{method:'POST',headers:H(),body:JSON.stringify({student:name,subject:subj,topic:title,grade_type:'ДЗ',grade:+g,comment})});
-  await approveTask(name,taskId);toast(`✅ Оценка ${g} поставлена`);
+  await approveTask(name,taskId,+g,comment);
+  toast(`✅ Оценка ${g} поставлена`);
 }
 
 // ── GRADES ────────────────────────────────────────────
@@ -888,10 +944,29 @@ async function addLesson(){
   }
 }
 
+function fillGenLessons(){
+  const name=document.getElementById('gen-student').value;
+  const s=STUDENTS[name]; const sel=document.getElementById('gen-lesson');
+  if(!s){sel.innerHTML='<option value="">— нет занятий —</option>';return;}
+  const planned=(s.schedule||[]).filter(l=>l.status==='planned');
+  if(!planned.length){sel.innerHTML='<option value="">— нет запланированных занятий —</option>';return;}
+  sel.innerHTML=planned.map(l=>`<option value="${l.id}">${l.day} · ${l.time} — ${l.name||''}</option>`).join('');
+}
+
 async function generateSchedule(){
   const student=document.getElementById('gen-student').value;
-  const r=await fetch(`${API}/api/admin/generate-schedule/${encodeURIComponent(student)}`,{method:'POST',headers:H()});
-  if(r.ok){const d=await r.json();const el=document.getElementById('gen-result');el.textContent=`✅ Сгенерировано ${d.generated} занятий`;setTimeout(()=>el.textContent='',4000);await loadStudents();renderUpcoming();renderAllPlanned();}
+  const lessonId=+document.getElementById('gen-lesson').value;
+  if(!lessonId){toast('⚠️ Выбери конкретное занятие');return;}
+  const r=await fetch(`${API}/api/admin/generate-schedule/${encodeURIComponent(student)}`,{
+    method:'POST',headers:H(),body:JSON.stringify({lesson_id:lessonId})
+  });
+  if(r.ok){
+    const d=await r.json();
+    const el=document.getElementById('gen-result');
+    el.textContent=`✅ Сгенерировано ${d.generated} занятий начиная со следующей недели`;
+    setTimeout(()=>el.textContent='',5000);
+    await loadStudents();renderUpcoming();renderAllPlanned();
+  }
 }
 
 // Ближайшие 3 дня
@@ -901,19 +976,18 @@ function getUpcomingLessons(){
   const dayNames=['вс','пн','вт','ср','чт','пт','сб'];
   const months=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
   const items=[];
-  Object.entries(STUDENTS).forEach(([name,s])=>{
+  Object.entries(STUDENTS).forEach(([studentName,s])=>{
     (s.schedule||[]).filter(l=>l.status==='planned').forEach(l=>{
-      // Парсим дату из поля day типа "Понедельник, 22 апреля"
       const match=l.day.match(/(\d{1,2})\s+(\S+)/);
       if(match){
         const day=+match[1];const monthName=match[2].toLowerCase();
         const monthIdx=months.indexOf(monthName.slice(0,3));
         if(monthIdx>=0){
           const year=today.getFullYear();const d=new Date(year,monthIdx,day);
-          if(d>=today&&d<=in3) items.push({name,lessonDate:d,...l});
+          if(d>=today&&d<=in3) items.push({studentName,lessonDate:d,...l});
         }
       } else {
-        items.push({name,lessonDate:today,...l});
+        items.push({studentName,lessonDate:today,...l});
       }
     });
   });
@@ -924,13 +998,13 @@ function getUpcomingLessons(){
 function renderUpcoming(){
   const items=getUpcomingLessons();
   document.getElementById('upcoming-lessons').innerHTML=items.length
-    ?items.map(l=>`<div class="lesson-card" onclick="openLessonModal('${l.name}',${l.id})">
+    ?items.map(l=>`<div class="lesson-card" onclick="openLessonModal('${l.studentName}',${l.id})">
         <div class="lesson-stripe" style="background:${l.color||'#4a7c59'}"></div>
         <div class="lesson-info">
-          <div class="lesson-name">${l.name}</div>
+          <div class="lesson-name">${l.studentName}</div>
           <div class="lesson-meta">
             <span>${l.day}</span><span>🕐 ${l.time}</span>
-            ${l['name']?`<span>${l['name']}</span>`:''}
+            <span>${l.name||''}</span>
             ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" style="color:var(--blue);font-size:10px;font-weight:700" onclick="event.stopPropagation()">🔗 Zoom</a>`:''}
           </div>
         </div>
@@ -941,16 +1015,16 @@ function renderUpcoming(){
 
 function renderAllPlanned(){
   const items=[];
-  Object.entries(STUDENTS).forEach(([name,s])=>{
-    (s.schedule||[]).filter(l=>l.status==='planned').forEach(l=>items.push({name,...l}));
+  Object.entries(STUDENTS).forEach(([studentName,s])=>{
+    (s.schedule||[]).filter(l=>l.status==='planned').forEach(l=>items.push({studentName,...l}));
   });
   document.getElementById('all-planned-lessons').innerHTML=items.length
-    ?items.map(l=>`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;gap:9px;cursor:pointer" onclick="openLessonModal('${l.name}',${l.id})">
+    ?items.map(l=>`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;gap:9px;cursor:pointer" onclick="openLessonModal('${l.studentName}',${l.id})">
         <div style="width:3px;height:34px;border-radius:99px;background:${l.color||'#4a7c59'};flex-shrink:0"></div>
         <div style="flex:1">
-          <div style="font-size:11px;font-weight:700;color:var(--g)">${l.name}</div>
-          <div style="font-size:12px;font-weight:600">${l.day} · ${l.time}</div>
-          <div style="font-size:10px;color:var(--mu)">${l['name_sub']||''}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--g)">${l.studentName}</div>
+          <div style="font-size:12px;font-weight:600">${l.name||''} · ${l.day} · ${l.time}</div>
+          ${l.topic?`<div style="font-size:10px;color:var(--mu)">${l.topic}</div>`:''}
         </div>
         ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" style="font-size:11px;color:var(--blue);font-weight:700" onclick="event.stopPropagation()">🔗</a>`:''}
       </div>`).join('')

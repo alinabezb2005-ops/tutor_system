@@ -582,18 +582,21 @@ function renderSched(){
       </div>`).join('')}</div>`).join('');
   }
   if(rec.length){
-    const DAYS=['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
+    // Показываем день недели + время из recurring_schedule
+    const DAYS_FULL=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
     wrap.innerHTML+=`<div class="card" style="margin-top:10px">
       <div class="ctitle">🔄 Еженедельное расписание</div>
       ${rec.map(l=>{
         const dayName=l.day_of_week||'';
-        return`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr)">
-          <div style="display:flex;gap:8px;align-items:center">
-            <span style="font-size:11px;font-weight:700;color:var(--g);min-width:90px">${dayName.charAt(0).toUpperCase()+dayName.slice(1)} · ${l.time}</span>
-            <span style="font-size:12px;font-weight:600;color:var(--ink)">${l.name}</span>
+        const capDay=dayName.charAt(0).toUpperCase()+dayName.slice(1);
+        return`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;gap:10px">
+          <div style="width:4px;height:36px;border-radius:99px;background:${l.color||'var(--g)'};flex-shrink:0"></div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--g)">${capDay} · ${l.time}</div>
+            <div style="font-size:12px;font-weight:700;color:var(--ink)">${l.name}</div>
+            ${l.topic?`<div style="font-size:11px;color:var(--mu)">${l.topic}</div>`:''}
+            ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" class="zoom-link">🔗 Zoom</a>`:''}
           </div>
-          ${l.topic?`<div style="font-size:11px;color:var(--mu);margin-top:2px">${l.topic}</div>`:''}
-          ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" class="zoom-link">🔗 Zoom</a>`:''}
         </div>`;}).join('')}
     </div>`;
   }
