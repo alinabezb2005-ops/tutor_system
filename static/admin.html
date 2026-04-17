@@ -771,21 +771,38 @@ function handleTaskDrop(e){e.preventDefault();document.getElementById('t-drop').
 function setDueNextLesson(){
   const student=document.getElementById('t-student').value;
   const s=STUDENTS[student]; if(!s){toast('⚠️ Сначала выбери ученика');return;}
-  // Ищем ближайшее запланированное занятие
-  const months={янв:0,фев:1,мар:2,апр:3,май:4,июн:5,июл:6,авг:7,сен:8,окт:9,ноя:10,дек:11};
+  const months={янв:0,фев:1,мар:2,апр:3,май:4,июн:5,июл:6,авг:7,сен:8,окт:9,ноя:10,дек:11,
+    января:0,февраля:1,марта:2,апреля:3,мая:4,июня:5,июля:6,августа:7,сентября:8,октября:9,ноября:10,декабря:11};
   const today=new Date(); today.setHours(0,0,0,0);
   let nearest=null;
   for(const l of (s.schedule||[]).filter(x=>x.status==='planned')){
-    const m=l.day.match(/(\d{1,2})\s+(\S+)/);
-    if(!m)continue;
-    const mn=months[m[2].toLowerCase().slice(0,3)];
-    if(mn===undefined)continue;
-    const d=new Date(today.getFullYear(),mn,+m[1]);
+    const day=l.day||''; let d=null;
+    // Формат 1: "Пн, 22.04" или "Ср, 22.04.2026"
+    const m1=day.match(/(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?/);
+    if(m1){
+      const dd=+m1[1], mm=+m1[2]-1;
+      const yy=m1[3]?+m1[3]:today.getFullYear();
+      d=new Date(yy,mm,dd);
+    } else {
+      // Формат 2: "Понедельник, 22 апреля" или "Пн, 22 апреля"
+      const m2=day.match(/(\d{1,2})\s+(\S+)/);
+      if(m2){
+        const mn=months[m2[2].toLowerCase()];
+        if(mn!==undefined) d=new Date(today.getFullYear(),mn,+m2[1]);
+      }
+    }
+    if(!d)continue;
+    // Если дата в прошлом, пробуем следующий год
+    if(d<today) d=new Date(d.getFullYear()+1,d.getMonth(),d.getDate());
     if(d<today)continue;
     if(!nearest||d<nearest)nearest=d;
   }
-  if(!nearest){toast('⚠️ Нет запланированных занятий');return;}
-  // Форматируем в yyyy-mm-dd для input[type=date]
+  if(!nearest){
+    // Показываем что есть для отладки
+    const plan=(s.schedule||[]).filter(x=>x.status==='planned');
+    toast(`⚠️ Нет подходящих занятий (всего запланировано: ${plan.length})`);
+    return;
+  }
   const y=nearest.getFullYear();
   const mo=String(nearest.getMonth()+1).padStart(2,'0');
   const dy=String(nearest.getDate()).padStart(2,'0');
@@ -1033,19 +1050,24 @@ function renderAllPlanned(){
 
 function renderCompleted(){
   const items=[];
-  Object.entries(STUDENTS).forEach(([name,s])=>{
-    (s.schedule||[]).filter(l=>l.status==='completed'||l.status==='cancelled'||l.status==='transferred').slice(0,5).forEach(l=>items.push({name,...l}));
+  Object.entries(STUDENTS).forEach(([studentName,s])=>{
+    (s.schedule||[])
+      .filter(l=>l.status==='completed'||l.status==='cancelled'||l.status==='transferred')
+      .slice(-10).forEach(l=>items.push({studentName,...l}));
   });
+  // Сортируем по дате завершения (новые сверху)
+  items.sort((a,b)=>(b.completed_date||'').localeCompare(a.completed_date||''));
   document.getElementById('completed-lessons').innerHTML=items.length
     ?items.map(l=>{
         const cls=l.status==='completed'?'ls-completed':l.status==='cancelled'?'ls-cancelled':'ls-transferred';
         const lbl=l.status==='completed'?'Проведено':l.status==='cancelled'?'Отменено':'Перенесено';
-        return`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;gap:9px">
+        return`<div style="padding:9px 0;border-bottom:1.5px solid var(--bdr);display:flex;align-items:flex-start;gap:9px">
           <div style="flex:1">
-            <div style="font-size:11px;font-weight:700;color:var(--g)">${l.name}</div>
-            <div style="font-size:12px;font-weight:600">${l.day} · ${l.time}</div>
-            ${l.completed_topic?`<div style="font-size:10px;color:var(--mu)">${l.completed_topic}</div>`:''}
-            ${l.materials?`<div style="font-size:10px;color:var(--mu)">📝 ${l.materials}</div>`:''}
+            <div style="font-size:11px;font-weight:700;color:var(--g)">${l.studentName}</div>
+            <div style="font-size:12px;font-weight:600;color:var(--ink)">${l.name||''} · ${l.day}</div>
+            <div style="font-size:10px;color:var(--mu)">🕐 ${l.time}${l.completed_date?' · '+l.completed_date:''}</div>
+            ${l.completed_topic?`<div style="font-size:11px;color:var(--im);margin-top:2px">📖 ${l.completed_topic}</div>`:''}
+            ${l.materials?`<div style="font-size:11px;color:var(--mu)">📝 ${l.materials}</div>`:''}
             ${l.material_file?`<a href="${l.material_file}" target="_blank" style="font-size:10px;color:var(--blue)">📎 ${l.material_file_name||'Файл'}</a>`:''}
           </div>
           <span class="lesson-status ${cls}">${lbl}</span>

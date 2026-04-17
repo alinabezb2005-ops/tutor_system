@@ -442,6 +442,15 @@ async def complete_lesson(name:str, lesson_id:int, r:Request,
     if action == "completed":
         s[name]["lessonsTotal"] = s[name].get("lessonsTotal",0)+1
         add_monthly_lesson()
+        # Списываем урок из абонемента (или фиксируем долг за разовый)
+        sub = s[name].get("current_sub")
+        if sub and sub.get("lessons_left",0) > 0:
+            sub["lessons_left"] -= 1
+            if sub["lessons_left"] == 0:
+                s[name]["current_sub"] = None
+        else:
+            price = s[name].get("lesson_price", 0)
+            s[name]["balance"] = s[name].get("balance", 0) - price
         # Оценка за занятие
         if grade and grade in (2,3,4,5):
             s[name].setdefault("grades",[])

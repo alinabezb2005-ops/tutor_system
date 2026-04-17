@@ -262,6 +262,7 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);
       <div class="schip">Расписание</div>
       <div class="ptitle">Занятия</div>
       <div id="schedwrap"></div>
+      <div id="completed-wrap"></div>
     </div>
 
     <!-- KNOWLEDGE -->
@@ -565,39 +566,61 @@ function renderGrades(){
 // SCHEDULE
 function renderSched(){
   const sched=(ST.schedule||[]).filter(l=>l.status==='planned');
+  const completed=(ST.schedule||[]).filter(l=>l.status==='completed');
   const rec=ST.recurring_schedule||[];
   const wrap=document.getElementById('schedwrap'); wrap.innerHTML='';
-  if(!sched.length&&!rec.length){wrap.innerHTML='<div class="card" style="color:var(--mu);font-size:13px">Расписание пока не заполнено</div>';return;}
-  if(sched.length){
-    const grouped={};
-    sched.forEach(l=>{if(!grouped[l.day])grouped[l.day]=[];grouped[l.day].push(l);});
-    wrap.innerHTML=Object.entries(grouped).map(([day,ls])=>`
-      <div class="sday"><div class="sdlbl">${day}</div>
-      ${ls.map(l=>`<div class="lcard-s">
-        <div class="lstripe" style="background:${l.color||'#4a7c59'}"></div>
-        <div class="ltime-s">${l.time}</div>
-        <div><div class="lname-t">${l.name}</div><div class="ltopic-t">${l.topic||''}</div>
-          ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" class="zoom-link">🔗 Zoom</a>`:''}
-        </div>
-      </div>`).join('')}</div>`).join('');
-  }
-  if(rec.length){
-    // Показываем день недели + время из recurring_schedule
-    const DAYS_FULL=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
-    wrap.innerHTML+=`<div class="card" style="margin-top:10px">
-      <div class="ctitle">🔄 Еженедельное расписание</div>
-      ${rec.map(l=>{
-        const dayName=l.day_of_week||'';
-        const capDay=dayName.charAt(0).toUpperCase()+dayName.slice(1);
-        return`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;gap:10px">
-          <div style="width:4px;height:36px;border-radius:99px;background:${l.color||'var(--g)'};flex-shrink:0"></div>
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--g)">${capDay} · ${l.time}</div>
-            <div style="font-size:12px;font-weight:700;color:var(--ink)">${l.name}</div>
-            ${l.topic?`<div style="font-size:11px;color:var(--mu)">${l.topic}</div>`:''}
+  const compWrap=document.getElementById('completed-wrap'); if(compWrap)compWrap.innerHTML='';
+
+  if(!sched.length&&!rec.length){
+    wrap.innerHTML='<div class="card" style="color:var(--mu);font-size:13px">Расписание пока не заполнено</div>';
+  } else {
+    if(sched.length){
+      const grouped={};
+      sched.forEach(l=>{if(!grouped[l.day])grouped[l.day]=[];grouped[l.day].push(l);});
+      wrap.innerHTML=Object.entries(grouped).map(([day,ls])=>`
+        <div class="sday"><div class="sdlbl">${day}</div>
+        ${ls.map(l=>`<div class="lcard-s">
+          <div class="lstripe" style="background:${l.color||'#4a7c59'}"></div>
+          <div class="ltime-s">${l.time}</div>
+          <div><div class="lname-t">${l.name}</div><div class="ltopic-t">${l.topic||''}</div>
             ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" class="zoom-link">🔗 Zoom</a>`:''}
           </div>
-        </div>`;}).join('')}
+        </div>`).join('')}</div>`).join('');
+    }
+    if(rec.length){
+      wrap.innerHTML+=`<div class="card" style="margin-top:10px">
+        <div class="ctitle">🔄 Еженедельное расписание</div>
+        ${rec.map(l=>{
+          const dayName=l.day_of_week||'';
+          const capDay=dayName.charAt(0).toUpperCase()+dayName.slice(1);
+          return`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;gap:10px">
+            <div style="width:4px;height:36px;border-radius:99px;background:${l.color||'var(--g)'};flex-shrink:0"></div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--g)">${capDay} · ${l.time}</div>
+              <div style="font-size:12px;font-weight:700;color:var(--ink)">${l.name}</div>
+              ${l.topic?`<div style="font-size:11px;color:var(--mu)">${l.topic}</div>`:''}
+              ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" class="zoom-link">🔗 Zoom</a>`:''}
+            </div>
+          </div>`;}).join('')}
+      </div>`;
+    }
+  }
+
+  // Завершённые занятия
+  if(compWrap&&completed.length){
+    const sorted=[...completed].sort((a,b)=>(b.completed_date||'').localeCompare(a.completed_date||''));
+    compWrap.innerHTML=`<div class="card" style="margin-top:10px">
+      <div class="ctitle">✅ Завершённые занятия (${completed.length})</div>
+      ${sorted.slice(0,10).map(l=>`
+        <div style="padding:9px 0;border-bottom:1.5px solid var(--bdr)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:12px;font-weight:700;color:var(--ink)">${l.name||''}</div>
+            <span style="font-size:10px;color:var(--mu)">${l.completed_date||l.day}</span>
+          </div>
+          ${l.completed_topic?`<div style="font-size:11px;color:var(--mu)">📖 ${l.completed_topic}</div>`:''}
+          ${l.materials?`<div style="font-size:11px;color:var(--im);margin-top:3px">📝 ${l.materials}</div>`:''}
+          ${l.material_file?`<a href="${l.material_file}" target="_blank" style="font-size:11px;color:var(--blue)">📎 ${l.material_file_name||'Файл'}</a>`:''}
+        </div>`).join('')}
     </div>`;
   }
 }
