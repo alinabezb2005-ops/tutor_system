@@ -165,6 +165,7 @@ textarea.fi2{resize:vertical;min-height:60px}
       <button class="tn" onclick="nav('knowledge-admin',this)">📚 Материалы</button>
       <button class="tn" onclick="nav('messages-admin',this)">💬 Сообщения</button>
       <button class="tn" onclick="nav('progress-admin',this)">📈 Прогресс</button>
+      <button class="tn" onclick="nav('videos-admin',this)">🎬 Видеоуроки</button>
     </nav>
     <div class="logoutl" onclick="aLogout()">Выйти</div>
   </header>
@@ -300,11 +301,17 @@ textarea.fi2{resize:vertical;min-height:60px}
             </div>
             <label class="fl2">Приоритет</label>
             <select class="fi2" id="t-pri"><option value="normal">Обычное</option><option value="high">Важное</option><option value="urgent">Срочное</option></select>
-            <label class="fl2">Фото задания</label>
-            <div class="file-drop" id="t-drop" onclick="document.getElementById('t-photo').click()"
-              ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleTaskDrop(event)">
-              <input type="file" id="t-photo" accept="image/*" onchange="showTaskPhoto(this)" style="display:none">
-              <div id="t-preview"><div style="font-size:22px">📷</div><div style="font-size:12px;color:var(--mu)">Фото или <strong style="color:var(--g)">выбери файл</strong></div></div>
+            <label class="fl2">Фото задания (до 5 фото)</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px" id="t-photos-preview"></div>
+            <div style="display:flex;gap:8px">
+              <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:var(--milk);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;color:var(--g)">
+                📷 Камера
+                <input type="file" id="t-photo-cam" accept="image/*" capture="environment" multiple style="display:none" onchange="addTaskPhotos(this)">
+              </label>
+              <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:var(--milk);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;color:var(--g)">
+                🖼 Галерея
+                <input type="file" id="t-photo-gal" accept="image/*" multiple style="display:none" onchange="addTaskPhotos(this)">
+              </label>
             </div>
             <button class="btn btnp" onclick="addTask()" style="margin-top:10px;width:100%;padding:10px">Выдать задание</button>
           </div>
@@ -358,7 +365,24 @@ textarea.fi2{resize:vertical;min-height:60px}
         <div>
           <div class="card">
             <div class="ctitle">📅 Добавить занятие</div>
-            <label class="fl2">Ученик</label><select class="fi2" id="l-student"></select>
+            <!-- Тип занятия -->
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <button id="lt-ind" class="btn btnp" style="flex:1;padding:8px;font-size:12px" onclick="setLessonType('individual')">👤 Индивидуальное</button>
+              <button id="lt-grp" class="btn btng" style="flex:1;padding:8px;font-size:12px" onclick="setLessonType('group')">👥 Групповое</button>
+            </div>
+            <!-- Индивидуальный ученик -->
+            <div id="l-individual-block">
+              <label class="fl2">Ученик</label><select class="fi2" id="l-student"></select>
+            </div>
+            <!-- Группа учеников -->
+            <div id="l-group-block" style="display:none">
+              <label class="fl2">Участники группы</label>
+              <div id="l-group-chosen" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px"></div>
+              <div style="display:flex;gap:7px">
+                <select class="fi2" id="l-group-sel" style="flex:1"><option value="">Добавить ученика…</option></select>
+                <button class="btn btng" onclick="addGroupMember()" style="padding:8px 12px">+</button>
+              </div>
+            </div>
             <label class="fl2">День (напр.: Понедельник, 22 апреля)</label><input class="fi2" id="l-day" placeholder="Понедельник, 22 апреля">
             <label class="fl2">Время</label><input class="fi2" id="l-time" placeholder="16:00 – 17:30">
             <label class="fl2">Предмет</label><input class="fi2" id="l-subj" placeholder="Алгебра">
@@ -465,6 +489,34 @@ textarea.fi2{resize:vertical;min-height:60px}
       <div class="card" id="prog-editor"><div style="color:var(--mu);font-size:13px">Выберите ученика</div></div>
     </div>
 
+    <!-- ВИДЕОУРОКИ -->
+    <div class="page" id="page-videos-admin">
+      <div class="chip">Видеоуроки</div>
+      <div class="ptitle">Библиотека видеоуроков</div>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:16px">
+        <div>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <input class="fi2" id="vid-filter" placeholder="Поиск по теме или предмету…" oninput="filterVideos()" style="flex:1;max-width:300px">
+          </div>
+          <div id="videos-list"></div>
+        </div>
+        <div class="card" style="align-self:start">
+          <div class="ctitle">➕ Добавить видеоурок</div>
+          <label class="fl2">Название урока</label>
+          <input class="fi2" id="vid-title" placeholder="Производные — введение">
+          <label class="fl2">Ссылка YouTube</label>
+          <input class="fi2" id="vid-url" placeholder="https://youtu.be/…">
+          <label class="fl2">Предмет</label>
+          <input class="fi2" id="vid-subj" placeholder="Алгебра">
+          <label class="fl2">Тема</label>
+          <input class="fi2" id="vid-topic" placeholder="Производные">
+          <label class="fl2">Описание (необязательно)</label>
+          <textarea class="fi2" id="vid-desc" placeholder="Краткое описание…" style="min-height:55px;resize:vertical"></textarea>
+          <button class="btn btnp" onclick="addVideo()" style="width:100%;padding:10px;margin-top:12px">Добавить видео</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -476,6 +528,51 @@ textarea.fi2{resize:vertical;min-height:60px}
 <!-- STUDENT CARD MODAL -->
 <div id="student-modal" class="modal-overlay hidden">
   <div class="modal" id="student-modal-inner"></div>
+</div>
+
+<!-- TASK EDIT MODAL -->
+<div id="task-edit-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('task-edit-modal')">
+  <div class="modal" style="max-width:420px">
+    <div class="mhead">
+      <div style="font-size:15px;font-weight:700;color:var(--ink)">✏️ Редактировать задание</div>
+      <div style="font-size:12px;color:var(--mu)" id="te-student"></div>
+      <button class="modal-close" onclick="closeModal('task-edit-modal')">✕</button>
+    </div>
+    <input type="hidden" id="te-id">
+    <input type="hidden" id="te-sname">
+    <div style="padding:0 20px 20px">
+      <label class="fl2">Задание</label>
+      <input class="fi2" id="te-title" placeholder="Название задания">
+      <label class="fl2">Предмет</label>
+      <input class="fi2" id="te-subj" placeholder="Предмет">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label class="fl2">Срок</label><input type="date" class="fi2" id="te-due"></div>
+        <div><label class="fl2">Приоритет</label>
+          <select class="fi2" id="te-pri">
+            <option value="normal">Обычное</option>
+            <option value="high">Важное</option>
+            <option value="urgent">Срочное</option>
+          </select>
+        </div>
+      </div>
+      <label class="fl2">Прикреплённые файлы</label>
+      <div id="te-files" style="margin-bottom:10px;font-size:12px"></div>
+      <label class="fl2">Добавить файл (PDF, фото, документ)</label>
+      <div style="display:flex;gap:7px;margin-bottom:8px">
+        <input type="file" id="te-file" accept=".pdf,.doc,.docx,.txt,image/*" class="fi2" style="flex:1;padding:6px">
+        <button class="btn btns" onclick="attachFileToTask()" style="font-size:11px;white-space:nowrap">📎 Прикрепить</button>
+      </div>
+      <label class="fl2">Или добавить ссылку</label>
+      <div style="display:flex;gap:7px;margin-bottom:14px">
+        <input class="fi2" id="te-link" placeholder="https://…" style="flex:1">
+        <button class="btn btns" onclick="attachFileToTask()" style="font-size:11px;white-space:nowrap">+ Ссылка</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btnp" onclick="saveTaskEdit()" style="flex:1;padding:10px">Сохранить</button>
+        <button class="btn btnd" onclick="deleteTaskAdmin()" style="padding:10px">🗑 Удалить ДЗ</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- GRADE DETAIL MODAL -->
@@ -537,6 +634,7 @@ function nav(id,btn){
   if(id==='grades-admin')renderRecentGrades();
   if(id==='schedule-admin'){renderUpcoming();renderAllPlanned();renderCompleted();}
   if(id==='messages-admin'){loadChat();startChatPoll();}
+  if(id==='videos-admin')loadVideos();
   else stopChatPoll();
 }
 
@@ -765,8 +863,34 @@ async function qWriteOff(){const student=document.getElementById('quick-student'
 function qRes(msg,color='var(--g)'){const el=document.getElementById('q-result');el.style.color=color;el.textContent=msg;setTimeout(()=>el.textContent='',4000);}
 
 // ── TASKS ─────────────────────────────────────────────
-function showTaskPhoto(inp){if(!inp.files[0])return;const reader=new FileReader();reader.onload=e=>{document.getElementById('t-preview').innerHTML=`<img src="${e.target.result}" style="max-height:100px;border-radius:7px;object-fit:cover"><div style="font-size:11px;color:var(--g);font-weight:600;margin-top:4px">${inp.files[0].name}</div>`;};reader.readAsDataURL(inp.files[0]);}
-function handleTaskDrop(e){e.preventDefault();document.getElementById('t-drop').classList.remove('drag');const f=e.dataTransfer.files[0];if(!f)return;const dt=new DataTransfer();dt.items.add(f);document.getElementById('t-photo').files=dt.files;showTaskPhoto(document.getElementById('t-photo'));}
+// Хранилище выбранных фото для задания
+let taskPhotoFiles = [];
+
+function addTaskPhotos(inp){
+  for(const f of inp.files){
+    if(taskPhotoFiles.length >= 5){toast('⚠️ Максимум 5 фото');break;}
+    taskPhotoFiles.push(f);
+  }
+  inp.value = '';
+  renderTaskPhotosPreview();
+}
+
+function renderTaskPhotosPreview(){
+  const el = document.getElementById('t-photos-preview');
+  if(!el) return;
+  el.innerHTML = taskPhotoFiles.map((f,i) => {
+    const url = URL.createObjectURL(f);
+    return `<div style="position:relative;display:inline-block">
+      <img src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1.5px solid var(--bdr)">
+      <div onclick="removeTaskPhoto(${i})" style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700">✕</div>
+    </div>`;
+  }).join('') + (taskPhotoFiles.length < 5 ? `<div style="width:60px;height:60px;border:1.5px dashed var(--bdr);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:20px">+</div>` : '');
+}
+
+function removeTaskPhoto(idx){
+  taskPhotoFiles.splice(idx, 1);
+  renderTaskPhotosPreview();
+}
 
 function setDueNextLesson(){
   const student=document.getElementById('t-student').value;
@@ -816,18 +940,99 @@ async function addTask(){
   const title=document.getElementById('t-title').value.trim();
   const due=document.getElementById('t-due').value;
   const priority=document.getElementById('t-pri').value;
-  const photoInp=document.getElementById('t-photo');
   if(!title||!subj){toast('⚠️ Заполни предмет и задание');return;}
-  const fd=new FormData();fd.append('student',student);fd.append('title',title);fd.append('subj',subj);fd.append('due',due);fd.append('priority',priority);
-  if(photoInp.files[0])fd.append('photo',photoInp.files[0]);
+  const fd=new FormData();
+  fd.append('student',student);fd.append('title',title);fd.append('subj',subj);fd.append('due',due);fd.append('priority',priority);
+  // Прикрепляем до 5 фото
+  const names = ['photo','photo2','photo3','photo4','photo5'];
+  taskPhotoFiles.slice(0,5).forEach((f,i) => fd.append(names[i], f));
   const r=await fetch(`${API}/api/admin/task-with-photo`,{method:'POST',headers:{'X-Admin-Token':TOKEN},body:fd});
-  if(r.ok){toast(`✅ Задание выдано ${student}`);document.getElementById('t-title').value='';document.getElementById('t-preview').innerHTML='<div style="font-size:22px">📷</div><div style="font-size:12px;color:var(--mu)">Фото или <strong style="color:var(--g)">выбери файл</strong></div>';photoInp.value='';await loadStudents();renderAllTasks();renderReviewTasks();renderDoneTasks();}
+  if(r.ok){
+    toast(`✅ Задание выдано ${student}`);
+    document.getElementById('t-title').value='';
+    taskPhotoFiles=[];
+    renderTaskPhotosPreview();
+    await loadStudents();renderAllTasks();renderReviewTasks();renderDoneTasks();
+  }
 }
 
 function renderAllTasks(){
   const items=[];Object.entries(STUDENTS).forEach(([name,s])=>(s.tasks||[]).filter(t=>t.status==='active').forEach(t=>items.push({name,...t})));
-  document.getElementById('all-tasks-list').innerHTML=items.length?items.map(t=>`<div style="padding:8px 0;border-bottom:1.5px solid var(--bdr)"><div style="font-size:11px;font-weight:700;color:var(--g)">${t.name}</div><div style="font-size:12px;font-weight:600">${t.title}</div><div style="font-size:10px;color:var(--mu)">${t.subj} · до ${t.due||'—'}</div>${t.photo_url?`<img src="${t.photo_url}" onclick="openPhoto('${t.photo_url}')" style="height:36px;border-radius:5px;margin-top:4px;cursor:pointer;object-fit:cover">`:''}
+  document.getElementById('all-tasks-list').innerHTML=items.length?items.map(t=>`
+  <div style="padding:9px 0;border-bottom:1.5px solid var(--bdr);cursor:pointer" onclick="openTaskEditModal('${t.name}',${t.id})">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--g)">${t.name}</div>
+        <div style="font-size:12px;font-weight:600">${t.title}</div>
+        <div style="font-size:10px;color:var(--mu)">${t.subj} · до ${t.due||'—'}</div>
+      </div>
+      <div style="font-size:18px;color:var(--mu);flex-shrink:0">✏️</div>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">
+      ${(t.photo_urls&&t.photo_urls.length?t.photo_urls:[t.photo_url]).filter(Boolean).map(u=>`<img src="${u}" onclick="event.stopPropagation();openPhoto('${u}')" style="height:34px;width:34px;border-radius:5px;cursor:pointer;object-fit:cover">`).join('')}
+      ${(t.files||[]).map(f=>`<a href="${f.url}" target="_blank" onclick="event.stopPropagation()" style="font-size:10px;font-weight:600;color:var(--blue);background:#e8f0fb;padding:2px 8px;border-radius:99px">${f.mime==='link'?'🔗':'📄'} ${f.name.slice(0,18)}</a>`).join('')}
+    </div>
   </div>`).join(''):'<div style="color:var(--mu);font-size:13px">Активных нет</div>';
+}
+
+function openTaskEditModal(studentName, taskId){
+  const s = STUDENTS[studentName]; if(!s) return;
+  const t = (s.tasks||[]).find(x=>x.id===taskId); if(!t) return;
+  const m = document.getElementById('task-edit-modal');
+  document.getElementById('te-student').textContent = studentName;
+  document.getElementById('te-title').value = t.title||'';
+  document.getElementById('te-subj').value = t.subj||'';
+  document.getElementById('te-due').value = t.due||'';
+  document.getElementById('te-pri').value = t.pri||'normal';
+  document.getElementById('te-id').value = taskId;
+  document.getElementById('te-sname').value = studentName;
+  // Показываем прикреплённые файлы
+  const filesEl = document.getElementById('te-files');
+  const allFiles = (t.files||[]);
+  filesEl.innerHTML = allFiles.length
+    ? allFiles.map(f=>`<a href="${f.url}" target="_blank" style="font-size:11px;color:var(--blue);font-weight:600">${f.mime==='link'?'🔗':'📄'} ${f.name}</a>`).join('<br>')
+    : '<span style="color:var(--mu);font-size:12px">Нет прикреплённых файлов</span>';
+  m.classList.remove('hidden');
+}
+
+async function saveTaskEdit(){
+  const name = document.getElementById('te-sname').value;
+  const id = +document.getElementById('te-id').value;
+  const data = {
+    title: document.getElementById('te-title').value.trim(),
+    subj: document.getElementById('te-subj').value.trim(),
+    due: document.getElementById('te-due').value,
+    priority: document.getElementById('te-pri').value
+  };
+  await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${id}/edit`,{method:'PATCH',headers:H(),body:JSON.stringify(data)});
+  toast('✅ Задание обновлено');
+  closeModal('task-edit-modal');
+  await loadStudents(); renderAllTasks(); renderReviewTasks(); renderDoneTasks();
+}
+
+async function deleteTaskAdmin(){
+  const name = document.getElementById('te-sname').value;
+  const id = +document.getElementById('te-id').value;
+  if(!confirm(`Удалить задание?`)) return;
+  await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${id}`,{method:'DELETE',headers:H()});
+  toast('🗑 Задание удалено');
+  closeModal('task-edit-modal');
+  await loadStudents(); renderAllTasks(); renderReviewTasks(); renderDoneTasks();
+}
+
+async function attachFileToTask(){
+  const name = document.getElementById('te-sname').value;
+  const id = +document.getElementById('te-id').value;
+  const fileInp = document.getElementById('te-file');
+  const linkInp = document.getElementById('te-link');
+  const fd = new FormData();
+  if(fileInp.files[0]) fd.append('file', fileInp.files[0]);
+  if(linkInp.value.trim()) fd.append('link', linkInp.value.trim());
+  if(!fileInp.files[0] && !linkInp.value.trim()){toast('⚠️ Выбери файл или введи ссылку');return;}
+  await fetch(`${API}/api/admin/task/${encodeURIComponent(name)}/${id}/attach`,{method:'POST',headers:{'X-Admin-Token':TOKEN},body:fd});
+  toast('✅ Файл прикреплён');
+  fileInp.value=''; linkInp.value='';
+  await loadStudents(); openTaskEditModal(name,id);
 }
 
 function renderDoneTasks(){
@@ -944,6 +1149,49 @@ async function deleteGrade(name,idx){
 }
 
 // ── SCHEDULE ──────────────────────────────────────────
+// Группа для занятия
+let lessonGroupMembers = [];
+let lessonType = 'individual';
+
+function setLessonType(type){
+  lessonType = type;
+  document.getElementById('l-individual-block').style.display = type==='individual'?'':'none';
+  document.getElementById('l-group-block').style.display = type==='group'?'':'none';
+  document.getElementById('lt-ind').className = type==='individual'?'btn btnp':'btn btng';
+  document.getElementById('lt-grp').className = type==='group'?'btn btnp':'btn btng';
+  if(type==='group'){
+    // Заполнить дропдаун группы
+    const sel = document.getElementById('l-group-sel');
+    sel.innerHTML = '<option value="">Добавить ученика…</option>' +
+      Object.keys(STUDENTS).map(n=>`<option value="${n}">${n}</option>`).join('');
+    lessonGroupMembers = [];
+    document.getElementById('l-group-chosen').innerHTML='';
+  }
+}
+
+function addGroupMember(){
+  const sel = document.getElementById('l-group-sel');
+  const name = sel.value; if(!name)return;
+  if(!lessonGroupMembers.includes(name)){
+    lessonGroupMembers.push(name);
+    const el = document.getElementById('l-group-chosen');
+    el.innerHTML += `<span style="background:var(--gbg);color:var(--gold);padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px">
+      ${name}
+      <span onclick="removeGroupMember('${name}')" style="cursor:pointer;font-weight:700">✕</span>
+    </span>`;
+  }
+  sel.value='';
+}
+
+function removeGroupMember(name){
+  lessonGroupMembers = lessonGroupMembers.filter(n=>n!==name);
+  // перерисуем
+  const el = document.getElementById('l-group-chosen');
+  el.innerHTML = lessonGroupMembers.map(n=>`<span style="background:var(--gbg);color:var(--gold);padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px">
+    ${n}<span onclick="removeGroupMember('${n}')" style="cursor:pointer;font-weight:700">✕</span>
+  </span>`).join('');
+}
+
 async function addLesson(){
   const student=document.getElementById('l-student').value;
   const day=document.getElementById('l-day').value.trim();
@@ -953,6 +1201,26 @@ async function addLesson(){
   const zoom_link=document.getElementById('l-zoom').value.trim();
   const recurring=document.getElementById('l-recurring').checked;
   if(!day||!time||!subject){toast('⚠️ Заполни день, время и предмет');return;}
+
+  // Групповое занятие
+  if(lessonType==='group'){
+    if(lessonGroupMembers.length < 2){toast('⚠️ Добавь минимум 2 участников');return;}
+    const r=await fetch(`${API}/api/admin/lesson`,{method:'POST',headers:H(),
+      body:JSON.stringify({student:lessonGroupMembers[0],day,time,subject,topic,
+        color:'#4a7c59',zoom_link,recurring,group_students:lessonGroupMembers})});
+    if(r.ok){
+      toast(`📅 Групповое занятие добавлено: ${lessonGroupMembers.join(', ')}`);
+      document.getElementById('l-day').value='';document.getElementById('l-time').value='';
+      document.getElementById('l-topic').value='';document.getElementById('l-zoom').value='';
+      document.getElementById('l-recurring').checked=false;
+      lessonGroupMembers=[]; document.getElementById('l-group-chosen').innerHTML='';
+      setLessonType('individual');
+      await loadStudents();renderUpcoming();renderAllPlanned();renderCompleted();
+    }
+    return;
+  }
+
+  // Индивидуальное занятие
   const r=await fetch(`${API}/api/admin/lesson`,{method:'POST',headers:H(),body:JSON.stringify({student,day,time,subject,topic,color:STUDENTS[student]?.color||'#4a7c59',zoom_link,recurring})});
   if(r.ok){
     toast(`📅 Занятие добавлено для ${student}`);
@@ -1319,6 +1587,109 @@ async function saveAllProgress(name){
 
 // ── TOAST ─────────────────────────────────────────────
 function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
+
+// ── VIDEO LESSONS ─────────────────────────────────────────────────────────────
+let ALL_VIDEOS = [];
+
+async function loadVideos(){
+  try{
+    const r = await fetch(`${API}/api/videos`, {headers:H()});
+    ALL_VIDEOS = await r.json();
+  }catch(e){ ALL_VIDEOS=[]; }
+  renderVideos();
+}
+
+function getYoutubeId(url){
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function filterVideos(){
+  const q = document.getElementById('vid-filter')?.value.toLowerCase()||'';
+  const filtered = q ? ALL_VIDEOS.filter(v=>
+    v.title.toLowerCase().includes(q)||
+    (v.subject||'').toLowerCase().includes(q)||
+    (v.topic||'').toLowerCase().includes(q)
+  ) : ALL_VIDEOS;
+  renderVideoList(filtered);
+}
+
+function renderVideos(){ renderVideoList(ALL_VIDEOS); }
+
+function renderVideoList(list){
+  const el = document.getElementById('videos-list'); if(!el) return;
+  if(!list.length){
+    el.innerHTML='<div style="color:var(--mu);font-size:13px;padding:16px 0">Видеоуроков пока нет — добавьте первый!</div>';
+    return;
+  }
+  el.innerHTML = list.map(v => {
+    const ytId = getYoutubeId(v.url||'');
+    const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '';
+    return `<div style="background:#fff;border:1.5px solid var(--bdr);border-radius:12px;padding:14px;margin-bottom:11px;display:flex;gap:13px;align-items:flex-start">
+      ${thumb
+        ? `<div style="flex-shrink:0;cursor:pointer" onclick="playVideo('${v.url}','${v.title}')">
+            <div style="position:relative;width:120px;height:68px;border-radius:8px;overflow:hidden">
+              <img src="${thumb}" style="width:100%;height:100%;object-fit:cover">
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35)">
+                <div style="width:32px;height:32px;background:rgba(255,0,0,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff">▶</div>
+              </div>
+            </div>
+          </div>`
+        : `<div style="flex-shrink:0;width:120px;height:68px;background:var(--gbg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px">🎬</div>`}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;cursor:pointer" onclick="playVideo('${v.url}','${v.title}')">${v.title}</div>
+        <div style="font-size:11px;color:var(--mu);margin-bottom:6px">${v.subject||''}${v.topic?' · '+v.topic:''} · ${v.added||''}</div>
+        ${v.description?`<div style="font-size:12px;color:var(--im)">${v.description}</div>`:''}
+      </div>
+      <button onclick="deleteVideo(${v.id})" style="background:none;border:none;color:var(--mu);cursor:pointer;font-size:16px;flex-shrink:0" title="Удалить">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function playVideo(url, title){
+  const ytId = getYoutubeId(url);
+  const embedUrl = ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=1` : url;
+  const ov = document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer';
+  ov.innerHTML=`
+    <div style="width:min(860px,95vw);cursor:default" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 4px">
+        <div style="font-size:15px;font-weight:700;color:#fff">${title}</div>
+        <div onclick="document.body.removeChild(ov)" style="color:#fff;font-size:20px;cursor:pointer;padding:4px 8px">✕</div>
+      </div>
+      <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden">
+        <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;fullscreen" allowfullscreen></iframe>
+      </div>
+    </div>`;
+  ov.onclick = ()=>document.body.removeChild(ov);
+  document.body.appendChild(ov);
+}
+
+async function addVideo(){
+  const title = document.getElementById('vid-title').value.trim();
+  const url = document.getElementById('vid-url').value.trim();
+  if(!title||!url){toast('⚠️ Введи название и ссылку');return;}
+  const data = {
+    title, url,
+    subject: document.getElementById('vid-subj').value.trim(),
+    topic: document.getElementById('vid-topic').value.trim(),
+    description: document.getElementById('vid-desc').value.trim()
+  };
+  const r = await fetch(`${API}/api/admin/videos`,{method:'POST',headers:H(),body:JSON.stringify(data)});
+  if(r.ok){
+    toast('🎬 Видеоурок добавлен');
+    ['vid-title','vid-url','vid-subj','vid-topic','vid-desc'].forEach(id=>document.getElementById(id).value='');
+    await loadVideos();
+  }
+}
+
+async function deleteVideo(id){
+  if(!confirm('Удалить видеоурок?'))return;
+  await fetch(`${API}/api/admin/videos/${id}`,{method:'DELETE',headers:H()});
+  toast('🗑 Удалено');
+  await loadVideos();
+}
+
 </script>
 </body>
 </html>

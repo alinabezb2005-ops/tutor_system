@@ -288,30 +288,38 @@ async def add_task(req:TaskReq, r:Request):
 async def add_task_with_photo(r:Request,
     student:str=Form(...), title:str=Form(...), subj:str=Form(...),
     due:str=Form(""), priority:str=Form("normal"),
-    photo:Optional[UploadFile]=File(None)):
+    photo:Optional[UploadFile]=File(None),
+    photo2:Optional[UploadFile]=File(None),
+    photo3:Optional[UploadFile]=File(None),
+    photo4:Optional[UploadFile]=File(None),
+    photo5:Optional[UploadFile]=File(None)):
     require_admin(r)
     s = get_students()
     if student not in s: raise HTTPException(404)
     st = s[student]; st.setdefault("tasks",[])
     tid = max((t["id"] for t in st["tasks"]),default=0)+1
-    photo_url = ""
-    if photo and photo.filename:
-        safe = f"task_{student.replace(' ','_')}_{tid}_{photo.filename}"
-        with open(UPLOAD_DIR/safe,"wb") as f_: f_.write(await photo.read())
-        photo_url = f"/static/uploads/{safe}"
+    photo_urls = []
+    for i, p in enumerate([photo, photo2, photo3, photo4, photo5], 1):
+        if p and p.filename:
+            safe = f"task_{student.replace(' ','_')}_{tid}_{i}_{p.filename}"
+            with open(UPLOAD_DIR/safe,"wb") as f_: f_.write(await p.read())
+            photo_urls.append(f"/static/uploads/{safe}")
+    photo_url = photo_urls[0] if photo_urls else ""
     st["tasks"].append({"id":tid,"title":title,"subj":subj,
         "due":due or str(date.today()),"status":"active","pri":priority,
-        "photo_url":photo_url,"answer_url":"","answer_date":""})
+        "photo_url":photo_url,"photo_urls":photo_urls,
+        "answer_url":"","answer_urls":[],"answer_date":""})
     save_students(s)
     tg_id = st.get("tg_id")
     if tg_id and tg_app_ref:
         try:
             bot = tg_app_ref.bot
             await bot.send_message(tg_id, f"📚 Новое задание!\n*{subj}*: {title}\nСрок: {due or 'не указан'}", parse_mode="Markdown")
-            if photo_url:
-                await bot.send_photo(tg_id, open(UPLOAD_DIR/safe,"rb"), caption="📎 Фото задания")
+            for url in photo_urls:
+                fname = url.split("/")[-1]
+                await bot.send_photo(tg_id, open(UPLOAD_DIR/fname,"rb"), caption="📎 Фото задания")
         except: pass
-    return {"ok":True,"id":tid,"photo_url":photo_url}
+    return {"ok":True,"id":tid,"photo_url":photo_url,"photo_urls":photo_urls}
 
 # Ученик меняет статус на "review" (на проверке)
 @app.patch("/api/student/{name}/task/{task_id}/review")
@@ -350,16 +358,27 @@ async def set_task_status(name:str, task_id:int, data:dict, r:Request):
             break
     save_students(s); return {"ok":True}
 
-# Сдать фото ответа
+# Сдать фото ответа (до 5 фото, с камеры или галереи)
 @app.post("/api/student/{name}/task/{task_id}/answer")
-async def submit_answer(name:str, task_id:int, photo:UploadFile=File(...)):
+async def submit_answer(name:str, task_id:int,
+    photo:Optional[UploadFile]=File(None),
+    photo2:Optional[UploadFile]=File(None),
+    photo3:Optional[UploadFile]=File(None),
+    photo4:Optional[UploadFile]=File(None),
+    photo5:Optional[UploadFile]=File(None)):
     s = get_students()
     if name not in s: raise HTTPException(404)
     task = next((t for t in s[name].get("tasks",[]) if t["id"]==task_id), None)
     if not task: raise HTTPException(404)
-    safe = f"answer_{name.replace(' ','_')}_{task_id}_{photo.filename}"
-    with open(UPLOAD_DIR/safe,"wb") as f_: f_.write(await photo.read())
-    task["answer_url"] = f"/static/uploads/{safe}"
+    answer_urls = list(task.get("answer_urls", []))
+    for i, p in enumerate([photo, photo2, photo3, photo4, photo5], 1):
+        if p and p.filename:
+            safe = f"answer_{name.replace(' ','_')}_{task_id}_{i}_{p.filename}"
+            with open(UPLOAD_DIR/safe,"wb") as f_: f_.write(await p.read())
+            answer_urls.append(f"/static/uploads/{safe}")
+    if not answer_urls: raise HTTPException(400, "Нет фото")
+    task["answer_url"] = answer_urls[0]
+    task["answer_urls"] = answer_urls
     task["answer_date"] = today_str()
     task["status"] = "review"
     save_students(s)
@@ -368,10 +387,12 @@ async def submit_answer(name:str, task_id:int, photo:UploadFile=File(...)):
             await tg_app_ref.bot.send_message(ADMIN_ID,
                 f"📬 *{name}* сдал(а) задание!\n*{task.get('subj','')}*: {task.get('title','')}",
                 parse_mode="Markdown")
-            await tg_app_ref.bot.send_photo(ADMIN_ID, open(UPLOAD_DIR/safe,"rb"),
-                caption=f"Ответ: {name}")
+            for url in answer_urls:
+                fname = url.split("/")[-1]
+                await tg_app_ref.bot.send_photo(ADMIN_ID, open(UPLOAD_DIR/fname,"rb"),
+                    caption=f"Ответ: {name}")
         except: pass
-    return {"ok":True,"answer_url":task["answer_url"]}
+    return {"ok":True,"answer_url":task["answer_url"],"answer_urls":answer_urls}
 
 # ── GRADES ────────────────────────────────────────────────────────────────────
 class GradeReq(BaseModel):
@@ -394,27 +415,37 @@ async def add_grade(req:GradeReq, r:Request):
 class LessonReq(BaseModel):
     student:str; day:str; time:str; subject:str; topic:str=""; color:str="#4a7c59"
     zoom_link:str=""; recurring:bool=False
+    group_students:list=[]  # список имён для группового занятия
 
 @app.post("/api/admin/lesson")
 async def add_lesson(req:LessonReq, r:Request):
     require_admin(r)
     s = get_students()
-    if req.student not in s: raise HTTPException(404)
-    st = s[req.student]; st.setdefault("schedule",[])
-    lesson = {"day":req.day,"time":req.time,"name":req.subject,"topic":req.topic,
-               "color":req.color,"zoom_link":req.zoom_link,"status":"planned",
-               "id":len(st["schedule"])+1,"materials":[]}
-    st["schedule"].append(lesson)
-    if req.recurring:
-        st.setdefault("recurring_schedule",[])
-        # Определяем день недели из поля day
-        day_lower = req.day.lower()
-        dow = next((d for d in ["понедельник","вторник","среда","четверг","пятница","суббота","воскресенье"] if d in day_lower), "")
-        st["recurring_schedule"].append({"day_of_week":dow,"time":req.time,"name":req.subject,
-                                           "topic":req.topic,"color":req.color,"zoom_link":req.zoom_link})
-    st["next"]={"day":req.day,"time":req.time.split("–")[0].strip(),"name":req.subject,
-                "topic":req.topic,"zoom_link":req.zoom_link}
-    save_students(s); return {"ok":True}
+    # Определяем список участников: группа или один ученик
+    members = req.group_students if req.group_students else [req.student]
+    # Генерируем общий group_id для групповых занятий
+    import uuid
+    group_id = str(uuid.uuid4())[:8] if len(members) > 1 else None
+    for member in members:
+        if member not in s: continue
+        st = s[member]; st.setdefault("schedule",[])
+        lid = max((l.get("id",0) for l in st["schedule"]),default=0)+1
+        lesson = {"day":req.day,"time":req.time,"name":req.subject,"topic":req.topic,
+                   "color":req.color,"zoom_link":req.zoom_link,"status":"planned",
+                   "id":lid,"materials":[]}
+        if group_id:
+            lesson["group_id"] = group_id
+            lesson["group_members"] = members
+        st["schedule"].append(lesson)
+        if req.recurring:
+            st.setdefault("recurring_schedule",[])
+            day_lower = req.day.lower()
+            dow = next((d for d in ["понедельник","вторник","среда","четверг","пятница","суббота","воскресенье"] if d in day_lower), "")
+            st["recurring_schedule"].append({"day_of_week":dow,"time":req.time,"name":req.subject,
+                                               "topic":req.topic,"color":req.color,"zoom_link":req.zoom_link})
+        st["next"]={"day":req.day,"time":req.time.split("–")[0].strip(),"name":req.subject,
+                    "topic":req.topic,"zoom_link":req.zoom_link}
+    save_students(s); return {"ok":True,"group_id":group_id}
 
 @app.patch("/api/admin/lesson/{name}/{lesson_id}/complete")
 async def complete_lesson(name:str, lesson_id:int, r:Request,
@@ -451,6 +482,26 @@ async def complete_lesson(name:str, lesson_id:int, r:Request,
         else:
             price = s[name].get("lesson_price", 0)
             s[name]["balance"] = s[name].get("balance", 0) - price
+        # Групповое занятие: списываем урок у остальных участников группы
+        lesson_obj = next((l for l in s[name].get("schedule",[]) if l.get("id")==lesson_id), None)
+        if lesson_obj and lesson_obj.get("group_id"):
+            gid = lesson_obj["group_id"]
+            for other_name, other_st in s.items():
+                if other_name == name: continue
+                other_lesson = next((l for l in other_st.get("schedule",[]) if l.get("group_id")==gid and l.get("status")=="planned"), None)
+                if other_lesson:
+                    other_lesson["status"] = "completed"
+                    other_lesson["completed_date"] = today_str()
+                    if topic: other_lesson["completed_topic"] = topic
+                    other_st["lessonsTotal"] = other_st.get("lessonsTotal",0)+1
+                    other_sub = other_st.get("current_sub")
+                    if other_sub and other_sub.get("lessons_left",0) > 0:
+                        other_sub["lessons_left"] -= 1
+                        if other_sub["lessons_left"] == 0:
+                            other_st["current_sub"] = None
+                    else:
+                        price = other_st.get("lesson_price", 0)
+                        other_st["balance"] = other_st.get("balance", 0) - price
         # Оценка за занятие
         if grade and grade in (2,3,4,5):
             s[name].setdefault("grades",[])
@@ -1124,6 +1175,106 @@ def build_bot_app():
     tg.add_handler(CommandHandler("уведомления",  tg_notify_cmd))
     tg.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, tg_text))
     return tg
+
+# ── TASK EDIT / DELETE ────────────────────────────────────────────────────────
+
+@app.patch("/api/admin/task/{name}/{task_id}/edit")
+async def edit_task(name: str, task_id: int, data: dict, r: Request):
+    """Репетитор редактирует задание: меняет дату, название, предмет"""
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    for t in s[name].get("tasks", []):
+        if t["id"] == task_id:
+            if "due" in data: t["due"] = data["due"]
+            if "title" in data: t["title"] = data["title"]
+            if "subj" in data: t["subj"] = data["subj"]
+            if "priority" in data: t["pri"] = data["priority"]
+            break
+    save_students(s)
+    return {"ok": True}
+
+@app.delete("/api/admin/task/{name}/{task_id}")
+async def delete_task(name: str, task_id: int, r: Request):
+    """Репетитор удаляет задание"""
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    s[name]["tasks"] = [t for t in s[name].get("tasks", []) if t["id"] != task_id]
+    save_students(s)
+    return {"ok": True}
+
+# ── TASK FILE ATTACH (PDF + any file) ─────────────────────────────────────────
+
+@app.post("/api/admin/task/{name}/{task_id}/attach")
+async def attach_task_file(name: str, task_id: int, r: Request,
+    file: Optional[UploadFile] = File(None),
+    link: str = Form("")):
+    """Прикрепить PDF или любой файл/ссылку к существующему заданию"""
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    for t in s[name].get("tasks", []):
+        if t["id"] == task_id:
+            if file and file.filename:
+                safe = f"taskfile_{name.replace(' ','_')}_{task_id}_{file.filename}"
+                content = await file.read()
+                with open(UPLOAD_DIR / safe, "wb") as f_: f_.write(content)
+                url = f"/static/uploads/{safe}"
+                t.setdefault("files", [])
+                t["files"].append({"name": file.filename, "url": url,
+                                    "mime": file.content_type or "application/octet-stream"})
+                # Также шлём ученику в Telegram
+                tg_id = s[name].get("tg_id")
+                if tg_id and tg_app_ref:
+                    try:
+                        await tg_app_ref.bot.send_document(tg_id,
+                            open(UPLOAD_DIR / safe, "rb"),
+                            caption=f"📎 Файл к заданию: {t.get('title','')}")
+                    except: pass
+            if link:
+                t.setdefault("files", [])
+                t["files"].append({"name": link, "url": link, "mime": "link"})
+            break
+    save_students(s)
+    return {"ok": True}
+
+# ── VIDEO LESSONS ──────────────────────────────────────────────────────────────
+
+VIDEOS_FILE = DATA_DIR / "videos.json"
+def get_videos(): return load_json(VIDEOS_FILE, [])
+def save_videos(d): save_json(VIDEOS_FILE, d)
+
+@app.get("/api/videos")
+async def list_videos(subject: str = ""):
+    items = get_videos()
+    if subject:
+        items = [v for v in items if v.get("subject", "") == subject]
+    return items
+
+@app.post("/api/admin/videos")
+async def add_video(data: dict, r: Request):
+    require_admin(r)
+    items = get_videos()
+    vid = {
+        "id": (max((v["id"] for v in items), default=0) + 1),
+        "title": data.get("title", ""),
+        "url": data.get("url", ""),   # YouTube ссылка
+        "subject": data.get("subject", ""),
+        "topic": data.get("topic", ""),
+        "description": data.get("description", ""),
+        "added": today_str()
+    }
+    items.insert(0, vid)
+    save_videos(items)
+    return {"ok": True, "id": vid["id"]}
+
+@app.delete("/api/admin/videos/{video_id}")
+async def delete_video(video_id: int, r: Request):
+    require_admin(r)
+    items = [v for v in get_videos() if v["id"] != video_id]
+    save_videos(items)
+    return {"ok": True}
 
 @app.on_event("startup")
 async def on_startup():

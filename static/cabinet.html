@@ -212,6 +212,7 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);
       <button class="tn" onclick="nav('grades',this)">📊 Оценки</button>
       <button class="tn" onclick="nav('schedule',this)">📅 Расписание</button>
       <button class="tn" onclick="nav('knowledge',this)" id="tn-kb">📚 Материалы</button>
+      <button class="tn" onclick="nav('videos',this)" id="tn-videos">🎬 Видеоуроки</button>
       <button class="tn" onclick="nav('messages',this)" id="tn-msgs">💬 Сообщения</button>
     </nav>
     <div class="tbright">
@@ -272,6 +273,18 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);
       <div class="psub">Изучи материал и введи кодовое слово</div>
       <div class="kb-filter" id="kbfilter"></div>
       <div class="kb-grid" id="kbgrid"></div>
+    </div>
+
+    <!-- VIDEOS -->
+    <div class="page" id="page-videos">
+      <div class="schip">Видеоуроки</div>
+      <div class="ptitle">Библиотека видеоуроков</div>
+      <div style="margin-bottom:14px">
+        <input id="vid-q" placeholder="Поиск по теме или предмету…"
+          style="width:100%;max-width:320px;padding:9px 13px;border:1.5px solid var(--bdr);border-radius:10px;font-family:inherit;font-size:13px;outline:none"
+          oninput="filterStudentVideos()">
+      </div>
+      <div id="student-videos-list"></div>
     </div>
 
     <!-- MESSAGES -->
@@ -342,6 +355,7 @@ function nav(id,btn){
   document.getElementById('page-'+id).classList.add('active');
   if(btn)btn.classList.add('active');
   if(id==='knowledge')loadKnowledge();
+  if(id==='videos')loadStudentVideos();
   if(id==='messages'){renderMsgs();markMsgsRead();}
 }
 
@@ -480,12 +494,24 @@ const PRI={urgent:['bw','Срочно'],high:['bgo','Важно'],normal:['bb','
 function tHTML(t,showActions){
   const [bcls,blbl]=PRI[t.pri]||PRI.normal;
   const due=t.due?t.due.slice(8)+'.'+t.due.slice(5,7):'';
-  const photo=t.photo_url?`<img src="${t.photo_url}" onclick="openPhoto('${t.photo_url}')" style="max-width:100%;max-height:170px;border-radius:8px;object-fit:cover;cursor:pointer;border:1.5px solid var(--bdr);margin-top:7px;display:block">`:'';
+  // Фото задания (одно или несколько)
+  const photoUrls = (t.photo_urls&&t.photo_urls.length?t.photo_urls:[t.photo_url]).filter(Boolean);
+  const photoHtml = photoUrls.length
+    ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">${photoUrls.map(u=>`<img src="${u}" onclick="openPhoto('${u}')" style="height:90px;width:90px;border-radius:8px;object-fit:cover;cursor:pointer;border:1.5px solid var(--bdr)">`).join('')}</div>` : '';
+  // PDF и другие файлы
+  const filesHtml = (t.files||[]).length
+    ? `<div style="margin-top:7px;display:flex;flex-wrap:wrap;gap:6px">${(t.files||[]).map(f=>`
+        <a href="${f.url}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:6px 11px;background:#e8f0fb;border-radius:8px;font-size:12px;font-weight:600;color:var(--blue);text-decoration:none">
+          ${f.mime==='link'?'🔗':f.mime&&f.mime.includes('pdf')?'📕':'📄'} ${f.name.slice(0,25)}
+        </a>`).join('')}</div>` : '';
+  const photo = photoHtml + filesHtml;
   // Для выполненных — показываем оценку и ответ ученика
   const doneBlock=t.status==='done'?`
-    ${t.answer_url?`<div style="margin-top:7px">
+    ${(t.answer_urls&&t.answer_urls.length?t.answer_urls:[t.answer_url]).filter(Boolean).length?`<div style="margin-top:7px">
       <div style="font-size:10px;color:var(--mu);font-weight:600;margin-bottom:4px">Твой ответ:</div>
-      <img src="${t.answer_url}" onclick="openPhoto('${t.answer_url}')" style="max-width:100%;max-height:130px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid var(--g);display:block">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${(t.answer_urls&&t.answer_urls.length?t.answer_urls:[t.answer_url]).filter(Boolean).map(url=>`<img src="${url}" onclick="openPhoto('${url}')" style="height:80px;width:80px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid var(--g)">`).join('')}
+      </div>
     </div>`:''}
     ${t.grade?`<div style="margin-top:6px;display:flex;align-items:center;gap:7px">
       <div style="width:24px;height:24px;border-radius:50%;background:${t.grade>=4?'rgba(74,124,89,.15)':'rgba(200,98,42,.15)'};display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;color:${t.grade>=4?'var(--gd)':'var(--warn)'}">${t.grade}</div>
@@ -498,10 +524,18 @@ function tHTML(t,showActions){
         <img src="${t.answer_url}" onclick="openPhoto('${t.answer_url}')" style="height:38px;width:38px;border-radius:7px;object-fit:cover;cursor:pointer">
         <span style="font-size:11px;color:var(--g);font-weight:600">📤 Отправлено ${t.answer_date||''}</span>
       </div>`:''}
-      <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;background:var(--gp);border:1.5px solid var(--bdr);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--g)">
-        📤 ${t.answer_url?'Переотправить':'Сдать выполненное'}
-        <input type="file" accept="image/*" capture="camera" style="display:none" onchange="submitAnswer(${t.id},this)">
-      </label>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px" id="ans-prev-${t.id}"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:var(--gp);border:1.5px solid var(--bdr);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--g)">
+          📷 Камера
+          <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addAnswerPhoto(${t.id},this)">
+        </label>
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:var(--gp);border:1.5px solid var(--bdr);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--g)">
+          🖼 Галерея
+          <input type="file" accept="image/*" multiple style="display:none" onchange="addAnswerPhoto(${t.id},this)">
+        </label>
+        <button onclick="submitAnswerPhotos(${t.id})" style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer">📤 Отправить</button>
+      </div>
     </div>`:'';
   const checkIcon=t.status==='done'?'✓':t.status==='review'?'⏳':'';
   const checkCls=t.status==='done'?'done':t.status==='review'?'review':'';
@@ -530,12 +564,49 @@ async function markReview(id){
   try{await fetch(`${API}/api/student/${encodeURIComponent(sName)}/task/${id}/review`,{method:'PATCH'});}catch(e){}
 }
 
-async function submitAnswer(taskId,inp){
-  if(!inp.files[0])return;
-  const fd=new FormData(); fd.append('photo',inp.files[0]);
+// Хранилище фото ответов по задачам {taskId: [File,...]}
+const answerPhotos = {};
+
+function addAnswerPhoto(taskId, inp){
+  if(!answerPhotos[taskId]) answerPhotos[taskId] = [];
+  for(const f of inp.files){
+    if(answerPhotos[taskId].length >= 5){showToast('⚠️ Максимум 5 фото');break;}
+    answerPhotos[taskId].push(f);
+  }
+  inp.value = '';
+  // Обновляем превью
+  const el = document.getElementById(`ans-prev-${taskId}`);
+  if(el){
+    el.innerHTML = (answerPhotos[taskId]||[]).map((f,i)=>{
+      const url = URL.createObjectURL(f);
+      return `<div style="position:relative;display:inline-block">
+        <img src="${url}" style="width:48px;height:48px;object-fit:cover;border-radius:7px;border:1.5px solid var(--g)">
+        <div onclick="removeAnswerPhoto(${taskId},${i})" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#e74c3c;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700">✕</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function removeAnswerPhoto(taskId, idx){
+  if(answerPhotos[taskId]) answerPhotos[taskId].splice(idx,1);
+  addAnswerPhoto(taskId, {files:[], value:''}); // re-render
+}
+
+async function submitAnswerPhotos(taskId){
+  const photos = answerPhotos[taskId]||[];
+  if(!photos.length){showToast('⚠️ Выбери хотя бы одно фото');return;}
+  const fd = new FormData();
+  const names = ['photo','photo2','photo3','photo4','photo5'];
+  photos.slice(0,5).forEach((f,i) => fd.append(names[i], f));
   try{
     const r=await fetch(`${API}/api/student/${encodeURIComponent(sName)}/task/${taskId}/answer`,{method:'POST',body:fd});
-    if(r.ok){const d=await r.json();const t=(ST.tasks||[]).find(x=>x.id===taskId);if(t){t.answer_url=d.answer_url;t.answer_date='сегодня';t.status='review';}renderTasks();showToast('✅ Ответ отправлен!');}
+    if(r.ok){
+      const d=await r.json();
+      const t=(ST.tasks||[]).find(x=>x.id===taskId);
+      if(t){t.answer_url=d.answer_url;t.answer_urls=d.answer_urls||[];t.answer_date='сегодня';t.status='review';}
+      answerPhotos[taskId]=[];
+      renderTasks();showToast('✅ Ответ отправлен!');
+    }
   }catch(e){showToast('❌ Нет соединения');}
 }
 
@@ -753,6 +824,79 @@ async function sendMsg(){
     }
   }catch(e){}
 }
+
+// ── VIDEO LESSONS (STUDENT) ───────────────────────────────────────────────────
+let STUDENT_VIDEOS = [];
+
+async function loadStudentVideos(){
+  try{
+    const r = await fetch(`${API}/api/videos`);
+    STUDENT_VIDEOS = await r.json();
+  }catch(e){ STUDENT_VIDEOS=[]; }
+  filterStudentVideos();
+}
+
+function filterStudentVideos(){
+  const q = (document.getElementById('vid-q')?.value||'').toLowerCase();
+  const list = q ? STUDENT_VIDEOS.filter(v=>
+    v.title.toLowerCase().includes(q)||
+    (v.subject||'').toLowerCase().includes(q)||
+    (v.topic||'').toLowerCase().includes(q)
+  ) : STUDENT_VIDEOS;
+  renderStudentVideos(list);
+}
+
+function getYoutubeId(url){
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function renderStudentVideos(list){
+  const el = document.getElementById('student-videos-list'); if(!el)return;
+  if(!list.length){
+    el.innerHTML='<div class="card" style="color:var(--mu);font-size:13px">Видеоуроков пока нет</div>';
+    return;
+  }
+  el.innerHTML = list.map(v=>{
+    const ytId = getYoutubeId(v.url||'');
+    const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '';
+    return `<div class="card" style="display:flex;gap:13px;align-items:flex-start;margin-bottom:10px;padding:14px;cursor:pointer" onclick="playVideo('${v.url}','${v.title}')">
+      ${thumb
+        ? `<div style="flex-shrink:0;position:relative;width:110px;height:62px;border-radius:8px;overflow:hidden">
+            <img src="${thumb}" style="width:100%;height:100%;object-fit:cover">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3)">
+              <div style="width:28px;height:28px;background:rgba(255,0,0,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff">▶</div>
+            </div>
+          </div>`
+        : `<div style="flex-shrink:0;width:110px;height:62px;background:#f0ecec;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px">🎬</div>`}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px">${v.title}</div>
+        <div style="font-size:11px;color:var(--mu)">${v.subject||''}${v.topic?' · '+v.topic:''}</div>
+        ${v.description?`<div style="font-size:12px;color:var(--im);margin-top:4px">${v.description}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function playVideo(url, title){
+  const ytId = getYoutubeId(url);
+  const embedUrl = ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=1` : url;
+  const ov = document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:16px';
+  ov.innerHTML=`
+    <div style="width:min(800px,100%);cursor:default" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:15px;font-weight:700;color:#fff">${title}</div>
+        <div onclick="document.body.removeChild(this.closest('[style*=fixed]'))" style="color:#fff;font-size:22px;cursor:pointer">✕</div>
+      </div>
+      <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden">
+        <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;fullscreen" allowfullscreen></iframe>
+      </div>
+    </div>`;
+  ov.onclick = e=>{ if(e.target===ov) document.body.removeChild(ov); };
+  document.body.appendChild(ov);
+}
+
 </script>
 </body>
 </html>
