@@ -332,7 +332,14 @@ async def add_task_with_photo(r:Request,
             await bot.send_message(tg_id, f"📚 Новое задание!\n*{subj}*: {title}\nСрок: {due or 'не указан'}", parse_mode="Markdown")
             for url in photo_urls:
                 fname = url.split("/")[-1]
-                await bot.send_photo(tg_id, open(UPLOAD_DIR/fname,"rb"), caption="📎 Фото задания")
+                fpath = UPLOAD_DIR/fname
+                # Определяем тип файла
+                is_pdf = fname.lower().endswith('.pdf')
+                is_doc = any(fname.lower().endswith(ext) for ext in ['.doc','.docx','.txt'])
+                if is_pdf or is_doc:
+                    await bot.send_document(tg_id, open(fpath,"rb"), caption=f"📎 Файл к заданию: {fname}")
+                else:
+                    await bot.send_photo(tg_id, open(fpath,"rb"), caption="📎 Фото задания")
         except: pass
     return {"ok":True,"id":tid,"photo_url":photo_url,"photo_urls":photo_urls}
 
@@ -1310,14 +1317,23 @@ TESTS_FILE = DATA_DIR / "tests.json"
 def get_tests_db(): return load_json(TESTS_FILE, [])
 def save_tests_db(d): save_json(TESTS_FILE, d)
 
+@app.post("/api/admin/upload-image")
+async def upload_image(r: Request, file: UploadFile = File(...)):
+    """Загрузить картинку (для вопросов теста и т.д.)"""
+    require_admin(r)
+    safe = f"img_{file.filename}"
+    with open(UPLOAD_DIR/safe, "wb") as f_: f_.write(await file.read())
+    return {"ok": True, "url": f"/static/uploads/{safe}"}
+
 @app.get("/api/tests")
-async def list_tests(program: str = ""):
+async def list_tests(program: str = "", student: str = ""):
     items = get_tests_db()
-    if program:
-        items = [t for t in items if t.get("program","") in ["",program] or not t.get("program")]
+    if student:
+        items = [t for t in items if not t.get("assigned_to") or t.get("assigned_to") == student]
     return [{"id":t["id"],"title":t["title"],"subject":t.get("subject",""),
              "description":t.get("description",""),"questions_count":len(t.get("questions",[])),
-             "program":t.get("program",""),"created":t.get("created","")} for t in items]
+             "assigned_to":t.get("assigned_to",""),"time_limit":t.get("time_limit",0),
+             "created":t.get("created","")} for t in items]
 
 @app.get("/api/tests/{test_id}")
 async def get_test(test_id: int):
@@ -1335,7 +1351,8 @@ async def create_test(data: dict, r: Request):
         "title": data.get("title",""),
         "subject": data.get("subject",""),
         "description": data.get("description",""),
-        "program": data.get("program",""),
+        "assigned_to": data.get("assigned_to",""),
+        "time_limit": data.get("time_limit", 0),
         "questions": data.get("questions",[]),
         "created": today_str()
     }
@@ -1349,7 +1366,7 @@ async def update_test(test_id: int, data: dict, r: Request):
     items = get_tests_db()
     for t in items:
         if t["id"] == test_id:
-            for k in ["title","subject","description","program","questions"]:
+            for k in ["title","subject","description","assigned_to","time_limit","questions"]:
                 if k in data: t[k] = data[k]
             break
     save_tests_db(items)

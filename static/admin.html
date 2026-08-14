@@ -541,9 +541,9 @@ textarea.fi2{resize:vertical;min-height:60px}
     <div class="page" id="page-tests-admin">
       <div class="chip">Тесты</div>
       <div class="ptitle">Тесты и проверочные работы</div>
-      <div style="display:grid;grid-template-columns:1fr 380px;gap:16px">
-        <div id="tests-list-admin"></div>
-        <div class="card" style="align-self:start">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+        <div style="flex:1;min-width:320px" id="tests-list-admin"></div>
+        <div class="card" style="width:400px;flex-shrink:0">
           <div class="ctitle" id="test-form-title">➕ Новый тест</div>
           <input type="hidden" id="test-edit-id" value="">
           <label class="fl2">Название теста</label>
@@ -552,8 +552,10 @@ textarea.fi2{resize:vertical;min-height:60px}
           <input class="fi2" id="test-subject" placeholder="Алгебра">
           <label class="fl2">Описание</label>
           <textarea class="fi2" id="test-desc" placeholder="Описание теста…" style="min-height:50px;resize:vertical"></textarea>
-          <label class="fl2">Программа</label>
-          <select class="fi2" id="test-program"><option value="">Все программы</option></select>
+          <label class="fl2">Назначить ученику</label>
+          <select class="fi2" id="test-student"><option value="">Всем ученикам</option></select>
+          <label class="fl2">Время на выполнение (минуты, 0 = без ограничений)</label>
+          <input type="number" class="fi2" id="test-time" placeholder="0" min="0" value="0">
           <div style="border-top:1.5px solid var(--bdr);margin:12px 0 8px;padding-top:10px">
             <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">Вопросы</div>
             <div id="test-questions-list"></div>
@@ -754,7 +756,7 @@ function renderStudentsList(){
         <div class="stname">${name}</div>
         <div class="stmeta">
           <span>${s.program||''}</span>
-          <span>🔑 ${STUDENT_PASSWORDS[name]||s.password||'1234'}</span>
+          <span>🔑 ${(STUDENT_PASSWORDS[name]&&STUDENT_PASSWORDS[name].password)||s.password||'1234'}</span>
           ${sub?`<span>📦 ${sub.lessons_left}/${sub.lessons_total}</span>`:'<span>нет абон.</span>'}
           <span>${bal>=0?'✅':'⚠️ долг '+(-bal).toFixed(0)+'₽'}</span>
           <span>✅ ${active} акт.</span>
@@ -1119,13 +1121,17 @@ async function attachFileToTask(){
 function renderDoneTasks(){
   const items=[];
   Object.entries(STUDENTS).forEach(([studentName,s])=>
-    (s.tasks||[]).filter(t=>t.status==='done').slice(0,10).forEach(t=>items.push({studentName,...t})));
+    (s.tasks||[]).filter(t=>t.status==='done').slice(0,15).forEach(t=>items.push({studentName,...t})));
   document.getElementById('tasks-done-list').innerHTML=items.length
     ?items.map(t=>`<div style="padding:10px 0;border-bottom:1.5px solid var(--bdr)">
         <div style="font-size:11px;font-weight:700;color:var(--g)">${t.studentName}</div>
         <div style="font-size:13px;font-weight:600;color:var(--im);text-decoration:line-through">${t.title}</div>
-        <div style="font-size:10px;color:var(--mu);margin-bottom:5px">${t.subj} · сдано ${t.answer_date||'—'}</div>
-        ${t.answer_url?`<img src="${t.answer_url}" onclick="openPhoto('${t.answer_url}')" style="max-width:100%;max-height:140px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid var(--g);display:block;margin-bottom:5px">`:''}
+        <div style="font-size:10px;color:var(--mu);margin-bottom:6px">${t.subj} · сдано ${t.answer_date||'—'}</div>
+        <!-- Фото задания (маленькие) -->
+        ${(t.photo_urls&&t.photo_urls.length?t.photo_urls:[t.photo_url]).filter(Boolean).length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px">${(t.photo_urls&&t.photo_urls.length?t.photo_urls:[t.photo_url]).filter(Boolean).map(u=>`<img src="${u}" onclick="openPhoto('${u}')" style="width:40px;height:40px;border-radius:6px;object-fit:cover;cursor:pointer;border:1.5px solid var(--bdr)" title="Фото задания">`).join('')}</div>`:''}
+        <!-- Фото ответа (маленькие) -->
+        ${(t.answer_urls&&t.answer_urls.length?t.answer_urls:[t.answer_url]).filter(Boolean).length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px">${(t.answer_urls&&t.answer_urls.length?t.answer_urls:[t.answer_url]).filter(Boolean).map(u=>`<img src="${u}" onclick="openPhoto('${u}')" style="width:40px;height:40px;border-radius:6px;object-fit:cover;cursor:pointer;border:2px solid var(--g)" title="Ответ ученика">`).join('')}</div>`:''}
+        ${t.answer_comment?`<div style="font-size:11px;color:var(--im);background:rgba(74,124,89,.08);border-radius:7px;padding:5px 8px;margin-bottom:5px">💬 ${t.answer_comment}</div>`:''}
         ${t.grade?`<span style="font-size:11px;font-weight:700;color:var(--g)">Оценка: ${t.grade}${t.grade_comment?' — '+t.grade_comment:''}</span>`:''}
       </div>`).join('')
     :'<div style="color:var(--mu);font-size:13px">Выполненных нет</div>';
@@ -1543,10 +1549,22 @@ async function loadKnowledgeAdmin(countOnly=false){
     const r=await fetch(`${API}/api/knowledge`);const items=await r.json();
     if(countOnly)return;
     const list=document.getElementById('kb-list');if(!list)return;
-    list.innerHTML=items.length?items.map(item=>{const ico=item.kind==='link'?'🎬':item.kind==='file'?'📄':'📝';const bg=item.kind==='link'?'#fdf5e0':item.kind==='file'?'#e8f5ea':'#e8f0fb';
-      return`<div class="kb-item"><div style="width:32px;height:32px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${ico}</div>
-        <div style="flex:1"><div style="font-size:12px;font-weight:700">${item.title}</div><div style="font-size:10px;color:var(--mu)">${item.subject} · ${item.date} ${item.program?'· '+item.program:''} ${item.codeword?'· 🔑 код':''}${item.content&&item.kind==='link'?`<a href="${item.content}" target="_blank" style="font-size:10px;color:var(--blue)">🔗 открыть</a>`:''}${item.file_url?`<a href="${item.file_url}" target="_blank" style="font-size:10px;color:var(--g)">📥 скачать</a>`:''}</div>
-        <div class="ic-btn" onclick="deleteKb(${item.id})" style="color:var(--red)">🗑</div></div>`;}).join(''):'<div style="color:var(--mu);font-size:13px">Материалов пока нет</div>';
+    if(!items.length){list.innerHTML='<div style="color:var(--mu);font-size:13px">Материалов пока нет</div>';return;}
+    list.innerHTML=items.map(item=>{
+      const ico=item.kind==='link'?'🎬':item.kind==='file'?'📄':'📝';
+      const bg=item.kind==='link'?'#fdf5e0':item.kind==='file'?'#e8f5ea':'#e8f0fb';
+      const isPdf = item.file_url&&(item.file_url.toLowerCase().includes('.pdf')||(item.file_name||'').toLowerCase().includes('.pdf'));
+      return`<div style="background:var(--milk);border:1.5px solid var(--bdr);border-radius:10px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px">
+        <div style="width:34px;height:34px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${isPdf?'📕':ico}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;margin-bottom:2px">${item.title}</div>
+          <div style="font-size:10px;color:var(--mu);margin-bottom:5px">${item.subject||''} · ${item.date||''} ${item.program?'· '+item.program:''} ${item.codeword?'· 🔑 код':''}</div>
+          ${item.content&&item.kind==='link'?`<a href="${item.content}" target="_blank" style="font-size:11px;color:var(--blue);font-weight:600;display:block;margin-bottom:3px">🔗 Открыть ссылку</a>`:''}
+          ${item.file_url?`<a href="${item.file_url}" target="_blank" style="font-size:11px;color:${isPdf?'#c0392b':'var(--g)'};font-weight:600;display:block">${isPdf?'📕 Открыть PDF':'📥 Скачать файл'}</a>`:''}
+          ${item.content&&item.kind==='text'?`<div style="font-size:12px;color:var(--im)">${item.content.slice(0,80)}${item.content.length>80?'…':''}</div>`:''}
+        </div>
+        <button onclick="deleteKb(${item.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;flex-shrink:0;padding:2px" title="Удалить">🗑</button>
+      </div>`;}).join('');
   }catch(e){}
 }
 async function deleteKb(id){await fetch(`${API}/api/admin/knowledge/${id}`,{method:'DELETE',headers:H()});toast('🗑 Удалено');loadKnowledgeAdmin();}
@@ -1777,10 +1795,12 @@ let testQuestions = []; // [{text, options:[], correct:0}]
 let editingTestId = null;
 
 function fillTestPrograms(){
-  const sel = document.getElementById('test-program');
-  if(!sel) return;
-  sel.innerHTML = '<option value="">Все программы</option>' +
-    (PROGRAMS||[]).map(p=>`<option value="${p}">${p}</option>`).join('');
+  // Заполняем список учеников
+  const sel = document.getElementById('test-student');
+  if(sel){
+    sel.innerHTML = '<option value="">Всем ученикам</option>' +
+      Object.keys(STUDENTS).map(n=>`<option value="${n}">${n}</option>`).join('');
+  }
 }
 
 async function loadTestsAdmin(){
@@ -1829,7 +1849,15 @@ function renderTestQuestions(){
       </div>
       <input class="fi2" placeholder="Текст вопроса" value="${q.text}"
         oninput="testQuestions[${qi}].text=this.value" style="margin-bottom:8px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">Варианты ответов (выбери правильный)</div>
+      <!-- Картинка к вопросу -->
+      <div style="margin-bottom:8px">
+        ${q.image_url?`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><img src="${q.image_url}" style="height:60px;border-radius:7px;object-fit:cover"><div onclick="testQuestions[${qi}].image_url='';renderTestQuestions()" style="cursor:pointer;color:var(--red);font-size:11px;font-weight:700">✕ Удалить</div></div>`:''}
+        <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--mu);font-weight:600">
+          🖼 Добавить картинку к вопросу
+          <input type="file" accept="image/*" style="display:none" onchange="uploadQuestionImage(${qi},this)">
+        </label>
+      </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">Варианты ответов (⭕ = правильный)</div>
       ${q.options.map((opt,oi)=>`
         <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
           <input type="radio" name="q${qi}-correct" ${q.correct===oi?'checked':''} 
@@ -1838,6 +1866,26 @@ function renderTestQuestions(){
             oninput="testQuestions[${qi}].options[${oi}]=this.value" style="flex:1;margin:0">
         </div>`).join('')}
     </div>`).join('');
+}
+
+async function uploadQuestionImage(qi, inp){
+  if(!inp.files[0])return;
+  const fd = new FormData(); fd.append('photo', inp.files[0]);
+  // Загружаем как фото задания временно
+  const safe = `qimg_${Date.now()}_${inp.files[0].name}`;
+  const fd2 = new FormData(); fd2.append('file', inp.files[0]);
+  // Используем эндпоинт загрузки материала
+  const r = await fetch(`${API}/api/admin/upload-image`, {method:'POST', headers:{'X-Admin-Token':TOKEN}, body:fd2});
+  if(r.ok){
+    const d = await r.json();
+    testQuestions[qi].image_url = d.url;
+    renderTestQuestions();
+  } else {
+    // Fallback: используем createObjectURL для превью
+    testQuestions[qi].image_url = URL.createObjectURL(inp.files[0]);
+    renderTestQuestions();
+    toast('⚠️ Картинка добавлена локально, сохранится при деплое');
+  }
 }
 
 function removeTestQuestion(idx){
@@ -1858,7 +1906,8 @@ async function saveTest(){
     title,
     subject: document.getElementById('test-subject').value.trim(),
     description: document.getElementById('test-desc').value.trim(),
-    program: document.getElementById('test-program').value,
+    assigned_to: document.getElementById('test-student').value,
+    time_limit: +document.getElementById('test-time').value||0,
     questions: testQuestions.map(q=>({...q, options: q.options.filter(o=>o.trim())}))
   };
   if(editingTestId){
@@ -1881,8 +1930,9 @@ async function editTest(id){
     document.getElementById('test-title').value = t.title||'';
     document.getElementById('test-subject').value = t.subject||'';
     document.getElementById('test-desc').value = t.description||'';
-    document.getElementById('test-program').value = t.program||'';
-    testQuestions = (t.questions||[]).map(q=>({...q, options:[...q.options,...['','','','']].slice(0,4)}));
+    document.getElementById('test-student').value = t.assigned_to||'';
+    document.getElementById('test-time').value = t.time_limit||0;
+    testQuestions = (t.questions||[]).map(q=>({...q, options:[...q.options,...['','','','']].slice(0,4), image_url:q.image_url||''}));
     renderTestQuestions();
     document.getElementById('test-form-title').textContent = '✏️ Редактировать тест';
     document.getElementById('test-cancel-btn').style.display = '';
@@ -1896,7 +1946,8 @@ function cancelTestEdit(){
   document.getElementById('test-title').value = '';
   document.getElementById('test-subject').value = '';
   document.getElementById('test-desc').value = '';
-  document.getElementById('test-program').value = '';
+  document.getElementById('test-student').value = '';
+  document.getElementById('test-time').value = '0';
   testQuestions = [];
   renderTestQuestions();
   document.getElementById('test-form-title').textContent = '➕ Новый тест';

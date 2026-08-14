@@ -979,9 +979,8 @@ let studentAnswers = {};
 async function loadStudentTests(){
   // Загружаем тесты и результаты параллельно
   try{
-    const prog = ST.program||'';
     const [rTests, rResults] = await Promise.all([
-      fetch(`${API}/api/tests?program=${encodeURIComponent(prog)}`),
+      fetch(`${API}/api/tests?student=${encodeURIComponent(sName)}`),
       fetch(`${API}/api/student/${encodeURIComponent(sName)}/test-results`)
     ]);
     const tests = await rTests.json();
@@ -1039,23 +1038,30 @@ async function startTest(testId){
   }catch(e){ showToast('❌ Нет соединения'); }
 }
 
+let testTimer = null;
+let testSecondsLeft = 0;
+
 function renderTestRun(){
   if(!currentTest) return;
   document.getElementById('tests-list-student').style.display='none';
   document.getElementById('test-results-block').style.display='none';
   const el = document.getElementById('test-run-block');
   el.style.display='block';
+  const timeLimit = currentTest.time_limit||0;
+
   el.innerHTML=`
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <button onclick="exitTest()" style="background:var(--milk);border:1.5px solid var(--bdr);border-radius:8px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer">← Назад</button>
-      <div>
+      <div style="flex:1">
         <div style="font-size:16px;font-weight:800;color:var(--ink)">${currentTest.title}</div>
-        <div style="font-size:11px;color:var(--mu)">${currentTest.questions.length} вопросов</div>
+        <div style="font-size:11px;color:var(--mu)">${currentTest.questions.length} вопросов${timeLimit?' · ⏱ '+timeLimit+' мин':''}</div>
       </div>
+      ${timeLimit?`<div id="test-timer" style="font-size:20px;font-weight:800;color:var(--g);background:rgba(74,124,89,.1);padding:8px 14px;border-radius:10px">--:--</div>`:''}
     </div>
     ${currentTest.questions.map((q,qi)=>`
       <div class="card" style="margin-bottom:12px">
-        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px">${qi+1}. ${q.text}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px">${qi+1}. ${q.text}</div>
+        ${q.image_url?`<img src="${q.image_url}" style="max-width:100%;max-height:200px;border-radius:9px;object-fit:contain;margin-bottom:10px;display:block">`:''}
         ${q.options.map((opt,oi)=>`
           <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;border:1.5px solid var(--bdr);margin-bottom:7px;cursor:pointer;transition:.15s" id="opt-${qi}-${oi}">
             <input type="radio" name="q${qi}" value="${oi}" style="width:16px;height:16px;accent-color:var(--g);flex-shrink:0"
@@ -1065,6 +1071,27 @@ function renderTestRun(){
       </div>`).join('')}
     <button onclick="submitTest()" style="width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px">Завершить тест ✓</button>
   `;
+
+  // Запускаем таймер если задан
+  if(timeLimit > 0){
+    testSecondsLeft = timeLimit * 60;
+    clearInterval(testTimer);
+    testTimer = setInterval(()=>{
+      testSecondsLeft--;
+      const m = Math.floor(testSecondsLeft/60);
+      const s = testSecondsLeft%60;
+      const timerEl = document.getElementById('test-timer');
+      if(timerEl){
+        timerEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        if(testSecondsLeft <= 60) timerEl.style.color = '#e74c3c';
+      }
+      if(testSecondsLeft <= 0){
+        clearInterval(testTimer);
+        showToast('⏱ Время вышло! Тест завершается…');
+        setTimeout(()=>submitTest(), 1500);
+      }
+    }, 1000);
+  }
 }
 
 function selectAnswer(qi, oi){
@@ -1117,6 +1144,7 @@ function showTestResult(d){
 }
 
 function exitTest(){
+  clearInterval(testTimer); testTimer=null;
   currentTest = null; studentAnswers = {};
   document.getElementById('test-run-block').style.display='none';
   document.getElementById('test-run-block').innerHTML='';
