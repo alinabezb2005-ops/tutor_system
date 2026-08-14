@@ -541,29 +541,35 @@ textarea.fi2{resize:vertical;min-height:60px}
     <div class="page" id="page-tests-admin">
       <div class="chip">Тесты</div>
       <div class="ptitle">Тесты и проверочные работы</div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
-        <div style="flex:1;min-width:320px" id="tests-list-admin"></div>
-        <div class="card" style="width:400px;flex-shrink:0">
+      <div class="two">
+        <!-- Список тестов -->
+        <div>
+          <div id="tests-list-admin"></div>
+        </div>
+        <!-- Форма создания/редактирования -->
+        <div class="card" id="test-form-card">
           <div class="ctitle" id="test-form-title">➕ Новый тест</div>
           <input type="hidden" id="test-edit-id" value="">
           <label class="fl2">Название теста</label>
           <input class="fi2" id="test-title" placeholder="Итоговый тест по алгебре">
           <label class="fl2">Предмет</label>
           <input class="fi2" id="test-subject" placeholder="Алгебра">
-          <label class="fl2">Описание</label>
+          <label class="fl2">Описание (необязательно)</label>
           <textarea class="fi2" id="test-desc" placeholder="Описание теста…" style="min-height:50px;resize:vertical"></textarea>
           <label class="fl2">Назначить ученику</label>
           <select class="fi2" id="test-student"><option value="">Всем ученикам</option></select>
-          <label class="fl2">Время на выполнение (минуты, 0 = без ограничений)</label>
-          <input type="number" class="fi2" id="test-time" placeholder="0" min="0" value="0">
-          <div style="border-top:1.5px solid var(--bdr);margin:12px 0 8px;padding-top:10px">
-            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">Вопросы</div>
+          <label class="fl2">Время (минуты, 0 = без ограничений)</label>
+          <input type="number" class="fi2" id="test-time" value="0" min="0">
+          <div style="border-top:1.5px solid var(--bdr);margin:14px 0 10px;padding-top:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="font-size:12px;font-weight:700;color:var(--ink)">Вопросы (<span id="q-count">0</span>)</div>
+              <button class="btn btnp" onclick="addTestQuestion()" style="font-size:11px;padding:6px 12px">+ Вопрос</button>
+            </div>
             <div id="test-questions-list"></div>
-            <button class="btn btns" onclick="addTestQuestion()" style="width:100%;margin-top:7px;padding:9px">+ Добавить вопрос</button>
           </div>
-          <div style="display:flex;gap:8px;margin-top:4px">
-            <button class="btn btnp" onclick="saveTest()" style="flex:1;padding:10px">Сохранить тест</button>
-            <button class="btn btns" onclick="cancelTestEdit()" id="test-cancel-btn" style="display:none;padding:10px">Отмена</button>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button class="btn btnp" onclick="saveTest()" style="flex:1;padding:11px">💾 Сохранить тест</button>
+            <button class="btn btns" onclick="cancelTestEdit()" id="test-cancel-btn" style="display:none;padding:11px">Отмена</button>
           </div>
         </div>
       </div>
@@ -1790,16 +1796,18 @@ async function deleteVideo(id){
 }
 
 
-// ── TESTS ADMIN ───────────────────────────────────────────────────────────────
-let testQuestions = []; // [{text, options:[], correct:0}]
-let editingTestId = null;
+// ── TESTS ADMIN ─────────────────────────────────────────────────────
+let _tq = []; // testQuestions — [{text, options:[], correct:0, image_url:''}]
+let _editTestId = null;
 
 function fillTestPrograms(){
-  // Заполняем список учеников
+  // Заполняем список учеников при открытии вкладки
   const sel = document.getElementById('test-student');
   if(sel){
+    const cur = sel.value;
     sel.innerHTML = '<option value="">Всем ученикам</option>' +
       Object.keys(STUDENTS).map(n=>`<option value="${n}">${n}</option>`).join('');
+    sel.value = cur;
   }
 }
 
@@ -1808,159 +1816,177 @@ async function loadTestsAdmin(){
     const r = await fetch(`${API}/api/tests`, {headers:H()});
     const tests = await r.json();
     renderTestsAdmin(tests);
-  }catch(e){ document.getElementById('tests-list-admin').innerHTML='<div style="color:var(--mu)">Ошибка загрузки</div>'; }
+  }catch(e){
+    const el = document.getElementById('tests-list-admin');
+    if(el) el.innerHTML='<div class="card" style="color:var(--red)">Ошибка загрузки тестов</div>';
+  }
 }
 
 function renderTestsAdmin(tests){
   const el = document.getElementById('tests-list-admin'); if(!el) return;
   if(!tests.length){
-    el.innerHTML='<div class="card" style="color:var(--mu);font-size:13px">Тестов пока нет — создайте первый!</div>';
+    el.innerHTML='<div class="card" style="color:var(--mu);font-size:13px;padding:16px">Тестов пока нет — создайте первый в форме справа!</div>';
     return;
   }
   el.innerHTML = tests.map(t=>`
     <div class="card" style="margin-bottom:10px">
       <div style="display:flex;align-items:flex-start;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:#e8f0fb;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📝</div>
+        <div style="width:42px;height:42px;border-radius:10px;background:#e8f0fb;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📝</div>
         <div style="flex:1">
           <div style="font-size:14px;font-weight:700;color:var(--ink)">${t.title}</div>
-          <div style="font-size:11px;color:var(--mu);margin-top:2px">${t.subject||''}${t.program?' · '+t.program:''} · ${t.questions_count} вопросов · ${t.created||''}</div>
+          <div style="font-size:11px;color:var(--mu);margin-top:3px">
+            ${t.subject||''}
+            ${t.assigned_to?` · 👤 ${t.assigned_to}`:' · 👥 Всем'}
+            ${t.time_limit?' · ⏱ '+t.time_limit+' мин':''}
+            · ${t.questions_count} вопросов
+            · ${t.created||''}
+          </div>
           ${t.description?`<div style="font-size:12px;color:var(--im);margin-top:4px">${t.description}</div>`:''}
         </div>
-        <div style="display:flex;gap:7px;flex-shrink:0">
-          <button class="btn btns" onclick="editTest(${t.id})" style="font-size:11px;padding:6px 11px">✏️ Изменить</button>
-          <button class="btn btnd" onclick="deleteTestAdmin(${t.id})" style="font-size:11px;padding:6px 11px">🗑</button>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btns" onclick="editTestAdmin(${t.id})" style="font-size:11px;padding:6px 10px">✏️</button>
+          <button class="btn btnd" onclick="deleteTestAdmin(${t.id})" style="font-size:11px;padding:6px 10px">🗑</button>
         </div>
       </div>
     </div>`).join('');
+}
+
+function tqRender(){
+  const el = document.getElementById('test-questions-list'); if(!el) return;
+  const cnt = document.getElementById('q-count'); if(cnt) cnt.textContent = _tq.length;
+  if(!_tq.length){
+    el.innerHTML='<div style="color:var(--mu);font-size:12px;text-align:center;padding:10px">Нажми «+ Вопрос» чтобы добавить вопрос</div>';
+    return;
+  }
+  el.innerHTML = _tq.map((q,qi)=>`
+    <div style="background:var(--milk);border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">
+        <span style="font-size:11px;font-weight:700;color:var(--g);background:rgba(74,124,89,.12);padding:2px 8px;border-radius:99px">Вопрос ${qi+1}</span>
+        <button onclick="_tq.splice(${qi},1);tqRender()" style="margin-left:auto;background:none;border:none;color:var(--red);font-size:12px;font-weight:700;cursor:pointer">✕ Удалить</button>
+      </div>
+      <input class="fi2" placeholder="Текст вопроса" value="${q.text.replace(/"/g,'&quot;')}"
+        oninput="_tq[${qi}].text=this.value" style="margin-bottom:8px">
+      ${q.image_url?`<div style="margin-bottom:7px;display:flex;align-items:center;gap:8px">
+        <img src="${q.image_url}" style="height:55px;border-radius:7px;object-fit:cover">
+        <button onclick="_tq[${qi}].image_url='';tqRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;font-weight:700">✕ Удалить</button>
+      </div>`:''}
+      <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--mu);font-weight:600;margin-bottom:8px">
+        🖼 Добавить картинку
+        <input type="file" accept="image/*" style="display:none" onchange="uploadQImg(${qi},this)">
+      </label>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">Варианты (⭕ отмечает правильный)</div>
+      ${q.options.map((opt,oi)=>`
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+          <input type="radio" name="tq${qi}" ${q.correct===oi?'checked':''}
+            onchange="_tq[${qi}].correct=${oi}"
+            style="width:16px;height:16px;flex-shrink:0;accent-color:var(--g)">
+          <input class="fi2" placeholder="Вариант ${oi+1}" value="${opt.replace(/"/g,'&quot;')}"
+            oninput="_tq[${qi}].options[${oi}]=this.value" style="flex:1;margin:0">
+        </div>`).join('')}
+    </div>`).join('');
+  // Восстанавливаем радиокнопки (они не сохраняются через innerHTML)
 }
 
 function addTestQuestion(){
-  testQuestions.push({text:'', options:['','','',''], correct:0});
-  renderTestQuestions();
+  _tq.push({text:'', options:['','','',''], correct:0, image_url:''});
+  tqRender();
 }
 
-function renderTestQuestions(){
-  const el = document.getElementById('test-questions-list'); if(!el) return;
-  el.innerHTML = testQuestions.map((q,qi)=>`
-    <div style="background:var(--milk);border:1.5px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div style="font-size:11px;font-weight:700;color:var(--g);background:rgba(74,124,89,.1);padding:2px 8px;border-radius:99px">Вопрос ${qi+1}</div>
-        <div onclick="removeTestQuestion(${qi})" style="margin-left:auto;cursor:pointer;color:var(--red);font-size:12px;font-weight:700">✕ Удалить</div>
-      </div>
-      <input class="fi2" placeholder="Текст вопроса" value="${q.text}"
-        oninput="testQuestions[${qi}].text=this.value" style="margin-bottom:8px">
-      <!-- Картинка к вопросу -->
-      <div style="margin-bottom:8px">
-        ${q.image_url?`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><img src="${q.image_url}" style="height:60px;border-radius:7px;object-fit:cover"><div onclick="testQuestions[${qi}].image_url='';renderTestQuestions()" style="cursor:pointer;color:var(--red);font-size:11px;font-weight:700">✕ Удалить</div></div>`:''}
-        <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--mu);font-weight:600">
-          🖼 Добавить картинку к вопросу
-          <input type="file" accept="image/*" style="display:none" onchange="uploadQuestionImage(${qi},this)">
-        </label>
-      </div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">Варианты ответов (⭕ = правильный)</div>
-      ${q.options.map((opt,oi)=>`
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
-          <input type="radio" name="q${qi}-correct" ${q.correct===oi?'checked':''} 
-            onchange="testQuestions[${qi}].correct=${oi}" style="width:15px;height:15px;flex-shrink:0;accent-color:var(--g)">
-          <input class="fi2" placeholder="Вариант ${oi+1}" value="${opt}"
-            oninput="testQuestions[${qi}].options[${oi}]=this.value" style="flex:1;margin:0">
-        </div>`).join('')}
-    </div>`).join('');
-}
-
-async function uploadQuestionImage(qi, inp){
+async function uploadQImg(qi, inp){
   if(!inp.files[0])return;
-  const fd = new FormData(); fd.append('photo', inp.files[0]);
-  // Загружаем как фото задания временно
-  const safe = `qimg_${Date.now()}_${inp.files[0].name}`;
-  const fd2 = new FormData(); fd2.append('file', inp.files[0]);
-  // Используем эндпоинт загрузки материала
-  const r = await fetch(`${API}/api/admin/upload-image`, {method:'POST', headers:{'X-Admin-Token':TOKEN}, body:fd2});
-  if(r.ok){
-    const d = await r.json();
-    testQuestions[qi].image_url = d.url;
-    renderTestQuestions();
-  } else {
-    // Fallback: используем createObjectURL для превью
-    testQuestions[qi].image_url = URL.createObjectURL(inp.files[0]);
-    renderTestQuestions();
-    toast('⚠️ Картинка добавлена локально, сохранится при деплое');
-  }
-}
-
-function removeTestQuestion(idx){
-  testQuestions.splice(idx,1);
-  renderTestQuestions();
+  const fd=new FormData(); fd.append('file',inp.files[0]);
+  try{
+    const r=await fetch(`${API}/api/admin/upload-image`,{method:'POST',headers:{'X-Admin-Token':TOKEN},body:fd});
+    if(r.ok){const d=await r.json();_tq[qi].image_url=d.url;tqRender();}
+    else{_tq[qi].image_url=URL.createObjectURL(inp.files[0]);tqRender();}
+  }catch(e){_tq[qi].image_url=URL.createObjectURL(inp.files[0]);tqRender();}
 }
 
 async function saveTest(){
   const title = document.getElementById('test-title').value.trim();
   if(!title){toast('⚠️ Введи название теста');return;}
-  if(!testQuestions.length){toast('⚠️ Добавь хотя бы один вопрос');return;}
-  // Проверяем что все вопросы заполнены
-  for(const q of testQuestions){
-    if(!q.text.trim()){toast('⚠️ Заполни текст всех вопросов');return;}
-    if(q.options.filter(o=>o.trim()).length < 2){toast('⚠️ У каждого вопроса должно быть минимум 2 варианта');return;}
+  if(!_tq.length){toast('⚠️ Добавь хотя бы один вопрос');return;}
+  for(let i=0;i<_tq.length;i++){
+    const q=_tq[i];
+    if(!q.text.trim()){toast(`⚠️ Заполни текст вопроса ${i+1}`);return;}
+    const filled = q.options.filter(o=>o.trim());
+    if(filled.length<2){toast(`⚠️ Вопрос ${i+1}: нужно минимум 2 варианта ответа`);return;}
   }
+  const btn = document.querySelector('#test-form-card .btn.btnp');
+  if(btn){btn.textContent='Сохраняю…';btn.disabled=true;}
   const data = {
     title,
     subject: document.getElementById('test-subject').value.trim(),
     description: document.getElementById('test-desc').value.trim(),
     assigned_to: document.getElementById('test-student').value,
     time_limit: +document.getElementById('test-time').value||0,
-    questions: testQuestions.map(q=>({...q, options: q.options.filter(o=>o.trim())}))
+    questions: _tq.map(q=>({
+      text:q.text, correct:q.correct, image_url:q.image_url||'',
+      options: q.options.filter(o=>o.trim())
+    }))
   };
-  if(editingTestId){
-    await fetch(`${API}/api/admin/tests/${editingTestId}`,{method:'PUT',headers:H(),body:JSON.stringify(data)});
-    toast('✅ Тест обновлён');
-  } else {
-    await fetch(`${API}/api/admin/tests`,{method:'POST',headers:H(),body:JSON.stringify(data)});
-    toast('✅ Тест создан');
-  }
-  cancelTestEdit();
-  loadTestsAdmin();
+  try{
+    let r;
+    if(_editTestId){
+      r=await fetch(`${API}/api/admin/tests/${_editTestId}`,{method:'PUT',headers:H(),body:JSON.stringify(data)});
+    } else {
+      r=await fetch(`${API}/api/admin/tests`,{method:'POST',headers:H(),body:JSON.stringify(data)});
+    }
+    if(r.ok){
+      toast(_editTestId?'✅ Тест обновлён':'✅ Тест создан');
+      cancelTestEdit();
+      await loadTestsAdmin();
+    } else {
+      const err=await r.json().catch(()=>({}));
+      toast('❌ Ошибка: '+(err.detail||r.status));
+    }
+  }catch(e){toast('❌ Нет соединения');}
+  if(btn){btn.textContent='💾 Сохранить тест';btn.disabled=false;}
 }
 
-async function editTest(id){
+async function editTestAdmin(id){
   try{
-    const r = await fetch(`${API}/api/tests/${id}`,{headers:H()});
-    const t = await r.json();
-    editingTestId = id;
-    document.getElementById('test-edit-id').value = id;
-    document.getElementById('test-title').value = t.title||'';
-    document.getElementById('test-subject').value = t.subject||'';
-    document.getElementById('test-desc').value = t.description||'';
-    document.getElementById('test-student').value = t.assigned_to||'';
-    document.getElementById('test-time').value = t.time_limit||0;
-    testQuestions = (t.questions||[]).map(q=>({...q, options:[...q.options,...['','','','']].slice(0,4), image_url:q.image_url||''}));
-    renderTestQuestions();
-    document.getElementById('test-form-title').textContent = '✏️ Редактировать тест';
-    document.getElementById('test-cancel-btn').style.display = '';
-    document.getElementById('test-form-title').scrollIntoView({behavior:'smooth'});
-  }catch(e){toast('❌ Ошибка загрузки теста');}
+    const r=await fetch(`${API}/api/tests/${id}`,{headers:H()});
+    if(!r.ok){toast('❌ Не удалось загрузить тест');return;}
+    const t=await r.json();
+    _editTestId=id;
+    document.getElementById('test-edit-id').value=id;
+    document.getElementById('test-title').value=t.title||'';
+    document.getElementById('test-subject').value=t.subject||'';
+    document.getElementById('test-desc').value=t.description||'';
+    document.getElementById('test-student').value=t.assigned_to||'';
+    document.getElementById('test-time').value=t.time_limit||0;
+    _tq=(t.questions||[]).map(q=>({
+      text:q.text||'', correct:q.correct||0, image_url:q.image_url||'',
+      options:[...((q.options||[]).concat(['','','',''])).slice(0,4)]
+    }));
+    tqRender();
+    document.getElementById('test-form-title').textContent='✏️ Редактировать тест';
+    document.getElementById('test-cancel-btn').style.display='';
+    document.getElementById('test-form-card').scrollIntoView({behavior:'smooth'});
+  }catch(e){toast('❌ Ошибка загрузки');}
 }
 
 function cancelTestEdit(){
-  editingTestId = null;
-  document.getElementById('test-edit-id').value = '';
-  document.getElementById('test-title').value = '';
-  document.getElementById('test-subject').value = '';
-  document.getElementById('test-desc').value = '';
-  document.getElementById('test-student').value = '';
-  document.getElementById('test-time').value = '0';
-  testQuestions = [];
-  renderTestQuestions();
-  document.getElementById('test-form-title').textContent = '➕ Новый тест';
-  document.getElementById('test-cancel-btn').style.display = 'none';
+  _editTestId=null;
+  document.getElementById('test-edit-id').value='';
+  document.getElementById('test-title').value='';
+  document.getElementById('test-subject').value='';
+  document.getElementById('test-desc').value='';
+  document.getElementById('test-student').value='';
+  document.getElementById('test-time').value='0';
+  _tq=[];
+  tqRender();
+  document.getElementById('test-form-title').textContent='➕ Новый тест';
+  document.getElementById('test-cancel-btn').style.display='none';
 }
 
 async function deleteTestAdmin(id){
-  if(!confirm('Удалить тест?'))return;
+  if(!confirm('Удалить тест? Это действие нельзя отменить.'))return;
   await fetch(`${API}/api/admin/tests/${id}`,{method:'DELETE',headers:H()});
   toast('🗑 Тест удалён');
-  loadTestsAdmin();
+  await loadTestsAdmin();
 }
-
 </script>
 </body>
 </html>

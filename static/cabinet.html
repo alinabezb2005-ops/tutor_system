@@ -405,7 +405,7 @@ function boot(){
 }
 
 // ALERTS на главной
-function renderAlerts(){
+async function renderAlerts(){
   const active=(ST.tasks||[]).filter(t=>t.status==='active').length;
   const review=(ST.tasks||[]).filter(t=>t.status==='review').length;
   const unread=getUnreadCount();
@@ -430,6 +430,26 @@ function renderAlerts(){
     el.onclick=()=>nav('messages',document.getElementById('tn-msgs'));
     wrap.appendChild(el);
   }
+  // Непройденные тесты
+  try{
+    const [rTests, rResults] = await Promise.all([
+      fetch(`${API}/api/tests?student=${encodeURIComponent(sName)}`),
+      fetch(`${API}/api/student/${encodeURIComponent(sName)}/test-results`)
+    ]);
+    if(rTests.ok && rResults.ok){
+      const tests = await rTests.json();
+      const results = await rResults.json();
+      const doneIds = new Set(results.map(r=>r.test_id));
+      const pending = tests.filter(t=>!doneIds.has(t.id)).length;
+      if(pending>0){
+        const el=document.createElement('div');
+        el.className='alert alert-warn';
+        el.innerHTML=`<span style="font-size:16px">📝</span><span>У тебя ${pending} непройденн${pending===1?'ый':'ых'} тест${pending===1?'':'ов'}</span>`;
+        el.onclick=()=>nav('tests',document.getElementById('tn-tests'));
+        wrap.appendChild(el);
+      }
+    }
+  }catch(e){}
 }
 
 // Подсчёт непрочитанных сообщений
