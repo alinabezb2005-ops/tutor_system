@@ -160,10 +160,25 @@ async def update_student(name:str, data:dict, r:Request):
     if name not in s: raise HTTPException(404)
     allowed = {"color","subject","program","streak","lessonsTotal","avgGrade","doneTasks",
                "next","program_topics","progress","lesson_price","subscription_price",
-               "subscription_lessons","tg_id","recurring_schedule"}
+               "subscription_lessons","tg_id","recurring_schedule","password"}
     for k,v in data.items():
         if k in allowed: s[name][k] = v
     save_students(s); return {"ok":True}
+
+@app.get("/api/admin/student-password/{name}")
+async def get_student_password(name:str, r:Request):
+    """Получить пароль ученика (только для репетитора)"""
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    return {"password": s[name].get("password","1234")}
+
+@app.get("/api/admin/students-with-passwords")
+async def get_students_with_passwords(r:Request):
+    """Все ученики с паролями для панели репетитора"""
+    require_admin(r)
+    s = get_students()
+    return {name: {"password": st.get("password","1234")} for name,st in s.items()}
 
 @app.delete("/api/admin/students/{name}")
 async def delete_student(name:str, r:Request):
@@ -380,6 +395,7 @@ async def submit_answer(name:str, task_id:int,
     task["answer_url"] = answer_urls[0]
     task["answer_urls"] = answer_urls
     task["answer_date"] = today_str()
+    task["answer_comment"] = ""  # будет заполнен отдельным запросом
     task["status"] = "review"
     save_students(s)
     if ADMIN_ID and tg_app_ref:
@@ -394,7 +410,18 @@ async def submit_answer(name:str, task_id:int,
         except: pass
     return {"ok":True,"answer_url":task["answer_url"],"answer_urls":answer_urls}
 
-# ── GRADES ────────────────────────────────────────────────────────────────────
+@app.patch("/api/student/{name}/task/{task_id}/comment")
+async def add_answer_comment(name:str, task_id:int, data:dict):
+    """Ученик добавляет комментарий к сданному заданию"""
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    task = next((t for t in s[name].get("tasks",[]) if t["id"]==task_id), None)
+    if not task: raise HTTPException(404)
+    task["answer_comment"] = data.get("comment","")
+    save_students(s)
+    return {"ok":True}
+
+
 class GradeReq(BaseModel):
     student:str; subject:str; topic:str; grade_type:str="Оценка"; grade:int; comment:str=""
 
@@ -1275,6 +1302,102 @@ async def delete_video(video_id: int, r: Request):
     items = [v for v in get_videos() if v["id"] != video_id]
     save_videos(items)
     return {"ok": True}
+
+
+# ── TESTS ─────────────────────────────────────────────────────────────────────
+
+TESTS_FILE = DATA_DIR / "tests.json"
+def get_tests_db(): return load_json(TESTS_FILE, [])
+def save_tests_db(d): save_json(TESTS_FILE, d)
+
+@app.get("/api/tests")
+async def list_tests(program: str = ""):
+    items = get_tests_db()
+    if program:
+        items = [t for t in items if t.get("program","") in ["",program] or not t.get("program")]
+    return [{"id":t["id"],"title":t["title"],"subject":t.get("subject",""),
+             "description":t.get("description",""),"questions_count":len(t.get("questions",[])),
+             "program":t.get("program",""),"created":t.get("created","")} for t in items]
+
+@app.get("/api/tests/{test_id}")
+async def get_test(test_id: int):
+    items = get_tests_db()
+    t = next((x for x in items if x["id"]==test_id), None)
+    if not t: raise HTTPException(404)
+    return t
+
+@app.post("/api/admin/tests")
+async def create_test(data: dict, r: Request):
+    require_admin(r)
+    items = get_tests_db()
+    test = {
+        "id": new_id(items),
+        "title": data.get("title",""),
+        "subject": data.get("subject",""),
+        "description": data.get("description",""),
+        "program": data.get("program",""),
+        "questions": data.get("questions",[]),
+        "created": today_str()
+    }
+    items.insert(0, test)
+    save_tests_db(items)
+    return {"ok": True, "id": test["id"]}
+
+@app.put("/api/admin/tests/{test_id}")
+async def update_test(test_id: int, data: dict, r: Request):
+    require_admin(r)
+    items = get_tests_db()
+    for t in items:
+        if t["id"] == test_id:
+            for k in ["title","subject","description","program","questions"]:
+                if k in data: t[k] = data[k]
+            break
+    save_tests_db(items)
+    return {"ok": True}
+
+@app.delete("/api/admin/tests/{test_id}")
+async def delete_test(test_id: int, r: Request):
+    require_admin(r)
+    items = [t for t in get_tests_db() if t["id"] != test_id]
+    save_tests_db(items)
+    return {"ok": True}
+
+@app.post("/api/student/{name}/tests/{test_id}/submit")
+async def submit_test(name: str, test_id: int, data: dict):
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    items = get_tests_db()
+    test = next((t for t in items if t["id"]==test_id), None)
+    if not test: raise HTTPException(404)
+    answers = data.get("answers", {})  # {question_index: answer_index}
+    questions = test.get("questions", [])
+    correct = 0
+    results = []
+    for i, q in enumerate(questions):
+        user_ans = answers.get(str(i))
+        correct_ans = q.get("correct", 0)
+        is_correct = user_ans == correct_ans
+        if is_correct: correct += 1
+        results.append({"question": q["text"], "user_answer": user_ans,
+                        "correct_answer": correct_ans, "is_correct": is_correct,
+                        "options": q.get("options",[])})
+    score = round(correct / len(questions) * 100) if questions else 0
+    grade = 5 if score>=90 else 4 if score>=70 else 3 if score>=50 else 2
+    result_entry = {"test_id": test_id, "test_title": test["title"],
+                    "score": score, "grade": grade, "correct": correct,
+                    "total": len(questions), "date": today_str(), "results": results}
+    st = s[name]
+    st.setdefault("test_results", [])
+    st["test_results"].insert(0, result_entry)
+    save_students(s)
+    return {"ok": True, "score": score, "grade": grade, "correct": correct,
+            "total": len(questions), "results": results}
+
+@app.get("/api/student/{name}/test-results")
+async def get_test_results(name: str):
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    return s[name].get("test_results", [])
 
 @app.on_event("startup")
 async def on_startup():

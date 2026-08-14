@@ -213,6 +213,7 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);
       <button class="tn" onclick="nav('schedule',this)">📅 Расписание</button>
       <button class="tn" onclick="nav('knowledge',this)" id="tn-kb">📚 Материалы</button>
       <button class="tn" onclick="nav('videos',this)" id="tn-videos">🎬 Видеоуроки</button>
+      <button class="tn" onclick="nav('tests',this)" id="tn-tests">📝 Тесты</button>
       <button class="tn" onclick="nav('messages',this)" id="tn-msgs">💬 Сообщения</button>
     </nav>
     <div class="tbright">
@@ -287,6 +288,18 @@ body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);
       <div id="student-videos-list"></div>
     </div>
 
+    <!-- ТЕСТЫ -->
+    <div class="page" id="page-tests">
+      <div class="schip">Тесты</div>
+      <div class="ptitle">Тесты и проверочные работы</div>
+      <!-- Результаты -->
+      <div id="test-results-block" style="margin-bottom:16px"></div>
+      <!-- Список тестов -->
+      <div id="tests-list-student"></div>
+      <!-- Прохождение теста -->
+      <div id="test-run-block" style="display:none"></div>
+    </div>
+
     <!-- MESSAGES -->
     <div class="page" id="page-messages">
       <div class="schip">Переписка</div>
@@ -356,6 +369,7 @@ function nav(id,btn){
   if(btn)btn.classList.add('active');
   if(id==='knowledge')loadKnowledge();
   if(id==='videos')loadStudentVideos();
+  if(id==='tests')loadStudentTests();
   if(id==='messages'){renderMsgs();markMsgsRead();}
 }
 
@@ -569,27 +583,31 @@ const answerPhotos = {};
 
 function addAnswerPhoto(taskId, inp){
   if(!answerPhotos[taskId]) answerPhotos[taskId] = [];
-  for(const f of inp.files){
-    if(answerPhotos[taskId].length >= 5){showToast('⚠️ Максимум 5 фото');break;}
-    answerPhotos[taskId].push(f);
+  if(inp.files && inp.files.length){
+    for(const f of inp.files){
+      if(answerPhotos[taskId].length >= 5){showToast('⚠️ Максимум 5 фото');break;}
+      answerPhotos[taskId].push(f);
+    }
+    inp.value = '';
   }
-  inp.value = '';
-  // Обновляем превью
+  renderAnswerPreview(taskId);
+}
+
+function renderAnswerPreview(taskId){
   const el = document.getElementById(`ans-prev-${taskId}`);
-  if(el){
-    el.innerHTML = (answerPhotos[taskId]||[]).map((f,i)=>{
-      const url = URL.createObjectURL(f);
-      return `<div style="position:relative;display:inline-block">
-        <img src="${url}" style="width:48px;height:48px;object-fit:cover;border-radius:7px;border:1.5px solid var(--g)">
-        <div onclick="removeAnswerPhoto(${taskId},${i})" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#e74c3c;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700">✕</div>
-      </div>`;
-    }).join('');
-  }
+  if(!el) return;
+  el.innerHTML = (answerPhotos[taskId]||[]).map((f,i)=>{
+    const url = URL.createObjectURL(f);
+    return `<div style="position:relative;display:inline-block">
+      <img src="${url}" style="width:48px;height:48px;object-fit:cover;border-radius:7px;border:1.5px solid var(--g)">
+      <div onclick="removeAnswerPhoto(${taskId},${i})" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#e74c3c;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700">✕</div>
+    </div>`;
+  }).join('');
 }
 
 function removeAnswerPhoto(taskId, idx){
   if(answerPhotos[taskId]) answerPhotos[taskId].splice(idx,1);
-  addAnswerPhoto(taskId, {files:[], value:''}); // re-render
+  renderAnswerPreview(taskId);
 }
 
 async function submitAnswerPhotos(taskId){
@@ -605,9 +623,53 @@ async function submitAnswerPhotos(taskId){
       const t=(ST.tasks||[]).find(x=>x.id===taskId);
       if(t){t.answer_url=d.answer_url;t.answer_urls=d.answer_urls||[];t.answer_date='сегодня';t.status='review';}
       answerPhotos[taskId]=[];
-      renderTasks();showToast('✅ Ответ отправлен!');
+      renderTasks();
+      // Показываем окно для комментария
+      showAnswerCommentModal(taskId);
     }
   }catch(e){showToast('❌ Нет соединения');}
+}
+
+function showAnswerCommentModal(taskId){
+  // Удаляем старую модалку если есть
+  const old = document.getElementById('comment-modal');
+  if(old) old.remove();
+  const ov = document.createElement('div');
+  ov.id = 'comment-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease';
+  ov.innerHTML = `
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:380px;padding:24px;animation:up .25s ease;box-shadow:0 16px 48px rgba(0,0,0,.2)">
+      <div style="font-size:36px;text-align:center;margin-bottom:10px">✅</div>
+      <div style="font-size:16px;font-weight:800;color:var(--ink);text-align:center;margin-bottom:6px">Задание отправлено!</div>
+      <div style="font-size:13px;color:var(--mu);text-align:center;margin-bottom:16px">Есть вопросы или что-то непонятно? Напиши комментарий репетитору</div>
+      <textarea id="answer-comment-inp" placeholder="Напишите комментарий (необязательно)…"
+        style="width:100%;padding:11px 13px;border:1.5px solid var(--bdr);border-radius:10px;font-family:inherit;font-size:13px;resize:vertical;min-height:80px;outline:none;caret-color:var(--ink);color:var(--ink);background:var(--gp)"></textarea>
+      <div style="display:flex;gap:9px;margin-top:12px">
+        <button onclick="skipAnswerComment()" style="flex:1;padding:12px;background:var(--milk);border:1.5px solid var(--bdr);border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--mu)">Пропустить</button>
+        <button onclick="sendAnswerComment(${taskId})" style="flex:1;padding:12px;background:var(--g);border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:#fff">Отправить →</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  setTimeout(()=>document.getElementById('answer-comment-inp')?.focus(), 100);
+}
+
+function skipAnswerComment(){
+  const m = document.getElementById('comment-modal');
+  if(m) m.remove();
+  showToast('✅ Ответ отправлен!');
+}
+
+async function sendAnswerComment(taskId){
+  const comment = document.getElementById('answer-comment-inp')?.value.trim()||'';
+  if(comment){
+    try{
+      await fetch(`${API}/api/student/${encodeURIComponent(sName)}/task/${taskId}/comment`,
+        {method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({comment})});
+    }catch(e){}
+  }
+  const m = document.getElementById('comment-modal');
+  if(m) m.remove();
+  showToast(comment ? '✅ Ответ и комментарий отправлены!' : '✅ Ответ отправлен!');
 }
 
 function openPhoto(url){
@@ -734,9 +796,21 @@ function openKbModal(id){
   modal.className='kb-modal'; modal.style.display='flex';
   modal.onclick=e=>{if(e.target===modal)modal.style.display='none';};
   let contentHtml='';
-  if(item.kind==='link'&&item.content)contentHtml=`<a href="${item.content}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;color:var(--blue);font-weight:600;font-size:13px;margin-bottom:12px">🔗 Открыть материал</a>`;
-  else if(item.kind==='file'&&item.file_url)contentHtml=`<a href="${item.file_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;color:var(--g);font-weight:600;font-size:13px;margin-bottom:12px">📥 Скачать файл: ${item.file_name||'файл'}</a>`;
-  else if(item.content)contentHtml=`<div style="font-size:13px;color:var(--im);line-height:1.6;margin-bottom:12px;background:var(--gp);border-radius:10px;padding:12px 14px">${item.content}</div>`;
+  if(item.kind==='link'&&item.content){
+    contentHtml=`<a href="${item.content}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#e8f0fb;border-radius:10px;padding:11px 15px;color:var(--blue);font-weight:700;font-size:13px;margin-bottom:12px;text-decoration:none;width:100%">🔗 Открыть материал</a>`;
+  } else if(item.kind==='file'&&item.file_url){
+    const isPdf = item.file_url.toLowerCase().includes('.pdf') || (item.file_name||'').toLowerCase().includes('.pdf');
+    const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(item.file_url);
+    if(isPdf){
+      contentHtml=`<a href="${item.file_url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#fdecea;border-radius:10px;padding:11px 15px;color:#c0392b;font-weight:700;font-size:13px;margin-bottom:12px;text-decoration:none;width:100%">📕 Открыть PDF: ${item.file_name||'файл'}</a>`;
+    } else if(isImg){
+      contentHtml=`<img src="${item.file_url}" style="max-width:100%;border-radius:10px;margin-bottom:12px;display:block">`;
+    } else {
+      contentHtml=`<a href="${item.file_url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#e8f5ea;border-radius:10px;padding:11px 15px;color:var(--gd);font-weight:700;font-size:13px;margin-bottom:12px;text-decoration:none;width:100%">📄 Открыть файл: ${item.file_name||'файл'}</a>`;
+    }
+  } else if(item.content){
+    contentHtml=`<div style="font-size:13px;color:var(--im);line-height:1.6;margin-bottom:12px;background:var(--gp);border-radius:10px;padding:12px 14px">${item.content}</div>`;
+  }
   modal.innerHTML=`<div class="kb-modal-inner">
     <div class="kb-modal-head">
       <div class="kb-modal-title">${item.title}</div>
@@ -895,6 +969,160 @@ function playVideo(url, title){
     </div>`;
   ov.onclick = e=>{ if(e.target===ov) document.body.removeChild(ov); };
   document.body.appendChild(ov);
+}
+
+
+// ── TESTS (STUDENT) ───────────────────────────────────────────────────────────
+let currentTest = null;
+let studentAnswers = {};
+
+async function loadStudentTests(){
+  // Загружаем тесты и результаты параллельно
+  try{
+    const prog = ST.program||'';
+    const [rTests, rResults] = await Promise.all([
+      fetch(`${API}/api/tests?program=${encodeURIComponent(prog)}`),
+      fetch(`${API}/api/student/${encodeURIComponent(sName)}/test-results`)
+    ]);
+    const tests = await rTests.json();
+    const results = rResults.ok ? await rResults.json() : [];
+    renderStudentTests(tests, results);
+  }catch(e){ document.getElementById('tests-list-student').innerHTML='<div style="color:var(--mu)">Нет соединения</div>'; }
+}
+
+function renderStudentTests(tests, results){
+  // Последние результаты
+  const resEl = document.getElementById('test-results-block');
+  if(results.length && resEl){
+    resEl.innerHTML = `<div style="background:var(--gl);border-radius:13px;padding:14px 16px;margin-bottom:4px">
+      <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px">📊 Мои последние результаты</div>
+      ${results.slice(0,3).map(r=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.06)">
+          <div style="width:36px;height:36px;border-radius:50%;background:${r.grade>=4?'var(--g)':'#e74c3c'};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0">${r.grade}</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">${r.test_title}</div>
+            <div style="font-size:11px;color:var(--mu)">${r.correct} из ${r.total} · ${r.score}% · ${r.date}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  const el = document.getElementById('tests-list-student');
+  if(!tests.length){
+    el.innerHTML='<div class="card" style="color:var(--mu);font-size:13px">Тестов пока нет — репетитор добавит их скоро!</div>';
+    return;
+  }
+  const doneIds = new Set(results.map(r=>r.test_id));
+  el.innerHTML = tests.map(t=>`
+    <div class="card" style="margin-bottom:10px;cursor:pointer" onclick="startTest(${t.id})">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:46px;height:46px;border-radius:12px;background:#e8f0fb;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📝</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:var(--ink)">${t.title}</div>
+          <div style="font-size:11px;color:var(--mu)">${t.subject||''} · ${t.questions_count} вопросов</div>
+          ${t.description?`<div style="font-size:12px;color:var(--im);margin-top:3px">${t.description}</div>`:''}
+        </div>
+        <div>
+          ${doneIds.has(t.id)
+            ?`<span style="background:var(--gl);color:var(--gd);font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px">✓ Пройден</span>`
+            :`<span style="background:#e8f0fb;color:var(--blue);font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px">Пройти →</span>`}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function startTest(testId){
+  try{
+    const r = await fetch(`${API}/api/tests/${testId}`);
+    currentTest = await r.json();
+    studentAnswers = {};
+    renderTestRun();
+  }catch(e){ showToast('❌ Нет соединения'); }
+}
+
+function renderTestRun(){
+  if(!currentTest) return;
+  document.getElementById('tests-list-student').style.display='none';
+  document.getElementById('test-results-block').style.display='none';
+  const el = document.getElementById('test-run-block');
+  el.style.display='block';
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="exitTest()" style="background:var(--milk);border:1.5px solid var(--bdr);border-radius:8px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer">← Назад</button>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--ink)">${currentTest.title}</div>
+        <div style="font-size:11px;color:var(--mu)">${currentTest.questions.length} вопросов</div>
+      </div>
+    </div>
+    ${currentTest.questions.map((q,qi)=>`
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px">${qi+1}. ${q.text}</div>
+        ${q.options.map((opt,oi)=>`
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;border:1.5px solid var(--bdr);margin-bottom:7px;cursor:pointer;transition:.15s" id="opt-${qi}-${oi}">
+            <input type="radio" name="q${qi}" value="${oi}" style="width:16px;height:16px;accent-color:var(--g);flex-shrink:0"
+              onchange="selectAnswer(${qi},${oi})">
+            <span style="font-size:13px">${opt}</span>
+          </label>`).join('')}
+      </div>`).join('')}
+    <button onclick="submitTest()" style="width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px">Завершить тест ✓</button>
+  `;
+}
+
+function selectAnswer(qi, oi){
+  studentAnswers[qi] = oi;
+  // Подсвечиваем выбранный вариант
+  currentTest.questions[qi].options.forEach((_,i)=>{
+    const el = document.getElementById(`opt-${qi}-${i}`);
+    if(el) el.style.background = i===oi ? 'rgba(74,124,89,.1)' : '';
+    if(el) el.style.borderColor = i===oi ? 'var(--g)' : 'var(--bdr)';
+  });
+}
+
+async function submitTest(){
+  if(!currentTest) return;
+  const total = currentTest.questions.length;
+  const answered = Object.keys(studentAnswers).length;
+  if(answered < total){
+    showToast(`⚠️ Ответь на все вопросы (${answered}/${total})`); return;
+  }
+  try{
+    const r = await fetch(`${API}/api/student/${encodeURIComponent(sName)}/tests/${currentTest.id}/submit`,
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answers:studentAnswers})});
+    const d = await r.json();
+    showTestResult(d);
+  }catch(e){ showToast('❌ Нет соединения'); }
+}
+
+function showTestResult(d){
+  const el = document.getElementById('test-run-block');
+  const grade = d.grade;
+  const color = grade>=4 ? 'var(--g)' : grade>=3 ? 'var(--warn)' : '#e74c3c';
+  el.innerHTML=`
+    <div class="card" style="text-align:center;padding:28px 20px">
+      <div style="font-size:64px;font-weight:900;color:${color};line-height:1;margin-bottom:8px">${grade}</div>
+      <div style="font-size:20px;font-weight:700;color:var(--ink);margin-bottom:4px">${d.score}% правильных ответов</div>
+      <div style="font-size:13px;color:var(--mu);margin-bottom:20px">${d.correct} из ${d.total} вопросов</div>
+    </div>
+    <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:var(--ink)">Разбор ошибок:</div>
+    ${d.results.map((res,i)=>`
+      <div class="card" style="margin-bottom:9px;border-left:4px solid ${res.is_correct?'var(--g)':'#e74c3c'}">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">${i+1}. ${res.question}</div>
+        ${res.options.map((opt,oi)=>`
+          <div style="padding:6px 10px;border-radius:7px;margin-bottom:4px;font-size:12px;
+            background:${oi===res.correct_answer?'rgba(74,124,89,.1)':oi===res.user_answer&&!res.is_correct?'rgba(231,76,60,.1)':'var(--milk)'}">
+            ${oi===res.correct_answer?'✅':oi===res.user_answer&&!res.is_correct?'❌':'○'} ${opt}
+          </div>`).join('')}
+      </div>`).join('')}
+    <button onclick="exitTest()" style="width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px">← К списку тестов</button>
+  `;
+}
+
+function exitTest(){
+  currentTest = null; studentAnswers = {};
+  document.getElementById('test-run-block').style.display='none';
+  document.getElementById('test-run-block').innerHTML='';
+  document.getElementById('tests-list-student').style.display='';
+  document.getElementById('test-results-block').style.display='';
+  loadStudentTests();
 }
 
 </script>
