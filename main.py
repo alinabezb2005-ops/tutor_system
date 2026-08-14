@@ -1316,6 +1316,7 @@ async def delete_video(video_id: int, r: Request):
 TESTS_FILE = DATA_DIR / "tests.json"
 def get_tests_db(): return load_json(TESTS_FILE, [])
 def save_tests_db(d): save_json(TESTS_FILE, d)
+def next_id(lst): return max((i.get("id",0) for i in lst), default=0) + 1 if lst else 1
 
 @app.post("/api/admin/upload-image")
 async def upload_image(r: Request, file: UploadFile = File(...)):
@@ -1347,7 +1348,7 @@ async def create_test(data: dict, r: Request):
     require_admin(r)
     items = get_tests_db()
     test = {
-        "id": new_id(items),
+        "id": next_id(items),
         "title": data.get("title",""),
         "subject": data.get("subject",""),
         "description": data.get("description",""),
