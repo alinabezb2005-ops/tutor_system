@@ -544,7 +544,12 @@ textarea.fi2{resize:vertical;min-height:60px}
       <div class="two">
         <!-- Список тестов -->
         <div>
+          <div class="tabs" style="margin-bottom:12px">
+            <div class="tab active" onclick="switchAdminTestTab('active',this)">📝 Активные</div>
+            <div class="tab" onclick="switchAdminTestTab('done',this)">✅ Завершённые</div>
+          </div>
           <div id="tests-list-admin"></div>
+          <div id="tests-done-admin" style="display:none"></div>
         </div>
         <!-- Форма создания/редактирования -->
         <div class="card" id="test-form-card">
@@ -556,8 +561,14 @@ textarea.fi2{resize:vertical;min-height:60px}
           <input class="fi2" id="test-subject" placeholder="Алгебра">
           <label class="fl2">Описание (необязательно)</label>
           <textarea class="fi2" id="test-desc" placeholder="Описание теста…" style="min-height:50px;resize:vertical"></textarea>
-          <label class="fl2">Назначить ученику</label>
-          <select class="fi2" id="test-student"><option value="">Всем ученикам</option></select>
+          <label class="fl2">Назначить ученику (можно выбрать нескольких)</label>
+          <div id="test-student-picks" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px"></div>
+          <div style="display:flex;gap:7px">
+            <select class="fi2" id="test-student-sel" style="flex:1">
+              <option value="">— выбрать ученика —</option>
+            </select>
+            <button class="btn btns" onclick="addTestStudent()" style="padding:8px 12px">+</button>
+          </div>
           <label class="fl2">Время (минуты, 0 = без ограничений)</label>
           <input type="number" class="fi2" id="test-time" value="0" min="0">
           <div style="border-top:1.5px solid var(--bdr);margin:14px 0 10px;padding-top:12px">
@@ -1797,57 +1808,134 @@ async function deleteVideo(id){
 
 
 // ── TESTS ADMIN ─────────────────────────────────────────────────────
-let _tq = []; // testQuestions — [{text, options:[], correct:0, image_url:''}]
+let _tq = [];
 let _editTestId = null;
+let _testStudents = []; // список назначенных учеников
+let _adminTestTab = 'active';
+let _allAdminTests = [];
+
+function switchAdminTestTab(tab, btn){
+  _adminTestTab = tab;
+  document.querySelectorAll('#page-tests-admin .tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('tests-list-admin').style.display = tab==='active'?'':'none';
+  document.getElementById('tests-done-admin').style.display = tab==='done'?'':'none';
+  if(tab==='done') renderTestsDone(_allAdminTests);
+}
 
 function fillTestPrograms(){
-  // Заполняем список учеников при открытии вкладки
-  const sel = document.getElementById('test-student');
+  const sel = document.getElementById('test-student-sel');
   if(sel){
-    const cur = sel.value;
-    sel.innerHTML = '<option value="">Всем ученикам</option>' +
+    sel.innerHTML = '<option value="">— выбрать ученика —</option>' +
       Object.keys(STUDENTS).map(n=>`<option value="${n}">${n}</option>`).join('');
-    sel.value = cur;
   }
+}
+
+function addTestStudent(){
+  const sel = document.getElementById('test-student-sel');
+  const name = sel.value; if(!name) return;
+  if(!_testStudents.includes(name)){
+    _testStudents.push(name);
+    renderTestStudentPicks();
+  }
+  sel.value = '';
+}
+
+function removeTestStudent(name){
+  _testStudents = _testStudents.filter(n=>n!==name);
+  renderTestStudentPicks();
+}
+
+function renderTestStudentPicks(){
+  const el = document.getElementById('test-student-picks'); if(!el) return;
+  el.innerHTML = _testStudents.map(n=>`
+    <span style="background:var(--gbg);color:var(--gold);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px">
+      ${n}
+      <span onclick="removeTestStudent('${n}')" style="cursor:pointer;font-weight:700">✕</span>
+    </span>`).join('');
 }
 
 async function loadTestsAdmin(){
   try{
-    const r = await fetch(`${API}/api/tests`, {headers:H()});
-    const tests = await r.json();
-    renderTestsAdmin(tests);
+    const r = await fetch(`${API}/api/admin/tests`, {headers:H()});
+    _allAdminTests = await r.json();
+    renderTestsAdmin(_allAdminTests.filter(t=>!t.results||t.results.length===0 || _adminTestTab==='active'));
+    if(_adminTestTab==='done') renderTestsDone(_allAdminTests);
+    else renderTestsAdmin(_allAdminTests);
   }catch(e){
     const el = document.getElementById('tests-list-admin');
-    if(el) el.innerHTML='<div class="card" style="color:var(--red)">Ошибка загрузки тестов</div>';
+    if(el) el.innerHTML='<div class="card" style="color:var(--red)">Ошибка загрузки</div>';
   }
 }
 
 function renderTestsAdmin(tests){
   const el = document.getElementById('tests-list-admin'); if(!el) return;
   if(!tests.length){
-    el.innerHTML='<div class="card" style="color:var(--mu);font-size:13px;padding:16px">Тестов пока нет — создайте первый в форме справа!</div>';
+    el.innerHTML='<div class="card" style="color:var(--mu);font-size:13px;padding:16px">Тестов пока нет — создайте первый!</div>';
     return;
   }
-  el.innerHTML = tests.map(t=>`
-    <div class="card" style="margin-bottom:10px">
+  el.innerHTML = tests.map(t=>{
+    const at = Array.isArray(t.assigned_to) ? t.assigned_to.join(', ') : (t.assigned_to||'');
+    const doneCount = (t.results||[]).length;
+    return `<div class="card" style="margin-bottom:10px">
       <div style="display:flex;align-items:flex-start;gap:12px">
         <div style="width:42px;height:42px;border-radius:10px;background:#e8f0fb;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📝</div>
         <div style="flex:1">
           <div style="font-size:14px;font-weight:700;color:var(--ink)">${t.title}</div>
           <div style="font-size:11px;color:var(--mu);margin-top:3px">
             ${t.subject||''}
-            ${t.assigned_to?` · 👤 ${t.assigned_to}`:' · 👥 Всем'}
-            ${t.time_limit?' · ⏱ '+t.time_limit+' мин':''}
-            · ${t.questions_count} вопросов
+            ${at ? ` · 👤 ${at}` : ' · ⚠️ не назначен'}
+            ${t.time_limit ? ` · ⏱ ${t.time_limit} мин` : ''}
+            · ${t.questions_count} вопр.
             · ${t.created||''}
           </div>
-          ${t.description?`<div style="font-size:12px;color:var(--im);margin-top:4px">${t.description}</div>`:''}
+          ${doneCount ? `<div style="font-size:11px;color:var(--ok);margin-top:3px">✅ Сдали: ${doneCount}</div>` : ''}
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
           <button class="btn btns" onclick="editTestAdmin(${t.id})" style="font-size:11px;padding:6px 10px">✏️</button>
           <button class="btn btnd" onclick="deleteTestAdmin(${t.id})" style="font-size:11px;padding:6px 10px">🗑</button>
         </div>
       </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTestsDone(tests){
+  const el = document.getElementById('tests-done-admin'); if(!el) return;
+  // Собираем все результаты всех тестов
+  const allResults = [];
+  tests.forEach(t => {
+    (t.results||[]).forEach(r => {
+      allResults.push({...r, testTitle: t.title, testSubject: t.subject||''});
+    });
+  });
+  allResults.sort((a,b) => b.date.localeCompare(a.date));
+  if(!allResults.length){
+    el.innerHTML='<div class="card" style="color:var(--mu);font-size:13px;padding:16px">Завершённых тестов пока нет.</div>';
+    return;
+  }
+  el.innerHTML = allResults.map(r=>`
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="width:42px;height:42px;border-radius:50%;background:${r.grade>=4?'var(--gl)':'rgba(231,76,60,.1)'};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:${r.grade>=4?'var(--gd)':'#e74c3c'};flex-shrink:0">${r.grade}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">${r.student}</div>
+          <div style="font-size:12px;color:var(--mu)">${r.testTitle}${r.testSubject?' · '+r.testSubject:''}</div>
+          <div style="font-size:11px;color:var(--mu)">${r.correct} из ${r.total} · ${r.score}% · ${r.date}</div>
+        </div>
+      </div>
+      <details style="font-size:12px">
+        <summary style="cursor:pointer;color:var(--blue);font-weight:600;margin-bottom:8px">Разбор ответов</summary>
+        ${(r.results||[]).map((q,i)=>`
+          <div style="padding:8px;border-radius:8px;margin-bottom:5px;background:${q.is_correct?'rgba(45,106,79,.07)':'rgba(231,76,60,.07)'}">
+            <div style="font-weight:600;margin-bottom:4px">${i+1}. ${q.question}</div>
+            ${(q.options||[]).map((opt,oi)=>`
+              <div style="font-size:11px;padding:3px 7px;border-radius:5px;margin-bottom:2px;
+                background:${oi===q.correct_answer?'rgba(45,106,79,.15)':oi===q.user_answer&&!q.is_correct?'rgba(231,76,60,.15)':''}">
+                ${oi===q.correct_answer?'✅':oi===q.user_answer&&!q.is_correct?'❌':'○'} ${opt}
+              </div>`).join('')}
+          </div>`).join('')}
+      </details>
     </div>`).join('');
 }
 
@@ -1868,13 +1956,13 @@ function tqRender(){
         oninput="_tq[${qi}].text=this.value" style="margin-bottom:8px">
       ${q.image_url?`<div style="margin-bottom:7px;display:flex;align-items:center;gap:8px">
         <img src="${q.image_url}" style="height:55px;border-radius:7px;object-fit:cover">
-        <button onclick="_tq[${qi}].image_url='';tqRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;font-weight:700">✕ Удалить</button>
+        <button onclick="_tq[${qi}].image_url='';tqRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;font-weight:700">✕</button>
       </div>`:''}
       <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--mu);font-weight:600;margin-bottom:8px">
-        🖼 Добавить картинку
+        🖼 Картинка к вопросу
         <input type="file" accept="image/*" style="display:none" onchange="uploadQImg(${qi},this)">
       </label>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">Варианты (⭕ отмечает правильный)</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:6px">Варианты (⭕ = правильный)</div>
       ${q.options.map((opt,oi)=>`
         <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
           <input type="radio" name="tq${qi}" ${q.correct===oi?'checked':''}
@@ -1884,7 +1972,6 @@ function tqRender(){
             oninput="_tq[${qi}].options[${oi}]=this.value" style="flex:1;margin:0">
         </div>`).join('')}
     </div>`).join('');
-  // Восстанавливаем радиокнопки (они не сохраняются через innerHTML)
 }
 
 function addTestQuestion(){
@@ -1906,11 +1993,12 @@ async function saveTest(){
   const title = document.getElementById('test-title').value.trim();
   if(!title){toast('⚠️ Введи название теста');return;}
   if(!_tq.length){toast('⚠️ Добавь хотя бы один вопрос');return;}
+  if(!_testStudents.length){toast('⚠️ Назначь тест хотя бы одному ученику');return;}
   for(let i=0;i<_tq.length;i++){
     const q=_tq[i];
     if(!q.text.trim()){toast(`⚠️ Заполни текст вопроса ${i+1}`);return;}
     const filled = q.options.filter(o=>o.trim());
-    if(filled.length<2){toast(`⚠️ Вопрос ${i+1}: нужно минимум 2 варианта ответа`);return;}
+    if(filled.length<2){toast(`⚠️ Вопрос ${i+1}: нужно минимум 2 варианта`);return;}
   }
   const btn = document.querySelector('#test-form-card .btn.btnp');
   if(btn){btn.textContent='Сохраняю…';btn.disabled=true;}
@@ -1918,7 +2006,7 @@ async function saveTest(){
     title,
     subject: document.getElementById('test-subject').value.trim(),
     description: document.getElementById('test-desc').value.trim(),
-    assigned_to: document.getElementById('test-student').value,
+    assigned_to: _testStudents.length===1 ? _testStudents[0] : _testStudents,
     time_limit: +document.getElementById('test-time').value||0,
     questions: _tq.map(q=>({
       text:q.text, correct:q.correct, image_url:q.image_url||'',
@@ -1950,16 +2038,15 @@ async function editTestAdmin(id){
     if(!r.ok){toast('❌ Не удалось загрузить тест');return;}
     const t=await r.json();
     _editTestId=id;
-    document.getElementById('test-edit-id').value=id;
     document.getElementById('test-title').value=t.title||'';
     document.getElementById('test-subject').value=t.subject||'';
     document.getElementById('test-desc').value=t.description||'';
-    document.getElementById('test-student').value=t.assigned_to||'';
     document.getElementById('test-time').value=t.time_limit||0;
-    _tq=(t.questions||[]).map(q=>({
-      text:q.text||'', correct:q.correct||0, image_url:q.image_url||'',
-      options:[...((q.options||[]).concat(['','','',''])).slice(0,4)]
-    }));
+    // Назначенные ученики
+    const at = t.assigned_to;
+    _testStudents = Array.isArray(at) ? at : (at ? [at] : []);
+    renderTestStudentPicks();
+    _tq=(t.questions||[]).map(q=>({...q, options:[...((q.options||[]).concat(['','','',''])).slice(0,4)], image_url:q.image_url||''}));
     tqRender();
     document.getElementById('test-form-title').textContent='✏️ Редактировать тест';
     document.getElementById('test-cancel-btn').style.display='';
@@ -1969,12 +2056,12 @@ async function editTestAdmin(id){
 
 function cancelTestEdit(){
   _editTestId=null;
-  document.getElementById('test-edit-id').value='';
   document.getElementById('test-title').value='';
   document.getElementById('test-subject').value='';
   document.getElementById('test-desc').value='';
-  document.getElementById('test-student').value='';
   document.getElementById('test-time').value='0';
+  _testStudents=[];
+  renderTestStudentPicks();
   _tq=[];
   tqRender();
   document.getElementById('test-form-title').textContent='➕ Новый тест';
@@ -1982,7 +2069,7 @@ function cancelTestEdit(){
 }
 
 async function deleteTestAdmin(id){
-  if(!confirm('Удалить тест? Это действие нельзя отменить.'))return;
+  if(!confirm('Удалить тест?'))return;
   await fetch(`${API}/api/admin/tests/${id}`,{method:'DELETE',headers:H()});
   toast('🗑 Тест удалён');
   await loadTestsAdmin();

@@ -1330,7 +1330,12 @@ async def upload_image(r: Request, file: UploadFile = File(...)):
 async def list_tests(program: str = "", student: str = ""):
     items = get_tests_db()
     if student:
-        items = [t for t in items if not t.get("assigned_to") or t.get("assigned_to") == student]
+        def is_assigned(t):
+            at = t.get("assigned_to", "")
+            if not at: return False  # не назначен никому — не показываем
+            if isinstance(at, list): return student in at
+            return at == student
+        items = [t for t in items if is_assigned(t)]
     return [{"id":t["id"],"title":t["title"],"subject":t.get("subject",""),
              "description":t.get("description",""),"questions_count":len(t.get("questions",[])),
              "assigned_to":t.get("assigned_to",""),"time_limit":t.get("time_limit",0),
@@ -1343,16 +1348,42 @@ async def get_test(test_id: int):
     if not t: raise HTTPException(404)
     return t
 
+@app.get("/api/admin/tests")
+async def list_tests_admin(r: Request):
+    """Все тесты для репетитора с результатами"""
+    require_admin(r)
+    items = get_tests_db()
+    s = get_students()
+    result = []
+    for t in items:
+        # Собираем результаты всех учеников по этому тесту
+        test_results = []
+        for sname, st in s.items():
+            for res in st.get("test_results", []):
+                if res.get("test_id") == t["id"]:
+                    test_results.append({"student": sname, **res})
+        result.append({
+            "id": t["id"], "title": t["title"], "subject": t.get("subject",""),
+            "description": t.get("description",""), "questions_count": len(t.get("questions",[])),
+            "assigned_to": t.get("assigned_to",""), "time_limit": t.get("time_limit",0),
+            "created": t.get("created",""), "results": test_results
+        })
+    return result
+
 @app.post("/api/admin/tests")
 async def create_test(data: dict, r: Request):
     require_admin(r)
     items = get_tests_db()
+    assigned = data.get("assigned_to", "")
+    # Поддерживаем список учеников
+    if isinstance(assigned, str) and "," in assigned:
+        assigned = [a.strip() for a in assigned.split(",") if a.strip()]
     test = {
         "id": next_id(items),
         "title": data.get("title",""),
         "subject": data.get("subject",""),
         "description": data.get("description",""),
-        "assigned_to": data.get("assigned_to",""),
+        "assigned_to": assigned,
         "time_limit": data.get("time_limit", 0),
         "questions": data.get("questions",[]),
         "created": today_str()
@@ -1368,7 +1399,11 @@ async def update_test(test_id: int, data: dict, r: Request):
     for t in items:
         if t["id"] == test_id:
             for k in ["title","subject","description","assigned_to","time_limit","questions"]:
-                if k in data: t[k] = data[k]
+                if k in data:
+                    val = data[k]
+                    if k == "assigned_to" and isinstance(val, str) and "," in val:
+                        val = [a.strip() for a in val.split(",") if a.strip()]
+                    t[k] = val
             break
     save_tests_db(items)
     return {"ok": True}
@@ -1387,7 +1422,14 @@ async def submit_test(name: str, test_id: int, data: dict):
     items = get_tests_db()
     test = next((t for t in items if t["id"]==test_id), None)
     if not test: raise HTTPException(404)
-    answers = data.get("answers", {})  # {question_index: answer_index}
+    # Проверяем что тест назначен этому ученику
+    at = test.get("assigned_to", "")
+    if at:
+        if isinstance(at, list):
+            if name not in at: raise HTTPException(403, "Тест не назначен этому ученику")
+        else:
+            if at != name: raise HTTPException(403, "Тест не назначен этому ученику")
+    answers = data.get("answers", {})
     questions = test.get("questions", [])
     correct = 0
     results = []
@@ -1406,7 +1448,18 @@ async def submit_test(name: str, test_id: int, data: dict):
                     "total": len(questions), "date": today_str(), "results": results}
     st = s[name]
     st.setdefault("test_results", [])
+    # Заменяем предыдущий результат если уже сдавал (или добавляем новый)
+    st["test_results"] = [r for r in st["test_results"] if r.get("test_id") != test_id]
     st["test_results"].insert(0, result_entry)
+    # Добавляем оценку в grades
+    st.setdefault("grades", [])
+    # Удаляем старую оценку за этот тест если была
+    st["grades"] = [g for g in st["grades"] if not (g.get("source") == "test" and g.get("test_id") == test_id)]
+    st["grades"].insert(0, {
+        "subject": test.get("subject", "Тест"),
+        "grade": grade, "comment": f"Тест «{test['title']}»: {correct}/{len(questions)} ({score}%)",
+        "date": today_str(), "source": "test", "test_id": test_id
+    })
     save_students(s)
     return {"ok": True, "score": score, "grade": grade, "correct": correct,
             "total": len(questions), "results": results}
