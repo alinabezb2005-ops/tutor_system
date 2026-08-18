@@ -563,12 +563,14 @@ textarea.fi2{resize:vertical;min-height:60px}
           <textarea class="fi2" id="test-desc" placeholder="Описание теста…" style="min-height:50px;resize:vertical"></textarea>
           <label class="fl2">Назначить ученику (можно выбрать нескольких)</label>
           <div id="test-student-picks" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px"></div>
-          <div style="display:flex;gap:7px">
+          <div style="display:flex;gap:7px;align-items:center">
             <select class="fi2" id="test-student-sel" style="flex:1">
               <option value="">— выбрать ученика —</option>
             </select>
-            <button class="btn btns" onclick="addTestStudent()" style="padding:8px 12px">+</button>
+            <button class="btn btnp" onclick="addTestStudent()" style="padding:8px 14px;font-size:13px;font-weight:700">+ Добавить</button>
           </div>
+          <div id="ts-count" style="font-size:11px;color:var(--mu);margin-top:4px"></div>
+          <div style="font-size:11px;color:var(--mu);margin-top:2px">Если не выбрать никого — тест будет виден всем ученикам</div>
           <label class="fl2">Время (минуты, 0 = без ограничений)</label>
           <input type="number" class="fi2" id="test-time" value="0" min="0">
           <div style="border-top:1.5px solid var(--bdr);margin:14px 0 10px;padding-top:12px">
@@ -701,7 +703,7 @@ function nav(id,btn){
   if(id==='schedule-admin'){renderUpcoming();renderAllPlanned();renderCompleted();}
   if(id==='messages-admin'){loadChat();startChatPoll();}
   if(id==='videos-admin')loadVideos();
-  if(id==='tests-admin'){loadTestsAdmin();fillTestPrograms();_testStudents=[];renderTestStudentPicks();cancelTestEdit();}
+  if(id==='tests-admin'){loadTestsAdmin();fillTestPrograms();}
   else stopChatPoll();
 }
 
@@ -1836,14 +1838,15 @@ function addTestStudent(){
   if(!sel) return;
   const name = sel.value;
   if(!name){ toast('⚠️ Выбери ученика из списка'); return; }
-  if(!_testStudents.includes(name)){
-    _testStudents.push(name);
-    renderTestStudentPicks();
-    toast(`✅ ${name} добавлен`);
-  } else {
-    toast('⚠️ Ученик уже добавлен');
+  if(_testStudents.includes(name)){
+    toast('⚠️ Ученик уже в списке'); return;
   }
+  _testStudents.push(name);
+  renderTestStudentPicks();
   sel.value = '';
+  // Показываем счётчик
+  const countEl = document.getElementById('ts-count');
+  if(countEl) countEl.textContent = `Назначено: ${_testStudents.length}`;
 }
 
 function removeTestStudent(name){
@@ -1854,17 +1857,26 @@ function removeTestStudent(name){
 function renderTestStudentPicks(){
   const el = document.getElementById('test-student-picks'); if(!el) return;
   el.innerHTML = _testStudents.map(n=>`
-    <span style="background:var(--gbg);color:var(--gold);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px">
-      ${n}
-      <span onclick="removeTestStudent('${n}')" style="cursor:pointer;font-weight:700">✕</span>
+    <span style="background:var(--gbg);color:var(--gold);padding:4px 11px;border-radius:99px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;border:1.5px solid rgba(184,146,42,.3)">
+      👤 ${n}
+      <span onclick="removeTestStudent('${n}')" style="cursor:pointer;font-weight:800;color:var(--red)">✕</span>
     </span>`).join('');
+  const countEl = document.getElementById('ts-count');
+  if(countEl){
+    if(_testStudents.length === 0){
+      countEl.textContent = '';
+    } else {
+      countEl.textContent = `✅ Назначено: ${_testStudents.join(', ')}`;
+      countEl.style.color = 'var(--ok)';
+      countEl.style.fontWeight = '600';
+    }
+  }
 }
 
 async function loadTestsAdmin(){
   try{
     const r = await fetch(`${API}/api/admin/tests`, {headers:H()});
     _allAdminTests = await r.json();
-    renderTestsAdmin(_allAdminTests.filter(t=>!t.results||t.results.length===0 || _adminTestTab==='active'));
     if(_adminTestTab==='done') renderTestsDone(_allAdminTests);
     else renderTestsAdmin(_allAdminTests);
   }catch(e){
@@ -1889,7 +1901,7 @@ function renderTestsAdmin(tests){
           <div style="font-size:14px;font-weight:700;color:var(--ink)">${t.title}</div>
           <div style="font-size:11px;color:var(--mu);margin-top:3px">
             ${t.subject||''}
-            ${at ? ` · 👤 ${at}` : ' · ⚠️ не назначен'}
+            ${at ? ` · 👤 ${at}` : ' · 👥 Всем ученикам'}
             ${t.time_limit ? ` · ⏱ ${t.time_limit} мин` : ''}
             · ${t.questions_count} вопр.
             · ${t.created||''}
@@ -2005,6 +2017,16 @@ async function saveTest(){
     if(filled.length<2){toast(`⚠️ Вопрос ${i+1}: нужно минимум 2 варианта`);return;}
   }
   const btn = document.querySelector('#test-form-card .btn.btnp');
+  // Предупреждение если никто не назначен
+  if(_testStudents.length === 0){
+    const confirmed = confirm(
+      '⚠️ Ты не выбрал ученика!\n\n' +
+      'Тест будет виден ВСЕМ ученикам.\n\n' +
+      'Нажми OK чтобы сохранить для всех,\n' +
+      'или Отмена чтобы добавить конкретных учеников.'
+    );
+    if(!confirmed) return;
+  }
   if(btn){btn.textContent='Сохраняю…';btn.disabled=true;}
   const data = {
     title,
