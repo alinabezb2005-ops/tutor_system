@@ -1923,37 +1923,101 @@ function renderTestsDone(tests){
   const allResults = [];
   tests.forEach(t => {
     (t.results||[]).forEach(r => {
-      allResults.push({...r, testTitle: t.title, testSubject: t.subject||''});
+      allResults.push({
+        ...r,
+        testTitle: t.title,
+        testSubject: t.subject||'',
+        testId: t.id
+      });
     });
   });
-  allResults.sort((a,b) => b.date.localeCompare(a.date));
+  allResults.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
   if(!allResults.length){
-    el.innerHTML='<div class="card" style="color:var(--mu);font-size:13px;padding:16px">Завершённых тестов пока нет.</div>';
+    el.innerHTML=`<div class="card" style="color:var(--mu);font-size:13px;padding:16px">
+      Завершённых тестов пока нет.<br>
+      <span style="font-size:11px">Ученики ещё не сдавали тесты.</span>
+    </div>`;
     return;
   }
-  el.innerHTML = allResults.map(r=>`
-    <div class="card" style="margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-        <div style="width:42px;height:42px;border-radius:50%;background:${r.grade>=4?'var(--gl)':'rgba(231,76,60,.1)'};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:${r.grade>=4?'var(--gd)':'#e74c3c'};flex-shrink:0">${r.grade}</div>
+
+  el.innerHTML = allResults.map((r,idx)=>{
+    const isPending = r.status === 'pending';
+    const gradeColor = r.grade>=4?'var(--gd)':'#e74c3c';
+    const gradeBg = r.grade>=4?'var(--gl)':'rgba(231,76,60,.1)';
+    return `<div class="card" style="margin-bottom:12px" id="test-result-card-${idx}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:46px;height:46px;border-radius:50%;background:${isPending?'var(--milk)':gradeBg};
+          display:flex;align-items:center;justify-content:center;
+          font-size:${isPending?'20px':'22px'};font-weight:800;
+          color:${isPending?'var(--mu)':gradeColor};flex-shrink:0">
+          ${isPending?'⏳':r.grade}
+        </div>
         <div style="flex:1">
           <div style="font-size:14px;font-weight:700">${r.student}</div>
           <div style="font-size:12px;color:var(--mu)">${r.testTitle}${r.testSubject?' · '+r.testSubject:''}</div>
-          <div style="font-size:11px;color:var(--mu)">${r.correct} из ${r.total} · ${r.score}% · ${r.date}</div>
+          <div style="font-size:11px;color:var(--mu)">${r.correct||0} из ${r.total||0} · ${r.score||0}% · ${r.date||''}</div>
+          ${isPending?`<span style="font-size:11px;background:#fff8e1;color:#f57f17;padding:2px 8px;border-radius:99px;font-weight:600">⏳ Ожидает проверки</span>`
+            :`<span style="font-size:11px;background:var(--gl);color:var(--gd);padding:2px 8px;border-radius:99px;font-weight:600">✅ Оценка принята</span>`}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          ${isPending?`
+            <button onclick="acceptTestResult('${r.student}',${r.testId},${idx})"
+              style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">
+              ✅ Принять
+            </button>
+            <button onclick="rejectTestResult('${r.student}',${r.testId},${idx})"
+              style="background:rgba(231,76,60,.1);color:#e74c3c;border:1.5px solid rgba(231,76,60,.3);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">
+              🔄 Вернуть
+            </button>`:`
+            <button onclick="rejectTestResult('${r.student}',${r.testId},${idx})"
+              style="background:var(--milk);color:var(--mu);border:1.5px solid var(--bdr);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">
+              🔄 Пересдача
+            </button>`}
         </div>
       </div>
-      <details style="font-size:12px">
-        <summary style="cursor:pointer;color:var(--blue);font-weight:600;margin-bottom:8px">Разбор ответов</summary>
+      <details>
+        <summary style="cursor:pointer;color:var(--blue);font-size:12px;font-weight:600;margin-bottom:8px;padding:6px 0">
+          Посмотреть разбор ответов →
+        </summary>
         ${(r.results||[]).map((q,i)=>`
-          <div style="padding:8px;border-radius:8px;margin-bottom:5px;background:${q.is_correct?'rgba(45,106,79,.07)':'rgba(231,76,60,.07)'}">
-            <div style="font-weight:600;margin-bottom:4px">${i+1}. ${q.question}</div>
+          <div style="padding:9px;border-radius:8px;margin-bottom:6px;
+            background:${q.is_correct?'rgba(45,106,79,.07)':'rgba(231,76,60,.07)'}">
+            <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--ink)">
+              ${q.is_correct?'✅':'❌'} ${i+1}. ${q.question}
+            </div>
             ${(q.options||[]).map((opt,oi)=>`
-              <div style="font-size:11px;padding:3px 7px;border-radius:5px;margin-bottom:2px;
+              <div style="font-size:11px;padding:4px 8px;border-radius:6px;margin-bottom:3px;
                 background:${oi===q.correct_answer?'rgba(45,106,79,.15)':oi===q.user_answer&&!q.is_correct?'rgba(231,76,60,.15)':''}">
-                ${oi===q.correct_answer?'✅':oi===q.user_answer&&!q.is_correct?'❌':'○'} ${opt}
+                ${oi===q.correct_answer?'✅ Верно:':oi===q.user_answer&&!q.is_correct?'❌ Ответ:':'○'} ${opt}
               </div>`).join('')}
           </div>`).join('')}
       </details>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+async function acceptTestResult(studentName, testId, cardIdx){
+  const r = await fetch(`${API}/api/admin/test-result/${encodeURIComponent(studentName)}/${testId}/accept`,
+    {method:'POST',headers:H()});
+  if(r.ok){
+    toast(`✅ Оценка принята для ${studentName}`);
+    await loadTestsAdmin();
+  } else {
+    toast('❌ Ошибка');
+  }
+}
+
+async function rejectTestResult(studentName, testId, cardIdx){
+  if(!confirm(`Вернуть тест на пересдачу ученику ${studentName}?\nРезультат будет удалён.`)) return;
+  const r = await fetch(`${API}/api/admin/test-result/${encodeURIComponent(studentName)}/${testId}/reject`,
+    {method:'POST',headers:H()});
+  if(r.ok){
+    toast(`🔄 Тест возвращён на пересдачу`);
+    await loadTestsAdmin();
+  } else {
+    toast('❌ Ошибка');
+  }
 }
 
 function tqRender(){

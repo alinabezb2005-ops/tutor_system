@@ -997,7 +997,7 @@ let currentTest = null;
 let studentAnswers = {};
 
 async function loadStudentTests(){
-  // Загружаем тесты и результаты параллельно
+  _studentTestResults = []; // сбрасываем перед загрузкой
   try{
     const [rTests, rResults] = await Promise.all([
       fetch(`${API}/api/tests?student=${encodeURIComponent(sName)}`),
@@ -1005,6 +1005,7 @@ async function loadStudentTests(){
     ]);
     const tests = await rTests.json();
     const results = rResults.ok ? await rResults.json() : [];
+    _studentTestResults = results;
     renderStudentTests(tests, results);
   }catch(e){ document.getElementById('tests-list-student').innerHTML='<div style="color:var(--mu)">Нет соединения</div>'; }
 }
@@ -1045,7 +1046,10 @@ function renderStudentTests(tests, results){
         </div>
         <div>
           ${done
-            ?`<span style="background:var(--gl);color:var(--gd);font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px">↩ Пройти снова</span>`
+            ?`<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+                <span onclick="event.stopPropagation();viewTestResult(${t.id})" style="background:var(--gl);color:var(--gd);font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;cursor:pointer">📊 Результат</span>
+                <span style="background:#e8f0fb;color:var(--blue);font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;cursor:pointer">↩ Пройти снова</span>
+              </div>`
             :`<span style="background:#e8f0fb;color:var(--blue);font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px">Пройти →</span>`}
         </div>
       </div>
@@ -1146,17 +1150,21 @@ function showTestResult(d){
   const el = document.getElementById('test-run-block');
   const grade = d.grade;
   const color = grade>=4 ? 'var(--g)' : grade>=3 ? 'var(--warn)' : '#e74c3c';
+  const isPending = d.status === 'pending';
   el.innerHTML=`
     <div class="card" style="text-align:center;padding:28px 20px">
-      <div style="font-size:64px;font-weight:900;color:${color};line-height:1;margin-bottom:8px">${grade}</div>
+      <div style="font-size:64px;font-weight:900;color:${isPending?'var(--mu)':color};line-height:1;margin-bottom:8px">${isPending?'⏳':grade}</div>
       <div style="font-size:20px;font-weight:700;color:var(--ink);margin-bottom:4px">${d.score}% правильных ответов</div>
-      <div style="font-size:13px;color:var(--mu);margin-bottom:20px">${d.correct} из ${d.total} вопросов</div>
+      <div style="font-size:13px;color:var(--mu);margin-bottom:8px">${d.correct} из ${d.total} вопросов</div>
+      ${isPending?`<div style="background:#fff8e1;border:1.5px solid #ffd54f;border-radius:10px;padding:10px 14px;font-size:13px;color:#f57f17;margin-bottom:10px">
+        ⏳ Репетитор ещё не проверил тест. Оценка появится после проверки.
+      </div>`:`<div style="font-size:24px;font-weight:900;color:${color}">Оценка: ${grade}</div>`}
     </div>
-    <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:var(--ink)">Разбор ошибок:</div>
-    ${d.results.map((res,i)=>`
+    <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:var(--ink)">Разбор ответов:</div>
+    ${(d.results||[]).map((res,i)=>`
       <div class="card" style="margin-bottom:9px;border-left:4px solid ${res.is_correct?'var(--g)':'#e74c3c'}">
         <div style="font-size:13px;font-weight:600;margin-bottom:8px">${i+1}. ${res.question}</div>
-        ${res.options.map((opt,oi)=>`
+        ${(res.options||[]).map((opt,oi)=>`
           <div style="padding:6px 10px;border-radius:7px;margin-bottom:4px;font-size:12px;
             background:${oi===res.correct_answer?'rgba(74,124,89,.1)':oi===res.user_answer&&!res.is_correct?'rgba(231,76,60,.1)':'var(--milk)'}">
             ${oi===res.correct_answer?'✅':oi===res.user_answer&&!res.is_correct?'❌':'○'} ${opt}
@@ -1175,6 +1183,38 @@ function exitTest(){
   document.getElementById('test-results-block').style.display='';
   loadStudentTests();
 }
+
+function viewTestResult(testId){
+  // Показываем результат из уже загруженных данных
+  const result = _studentTestResults && _studentTestResults.find(r=>r.test_id===testId);
+  if(!result){ showToast('Результат не найден'); return; }
+  document.getElementById('tests-list-student').style.display='none';
+  document.getElementById('test-results-block').style.display='none';
+  const el = document.getElementById('test-run-block');
+  el.style.display='block';
+  const grade = result.grade;
+  const color = grade>=4?'var(--g)':grade>=3?'var(--warn)':'#e74c3c';
+  el.innerHTML=`
+    <div class="card" style="text-align:center;padding:24px 20px;margin-bottom:12px">
+      <div style="font-size:56px;font-weight:900;color:${color};line-height:1;margin-bottom:6px">${grade}</div>
+      <div style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:3px">${result.score}% правильных</div>
+      <div style="font-size:13px;color:var(--mu)">${result.correct} из ${result.total} · ${result.test_title}</div>
+    </div>
+    <div style="margin-bottom:10px;font-size:13px;font-weight:700;color:var(--ink)">Разбор ответов:</div>
+    ${(result.results||[]).map((res,i)=>`
+      <div class="card" style="margin-bottom:9px;border-left:4px solid ${res.is_correct?'var(--g)':'#e74c3c'}">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">${i+1}. ${res.question}</div>
+        ${(res.options||[]).map((opt,oi)=>`
+          <div style="padding:6px 10px;border-radius:7px;margin-bottom:4px;font-size:12px;
+            background:${oi===res.correct_answer?'rgba(74,124,89,.1)':oi===res.user_answer&&!res.is_correct?'rgba(231,76,60,.1)':'var(--milk)'}">
+            ${oi===res.correct_answer?'✅':oi===res.user_answer&&!res.is_correct?'❌':'○'} ${opt}
+          </div>`).join('')}
+      </div>`).join('')}
+    <button onclick="exitTest()" style="width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px">← К списку тестов</button>
+  `;
+}
+
+let _studentTestResults = []; // результаты ТОЛЬКО текущего ученика
 
 </script>
 </body>
