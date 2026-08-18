@@ -1332,7 +1332,7 @@ async def list_tests(program: str = "", student: str = ""):
     if student:
         def is_assigned(t):
             at = t.get("assigned_to", "")
-            if not at: return False  # не назначен никому — не показываем
+            if not at: return True   # не назначен конкретно — виден всем
             if isinstance(at, list): return student in at
             return at == student
         items = [t for t in items if is_assigned(t)]

@@ -701,7 +701,7 @@ function nav(id,btn){
   if(id==='schedule-admin'){renderUpcoming();renderAllPlanned();renderCompleted();}
   if(id==='messages-admin'){loadChat();startChatPoll();}
   if(id==='videos-admin')loadVideos();
-  if(id==='tests-admin'){loadTestsAdmin();fillTestPrograms();}
+  if(id==='tests-admin'){loadTestsAdmin();fillTestPrograms();_testStudents=[];renderTestStudentPicks();cancelTestEdit();}
   else stopChatPoll();
 }
 
@@ -1833,10 +1833,15 @@ function fillTestPrograms(){
 
 function addTestStudent(){
   const sel = document.getElementById('test-student-sel');
-  const name = sel.value; if(!name) return;
+  if(!sel) return;
+  const name = sel.value;
+  if(!name){ toast('⚠️ Выбери ученика из списка'); return; }
   if(!_testStudents.includes(name)){
     _testStudents.push(name);
     renderTestStudentPicks();
+    toast(`✅ ${name} добавлен`);
+  } else {
+    toast('⚠️ Ученик уже добавлен');
   }
   sel.value = '';
 }
@@ -1993,7 +1998,6 @@ async function saveTest(){
   const title = document.getElementById('test-title').value.trim();
   if(!title){toast('⚠️ Введи название теста');return;}
   if(!_tq.length){toast('⚠️ Добавь хотя бы один вопрос');return;}
-  if(!_testStudents.length){toast('⚠️ Назначь тест хотя бы одному ученику');return;}
   for(let i=0;i<_tq.length;i++){
     const q=_tq[i];
     if(!q.text.trim()){toast(`⚠️ Заполни текст вопроса ${i+1}`);return;}
@@ -2006,7 +2010,7 @@ async function saveTest(){
     title,
     subject: document.getElementById('test-subject').value.trim(),
     description: document.getElementById('test-desc').value.trim(),
-    assigned_to: _testStudents.length===1 ? _testStudents[0] : _testStudents,
+    assigned_to: _testStudents.length===0 ? '' : _testStudents.length===1 ? _testStudents[0] : _testStudents,
     time_limit: +document.getElementById('test-time').value||0,
     questions: _tq.map(q=>({
       text:q.text, correct:q.correct, image_url:q.image_url||'',
