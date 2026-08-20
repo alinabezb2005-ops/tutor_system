@@ -1443,30 +1443,60 @@ async def submit_test(name: str, test_id: int, data: dict):
                         "options": q.get("options",[])})
     score = round(correct / len(questions) * 100) if questions else 0
     grade = 5 if score>=90 else 4 if score>=70 else 3 if score>=50 else 2
+    # Сохраняем результат со статусом "pending" - оценка не ставится пока репетитор не подтвердит
     result_entry = {"test_id": test_id, "test_title": test["title"],
+                    "test_subject": test.get("subject",""),
                     "score": score, "grade": grade, "correct": correct,
-                    "total": len(questions), "date": today_str(), "results": results}
+                    "total": len(questions), "date": today_str(),
+                    "results": results, "status": "pending"}  # pending = ждёт подтверждения
     st = s[name]
     st.setdefault("test_results", [])
-    # Заменяем предыдущий результат если уже сдавал (или добавляем новый)
+    # Заменяем предыдущий результат если уже сдавал
     st["test_results"] = [r for r in st["test_results"] if r.get("test_id") != test_id]
     st["test_results"].insert(0, result_entry)
-    # Добавляем оценку в grades в правильном формате {"d","s","t","tp","g","c"}
+    # Оценка НЕ ставится автоматически - только после подтверждения репетитором
+    save_students(s)
+    return {"ok": True, "score": score, "grade": grade, "correct": correct,
+            "total": len(questions), "results": results}
+
+@app.post("/api/admin/test-result/{name}/{test_id}/accept")
+async def accept_test_result(name: str, test_id: int, r: Request):
+    """Репетитор принимает результат - ставится оценка"""
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    st = s[name]
+    result = next((r for r in st.get("test_results",[]) if r.get("test_id")==test_id), None)
+    if not result: raise HTTPException(404)
+    result["status"] = "accepted"
+    # Теперь ставим оценку
     st.setdefault("grades", [])
-    st["grades"] = [g for g in st["grades"] if not (g.get("source") == "test" and g.get("test_id") == test_id)]
+    st["grades"] = [g for g in st["grades"] if not (g.get("source")=="test" and g.get("test_id")==test_id)]
     st["grades"].insert(0, {
-        "d": today_str(),
-        "s": test.get("subject", "Тест"),
-        "t": test["title"],
+        "d": result["date"],
+        "s": result.get("test_subject","Тест"),
+        "t": result["test_title"],
         "tp": "Тест",
-        "g": grade,
-        "c": f"{correct}/{len(questions)} правильных ({score}%)",
+        "g": result["grade"],
+        "c": f"{result['correct']}/{result['total']} правильных ({result['score']}%)",
         "source": "test",
         "test_id": test_id
     })
     save_students(s)
-    return {"ok": True, "score": score, "grade": grade, "correct": correct,
-            "total": len(questions), "results": results}
+    return {"ok": True}
+
+@app.post("/api/admin/test-result/{name}/{test_id}/reject")
+async def reject_test_result(name: str, test_id: int, r: Request):
+    """Репетитор возвращает тест на пересдачу - результат удаляется"""
+    require_admin(r)
+    s = get_students()
+    if name not in s: raise HTTPException(404)
+    st = s[name]
+    st["test_results"] = [r for r in st.get("test_results",[]) if r.get("test_id") != test_id]
+    # Убираем оценку если была
+    st["grades"] = [g for g in st.get("grades",[]) if not (g.get("source")=="test" and g.get("test_id")==test_id)]
+    save_students(s)
+    return {"ok": True}
 
 @app.get("/api/student/{name}/test-results")
 async def get_test_results(name: str):
